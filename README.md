@@ -24,4 +24,4 @@ probably want to implement an `IMeasurementPublisher`.
 
 To give it a twirl, use NuGet to install it.
 
-`Install-Package Scientist`
+`Install-Package Scientist -Pre`
