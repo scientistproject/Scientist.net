@@ -1,6 +1,7 @@
 ﻿using System;
 using GitHub.Internals;
 using System.Threading.Tasks;
+using NullGuard;
 
 namespace GitHub
 {
@@ -19,6 +20,7 @@ namespace GitHub
             set { _measurementPublisher = value; }
         }
 
+        [return: AllowNull]
         public static T Science<T>(string name, Action<IExperiment<T>> experiment)
         {
             var experimentBuilder = new Experiment<T>(name);
@@ -28,7 +30,8 @@ namespace GitHub
             return experimentBuilder.Build().Run().Result;
         }
 
-        public static Task<T> ScienceAsync<T>(string name, Action<IExperiment<T>> experiment)
+        [return: AllowNull]
+        public static Task<T> ScienceAsync<T>(string name, Action<IExperimentAsync<T>> experiment)
         {
             var experimentBuilder = new Experiment<T>(name);
             
