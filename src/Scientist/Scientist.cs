@@ -10,15 +10,14 @@ namespace GitHub
     public static class Scientist
     {
         // TODO: Evaluate the distribution of Random and whether it's good enough.
-        static readonly Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
-        static IMeasurementPublisher _measurementPublisher = new InMemoryPublisher();
+        static readonly Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);                                
 
         // Should be configured once before starting measurements.
         public static IMeasurementPublisher MeasurementPublisher
         {
-            get { return _measurementPublisher; }
-            set { _measurementPublisher = value; }
-        }
+            get;
+            set;
+        } = new InMemoryPublisher();
 
         [return: AllowNull]
         public static T Science<T>(string name, Action<IExperiment<T>> experiment)
