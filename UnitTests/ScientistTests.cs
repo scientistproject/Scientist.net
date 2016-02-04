@@ -53,5 +53,30 @@ public class TheScientistClass
             Assert.True(controlRan);
             Assert.False(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "failure").Success);
         }
+
+        [Fact]
+        public void RunsBothBranchesOfTheExperimentAndReportsSuccessWithDurations()
+        {
+            bool candidateRan = false;
+            bool controlRan = false;
+
+            // We introduce side effects for testing. Don't do this in real life please.
+            // Do we do a deep comparison?
+            Func<int> control = () => { controlRan = true; return 42; };
+            Func<int> candidate = () => { candidateRan = true; return 42; };
+
+            var result = Scientist.Science<int>("success", experiment =>
+            {
+                experiment.Use(control);
+                experiment.Try(candidate);
+            });
+
+            Assert.Equal(42, result);
+            Assert.True(candidateRan);
+            Assert.True(controlRan);
+            Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").Success);
+            Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").ControlDuration.Ticks > 0);
+            Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").CandidateDuration.Ticks > 0);
+        }
     }
 }
