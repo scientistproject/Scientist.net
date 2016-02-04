@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <id>scientist</id>
+    <version>$version$</version>
+    <authors>GitHub</authors>
+    <description>Implementation of the Scientist library from GitHub</description>
+    <releaseNotes>
+    </releaseNotes>
+    <summary>Implementation of the Scientist library from GitHub</summary>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <tags>routing asp.net</tags>
+    <language>en-US</language>
+    <licenseUrl>https://raw.githubusercontent.com/haacked/scientist/master/LICENSE</licenseUrl>
+    <projectUrl>http://github.com/haacked/scientist</projectUrl>
+  </metadata>
+</package>
