@@ -4,6 +4,10 @@ using System.Threading.Tasks;
 
 namespace GitHub.Internals
 {
+    /// <summary>
+    /// An instance of an experiment. This actually runs the control and the candidate and measures the result.
+    /// </summary>
+    /// <typeparam name="T">The return type of the experiment</typeparam>
     internal class ExperimentInstance<T>
     {
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
