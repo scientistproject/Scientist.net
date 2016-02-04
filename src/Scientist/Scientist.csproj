@@ -50,7 +50,7 @@
     <Compile Include="IMeasurementPublisher.cs" />
     <Compile Include="Internals\ExperimentBuilder.cs" />
     <Compile Include="IExperiment.cs" />
-    <Compile Include="Measurement.cs" />
+    <Compile Include="Observation.cs" />
     <Compile Include="Internals\InMemoryPublisher.cs" />
     <Compile Include="Scientist.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

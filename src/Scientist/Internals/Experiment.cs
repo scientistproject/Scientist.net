@@ -55,11 +55,11 @@ namespace GitHub.Internals
                 || controlResult.Result == null && candidateResult.Result != null;
 
             // TODO: Get that duration!
-            var measurement = new Measurement(_name, success, controlResult.Duration, candidateResult.Duration);
+            var observation = new Observation(_name, success, controlResult.Duration, candidateResult.Duration);
 
             // TODO: Make this Fire and forget so we don't have to wait for this
             // to complete before we return a result
-            await Scientist.MeasurementPublisher.Publish(measurement);
+            await Scientist.ObservationPublisher.Publish(observation);
 
             if (controlResult.ThrownException != null) throw controlResult.ThrownException;
             return controlResult.Result;
