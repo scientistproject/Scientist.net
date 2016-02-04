@@ -21,3 +21,7 @@ public bool MayPush(IUser user)
 
 By default measurements are stored in an in-memory publisher. For production use, you'll
 probably want to implement an `IMeasurementPublisher`.
+
+To give it a twirl, use NuGet to install it.
+
+`Install-Package Scientist`
