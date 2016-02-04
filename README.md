@@ -10,7 +10,7 @@ Here's a sample usage.
 ```csharp
 public bool MayPush(IUser user)
 {
-  var result = await Scientist.ScienceAsync<int>("experiment-name", experiment =>
+  return Scientist.Science<int>("experiment-name", experiment =>
   {
       experiment.Use(() => IsCollaborator(user));
       experiment.Try(() => HasAccess(user));
