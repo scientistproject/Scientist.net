@@ -53,7 +53,7 @@ namespace GitHub.Internals
                 controlResult = await Run(_control);
             }
 
-            // If a comparison Func has been set, user that, otherwise try a straight equals
+            // If a comparison Func has been set, use that, otherwise try a straight equals. 
             bool success = _resultComparison?.Invoke(controlResult.Result, candidateResult.Result) ?? controlResult.Result.Equals(candidateResult.Result);
 
             var measurement = new Measurement(_name, success, controlResult.Duration, candidateResult.Duration);
