@@ -2,8 +2,8 @@
 
 namespace GitHub
 {
-    public interface IMeasurementPublisher
+    public interface IObservationPublisher
     {
-        Task Publish(Measurement measurement);
+        Task Publish(Observation observation);
     }
 }

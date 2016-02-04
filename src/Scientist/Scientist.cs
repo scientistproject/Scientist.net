@@ -13,13 +13,13 @@ namespace GitHub
         // TODO: Evaluate the distribution of Random and whether it's good enough.
         static readonly Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);                                
 
-        // Should be configured once before starting measurements.
+        // Should be configured once before starting observations.
         // TODO: How can we guide the developer to the pit of success
-        public static IMeasurementPublisher MeasurementPublisher
+        public static IObservationPublisher ObservationPublisher
         {
             get;
             set;
-        } = new InMemoryPublisher();
+        } = new InMemoryObservationPublisher();
 
         /// <summary>
         /// Conduct a synchronous experiment

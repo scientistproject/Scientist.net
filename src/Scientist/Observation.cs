@@ -2,9 +2,9 @@
 
 namespace GitHub
 {
-    public class Measurement
+    public class Observation
     {
-        public Measurement(string name, bool success, TimeSpan controlDuration, TimeSpan candidateDuration)
+        public Observation(string name, bool success, TimeSpan controlDuration, TimeSpan candidateDuration)
         {
             Name = name;
             Success = success;
