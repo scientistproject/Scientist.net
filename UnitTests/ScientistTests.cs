@@ -51,7 +51,30 @@ public class TheScientistClass
             Assert.Equal(42, result);
             Assert.True(candidateRan);
             Assert.True(controlRan);
-            Assert.False(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "failure").Success);
+            Assert.False(TestHelper.Measurements.First(m => m.Name == "failure").Success);
+        }
+
+        [Fact]
+        public void AllowsReturningNullFromControlOrTest()
+        {
+            var result = Scientist.Science<object>("failure", experiment =>
+            {
+                experiment.Use(() => null);
+                experiment.Try(() => null);
+            });
+
+            Assert.Null(result);
+            Assert.True(TestHelper.Measurements.First(m => m.Name == "failure").Success);
+        }
+
+        [Fact]
+        public void EnsureNullGuardIsWorking()
+        {
+#if !DEBUG
+            Assert.Throws<ArgumentNullException>(() =>
+                Scientist.Science<object>(null, _ => { })
+            );
+#endif
         }
 
         [Fact]

@@ -45,7 +45,10 @@ namespace GitHub.Internals
             }
 
             // TODO: We're going to have to be a bit more sophisticated about this.
-            bool success = controlResult.Result.Equals(candidateResult.Result);
+            bool success = 
+                controlResult.Result == null && candidateResult.Result == null
+                || controlResult.Result != null && controlResult.Result.Equals(candidateResult.Result)
+                || controlResult.Result == null && candidateResult.Result != null;
 
             // TODO: Get that duration!
             var measurement = new Measurement(_name, success, controlResult.Duration, candidateResult.Duration);

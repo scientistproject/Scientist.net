@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace GitHub.Internals
 {
-    internal class Experiment<T> : IExperiment<T>
+    internal class Experiment<T> : IExperiment<T>, IExperimentAsync<T>
     {
         string _name;
         Func<Task<T>> _control;
