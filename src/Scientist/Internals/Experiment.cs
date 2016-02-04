@@ -43,13 +43,15 @@ namespace GitHub.Internals
                 controlResult = await Run(_control);
             }
 
-            bool success = controlResult == candidateResult;
+            // TODO: We're going to have to be a bit more sophisticated about this.
+            bool success = controlResult.Result.Equals(candidateResult.Result);
 
             // TODO: Get that duration!
             var measurement = new Measurement(_name, success, TimeSpan.Zero, TimeSpan.Zero);
 
-            // Fire and forget.
-            Publish(measurement);
+            // TODO: Make this Fire and forget so we don't have to wait for this
+            // to complete before we return a result
+            await Scientist.MeasurementPublisher.Publish(measurement);
 
             if (controlResult.ThrownException != null) throw controlResult.ThrownException;
             return controlResult.Result;
@@ -66,16 +68,6 @@ namespace GitHub.Internals
             {
                 return new ExperimentResult(e, TimeSpan.Zero);
             }
-        }
-
-        static void Publish(Measurement measurement)
-        {
-#pragma warning disable 4014
-            Task.Run(async () =>
-            {
-                await Scientist.MeasurementPublisher.Publish(measurement);
-            }).ConfigureAwait(false);
-#pragma warning restore 4014
         }
 
         class ExperimentResult

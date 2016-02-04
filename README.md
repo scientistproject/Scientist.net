@@ -1,7 +1,9 @@
 # Scientist.NET
 
 This is a .NET Port of the Ruby Scientist library. Read [about it here](http://githubengineering.com/scientist/).
-It's really really early. We'll be moving this to the GitHub org on GitHub.com once it's been battle tested.
+
+Currently, it's a rough sketch of what the library will look like.
+
 Here's a sample usage.
 
 
@@ -17,7 +19,5 @@ public bool MayPush(IUser user)
 
 ```
 
-The real power of Scientist lies in publishing measurements to a data store so 
-you can run stats against it. Right now, there's only a dirt simple in memory
-data store. We'll be very interested in having contributions to store measurements
-in SQL Server, Redis, etc. So help us out!
+By default measurements are stored in an in-memory publisher. For production use, you'll
+probably want to implement an `IMeasurementPublisher`.

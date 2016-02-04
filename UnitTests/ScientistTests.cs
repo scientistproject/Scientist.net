@@ -16,10 +16,11 @@ public class TheScientistClass
             bool controlRan = false;
 
             // We introduce side effects for testing. Don't do this in real life please.
+            // Do we do a deep comparison?
             Func<int> control = () => { controlRan = true; return 42; };
             Func<int> candidate = () => { candidateRan = true; return 42; };
 
-            var result = Scientist.Science<int>("experiment-name", experiment =>
+            var result = Scientist.Science<int>("success", experiment =>
             {
                 experiment.Use(control);
                 experiment.Try(candidate);
@@ -28,7 +29,7 @@ public class TheScientistClass
             Assert.Equal(42, result);
             Assert.True(candidateRan);
             Assert.True(controlRan);
-            Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First().Success);
+            Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").Success);
         }
 
         [Fact]
@@ -41,7 +42,7 @@ public class TheScientistClass
             Func<Task<int>> control = () => { controlRan = true; return Task.FromResult(42); };
             Func<Task<int>> candidate = () => { candidateRan = true; return Task.FromResult(43); };
 
-            var result = await Scientist.ScienceAsync<int>("experiment-name", experiment =>
+            var result = await Scientist.ScienceAsync<int>("failure", experiment =>
             {
                 experiment.Use(control);
                 experiment.Try(candidate);
@@ -50,7 +51,7 @@ public class TheScientistClass
             Assert.Equal(42, result);
             Assert.True(candidateRan);
             Assert.True(controlRan);
-            Assert.False(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First().Success);
+            Assert.False(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "failure").Success);
         }
     }
 }

@@ -13,6 +13,6 @@ namespace GitHub.Internals
             return Task.FromResult(0);
         }
 
-        public ConcurrentBag<Measurement> Measurements { get; }
+        public ConcurrentBag<Measurement> Measurements { get { return _measurements; } }
     }
 }
