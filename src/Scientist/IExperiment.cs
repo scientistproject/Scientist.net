@@ -9,5 +9,7 @@ namespace GitHub.Internals
         void Try(Func<T> candidate);
         void Use(Func<Task<T>> control);
         void Use(Func<T> control);
+
+        Func<T, T, bool> ResultComparison { get; set; } 
     }
 }

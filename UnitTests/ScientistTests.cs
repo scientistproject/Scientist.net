@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Threading.Tasks;
 using GitHub;
 using GitHub.Internals;
@@ -77,6 +78,56 @@ public class TheScientistClass
             Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").Success);
             Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").ControlDuration.Ticks > 0);
             Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").CandidateDuration.Ticks > 0);
+        }
+
+        [Fact]
+        public void RunsBothBranchesOfTheExperimentWithResultComparisonSetAndReportsSuccess()
+        {
+            bool candidateRan = false;
+            bool controlRan = false;
+
+            // We introduce side effects for testing. Don't do this in real life please.
+            // Do we do a deep comparison?
+            Func<ComplexResult> control = () => { controlRan = true; return new ComplexResult {Count = 10, Name = "Tester"}; };
+            Func<ComplexResult> candidate = () => { candidateRan = true; return new ComplexResult {Count = 10, Name = "Tester"}; };
+
+            var result = Scientist.Science<ComplexResult>("success", experiment =>
+            {
+                experiment.ResultComparison = (a, b) => a.Count == b.Count && a.Name == b.Name;
+                experiment.Use(control);
+                experiment.Try(candidate);
+            });
+
+            Assert.Equal(10, result.Count);
+            Assert.Equal("Tester", result.Name);
+            Assert.True(candidateRan);
+            Assert.True(controlRan);
+            Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").Success);
+        }
+
+        [Fact]
+        public void RunsBothBranchesOfTheExperimentWithResultComparisonSetAndReportsFailure()
+        {
+            bool candidateRan = false;
+            bool controlRan = false;
+
+            // We introduce side effects for testing. Don't do this in real life please.
+            // Do we do a deep comparison?
+            Func<ComplexResult> control = () => { controlRan = true; return new ComplexResult { Count = 10, Name = "Tester" }; };
+            Func<ComplexResult> candidate = () => { candidateRan = true; return new ComplexResult { Count = 10, Name = "Tester2" }; };
+
+            var result = Scientist.Science<ComplexResult>("success", experiment =>
+            {
+                experiment.ResultComparison = (a, b) => a.Count == b.Count && a.Name == b.Name;
+                experiment.Use(control);
+                experiment.Try(candidate);
+            });
+
+            Assert.Equal(10, result.Count);
+            Assert.Equal("Tester", result.Name);
+            Assert.True(candidateRan);
+            Assert.True(controlRan);
+            Assert.False(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").Success);
         }
     }
 }

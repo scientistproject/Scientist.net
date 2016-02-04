@@ -10,6 +10,7 @@ namespace GitHub.Internals
 
         readonly Func<Task<T>> _control;
         readonly Func<Task<T>> _candidate;
+        private readonly Func<T, T, bool> _resultComparison;
         readonly string _name;
 
         public ExperimentInstance(string name, Func<T> control, Func<T> candidate)
@@ -24,6 +25,14 @@ namespace GitHub.Internals
             _name = name;
             _control = control;
             _candidate = candidate;
+        }
+
+        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, Func<T, T, bool> resultComparison)
+        {
+            _name = name;
+            _control = control;
+            _candidate = candidate;
+            _resultComparison = resultComparison;
         }
 
         public async Task<T> Run()
@@ -44,10 +53,9 @@ namespace GitHub.Internals
                 controlResult = await Run(_control);
             }
 
-            // TODO: We're going to have to be a bit more sophisticated about this.
-            bool success = controlResult.Result.Equals(candidateResult.Result);
+            // If a comparison Func has been set, user that, otherwise try a straight equals
+            bool success = _resultComparison?.Invoke(controlResult.Result, candidateResult.Result) ?? controlResult.Result.Equals(candidateResult.Result);
 
-            // TODO: Get that duration!
             var measurement = new Measurement(_name, success, controlResult.Duration, candidateResult.Duration);
 
             // TODO: Make this Fire and forget so we don't have to wait for this

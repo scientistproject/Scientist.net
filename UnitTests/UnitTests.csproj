@@ -59,6 +59,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComplexResult.cs" />
     <Compile Include="ScientistTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
