@@ -20,7 +20,7 @@ namespace Scientist.Internals
     /// Console.WriteLine($"Time taken: {chrono.Timespan.Ticks} (in Ticks)");
     /// </example>
     /// </summary>
-    public class Chronometer : IDisposable
+    internal class Chronometer : IDisposable
     {
         public Stopwatch Stopwatch { get; } = new Stopwatch();
 
@@ -98,7 +98,7 @@ namespace Scientist.Internals
     /// Reference type wrapper of value type TimeSpan
     /// Needed so we can pass out object from Chronometer constructor 
     /// </summary>
-    public class Chrono
+    internal class Chrono
     {
         public TimeSpan Timespan { get; set; }
     }
