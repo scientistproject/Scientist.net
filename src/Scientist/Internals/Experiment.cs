@@ -91,7 +91,7 @@ namespace GitHub.Internals
             return controlResult.Result;
         }
 
-
+        //TODO: refactor this equality logic in to a better pattern and its own class
         /// <summary>
         /// Checks if two ExperimentResults are equal
         /// </summary>
