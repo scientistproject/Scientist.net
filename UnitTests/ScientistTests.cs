@@ -125,7 +125,7 @@ public class TheScientistClass
             Assert.Equal("Tester", result.Name);
             Assert.True(candidateRan);
             Assert.True(controlRan);
-            Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").Success);
+            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").Success);
         }
 
         [Fact]
@@ -150,7 +150,55 @@ public class TheScientistClass
             Assert.Equal("Tester", result.Name);
             Assert.True(candidateRan);
             Assert.True(controlRan);
-            Assert.False(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").Success);
+            Assert.False(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").Success);
+        }
+
+        [Fact]
+        public void RunsBothBranchesOfTheExperimentWithIEqualitySetAndReportsSuccess()
+        {
+            bool candidateRan = false;
+            bool controlRan = false;
+
+            // We introduce side effects for testing. Don't do this in real life please.
+            // Do we do a deep comparison?
+            Func<ComplexResult> control = () => { controlRan = true; return new ComplexResult { Count = 10, Name = "Tester" }; };
+            Func<ComplexResult> candidate = () => { candidateRan = true; return new ComplexResult { Count = 10, Name = "Tester" }; };
+
+            var result = Scientist.Science<ComplexResult>("success", experiment =>
+            {
+                experiment.Use(control);
+                experiment.Try(candidate);
+            });
+
+            Assert.Equal(10, result.Count);
+            Assert.Equal("Tester", result.Name);
+            Assert.True(candidateRan);
+            Assert.True(controlRan);
+            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").Success);
+        }
+
+        [Fact]
+        public void RunsBothBranchesOfTheExperimentWithIEqualitySetAndReportsFailure()
+        {
+            bool candidateRan = false;
+            bool controlRan = false;
+
+            // We introduce side effects for testing. Don't do this in real life please.
+            // Do we do a deep comparison?
+            Func<ComplexResult> control = () => { controlRan = true; return new ComplexResult { Count = 10, Name = "Tester" }; };
+            Func<ComplexResult> candidate = () => { candidateRan = true; return new ComplexResult { Count = 10, Name = "Tester2" }; };
+
+            var result = Scientist.Science<ComplexResult>("success", experiment =>
+            {
+                experiment.Use(control);
+                experiment.Try(candidate);
+            });
+
+            Assert.Equal(10, result.Count);
+            Assert.Equal("Tester", result.Name);
+            Assert.True(candidateRan);
+            Assert.True(controlRan);
+            Assert.False(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").Success);
         }
     }
 }

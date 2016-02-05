@@ -59,10 +59,7 @@ namespace GitHub.Internals
 
             // TODO: We need to compare that thrown exceptions are equivalent too https://github.com/github/scientist/blob/master/lib/scientist/observation.rb#L76
             // TODO: We're going to have to be a bit more sophisticated about this.
-            bool success = 
-                controlResult.Result == null && candidateResult.Result == null
-                || controlResult.Result != null && controlResult.Result.Equals(candidateResult.Result)
-                || controlResult.Result == null && candidateResult.Result != null;
+            bool success = CompareResults(controlResult, candidateResult);
 
             // TODO: Get that duration!
             var observation = new Observation(_name, success, controlResult.Duration, candidateResult.Duration);
@@ -75,12 +72,30 @@ namespace GitHub.Internals
             return controlResult.Result;
         }
 
+        private bool CompareResults(ExperimentResult controlResult, ExperimentResult candidateResult)
+        {
+            if (_resultComparison != null)
+            {
+                return _resultComparison(controlResult.Result, candidateResult.Result);                
+            }
+
+            var equatableResult = controlResult.Result as IEquatable<T>;
+            if (equatableResult != null)
+            {
+                return equatableResult.Equals(candidateResult.Result);
+            }
+
+            return (controlResult.Result == null && candidateResult.Result == null
+                        || controlResult.Result != null && controlResult.Result.Equals(candidateResult.Result)
+                        || controlResult.Result == null && candidateResult.Result != null);
+        }
+
         static async Task<ExperimentResult> Run(Func<Task<T>> experimentCase)
         {
             try
             {
                 // TODO: Refactor this into helper function?  
-                Stopwatch sw = new Stopwatch();
+                var sw = new Stopwatch();
                 sw.Start();
                 var result = await experimentCase();
                 sw.Stop();
