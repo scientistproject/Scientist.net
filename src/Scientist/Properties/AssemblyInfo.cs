@@ -41,6 +41,5 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyInformationalVersionAttribute("1.0.0-alpha")]
 
 
-//#if DEBUG
 [assembly: InternalsVisibleTo("UnitTests")]
-//#endif
+
