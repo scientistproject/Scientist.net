@@ -1,82 +1,117 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using GitHub;
 using GitHub.Internals;
 using Xunit;
 
-public class TheScientistClass
+
+namespace UnitTests
 {
-    public class TheScienceMethod
+
+    using GitHub;
+
+
+    public class TheScientistClass
     {
-        [Fact]
-        public void RunsBothBranchesOfTheExperimentAndReportsSuccess()
+        public class TheScienceMethod
         {
-            bool candidateRan = false;
-            bool controlRan = false;
-
-            // We introduce side effects for testing. Don't do this in real life please.
-            // Do we do a deep comparison?
-            Func<int> control = () => { controlRan = true; return 42; };
-            Func<int> candidate = () => { candidateRan = true; return 42; };
-
-            var result = Scientist.Science<int>("success", experiment =>
+            [Fact]
+            public void RunsBothBranchesOfTheExperimentAndReportsSuccess()
             {
-                experiment.Use(control);
-                experiment.Try(candidate);
-            });
+                bool candidateRan = false;
+                bool controlRan = false;
 
-            Assert.Equal(42, result);
-            Assert.True(candidateRan);
-            Assert.True(controlRan);
-            Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").Success);
-        }
+                // We introduce side effects for testing. Don't do this in real life please.
+                // Do we do a deep comparison?
+                Func<int> control = () =>
+                {
+                    controlRan = true;
+                    return 42;
+                };
+                Func<int> candidate = () =>
+                {
+                    candidateRan = true;
+                    return 42;
+                };
 
-        [Fact]
-        public async Task RunsBothBranchesOfTheExperimentAsyncAndReportsFailure()
-        {
-            bool candidateRan = false;
-            bool controlRan = false;
+                var result = Scientist.Science<int>("success", experiment =>
+                {
+                    experiment.Use(control);
+                    experiment.Try(candidate);
+                });
 
-            // We introduce side effects for testing. Don't do this in real life please.
-            Func<Task<int>> control = () => { controlRan = true; return Task.FromResult(42); };
-            Func<Task<int>> candidate = () => { candidateRan = true; return Task.FromResult(43); };
+                Assert.Equal(42, result);
+                Assert.True(candidateRan);
+                Assert.True(controlRan);
+                Assert.True(
+                    ((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(
+                        m => m.Name == "success").Success);
+            }
 
-            var result = await Scientist.ScienceAsync<int>("failure", experiment =>
+            [Fact]
+            public async Task RunsBothBranchesOfTheExperimentAsyncAndReportsFailure()
             {
-                experiment.Use(control);
-                experiment.Try(candidate);
-            });
+                bool candidateRan = false;
+                bool controlRan = false;
 
-            Assert.Equal(42, result);
-            Assert.True(candidateRan);
-            Assert.True(controlRan);
-            Assert.False(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "failure").Success);
-        }
+                // We introduce side effects for testing. Don't do this in real life please.
+                Func<Task<int>> control = () =>
+                {
+                    controlRan = true;
+                    return Task.FromResult(42);
+                };
+                Func<Task<int>> candidate = () =>
+                {
+                    candidateRan = true;
+                    return Task.FromResult(43);
+                };
 
-        [Fact]
-        public void RunsBothBranchesOfTheExperimentAndReportsSuccessWithDurations()
-        {
-            bool candidateRan = false;
-            bool controlRan = false;
+                var result = await Scientist.ScienceAsync<int>("failure", experiment =>
+                {
+                    experiment.Use(control);
+                    experiment.Try(candidate);
+                });
 
-            // We introduce side effects for testing. Don't do this in real life please.
-            // Do we do a deep comparison?
-            Func<int> control = () => { controlRan = true; return 42; };
-            Func<int> candidate = () => { candidateRan = true; return 42; };
+                Assert.Equal(42, result);
+                Assert.True(candidateRan);
+                Assert.True(controlRan);
+                Assert.False(
+                    ((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(
+                        m => m.Name == "failure").Success);
+            }
 
-            var result = Scientist.Science<int>("success", experiment =>
+            [Fact]
+            public void RunsBothBranchesOfTheExperimentAndReportsSuccessWithDurations()
             {
-                experiment.Use(control);
-                experiment.Try(candidate);
-            });
+                bool candidateRan = false;
+                bool controlRan = false;
 
-            Assert.Equal(42, result);
-            Assert.True(candidateRan);
-            Assert.True(controlRan);
-            Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").Success);
-            Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").ControlDuration.Ticks > 0);
-            Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").CandidateDuration.Ticks > 0);
+                // We introduce side effects for testing. Don't do this in real life please.
+                // Do we do a deep comparison?
+                Func<int> control = () =>
+                {
+                    controlRan = true;
+                    return 42;
+                };
+                Func<int> candidate = () =>
+                {
+                    candidateRan = true;
+                    return 42;
+                };
+
+                var result = Scientist.Science<int>("success", experiment =>
+                {
+                    experiment.Use(control);
+                    experiment.Try(candidate);
+                });
+
+                Assert.Equal(42, result);
+                Assert.True(candidateRan);
+                Assert.True(controlRan);
+                Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").Success);
+                Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").ControlDuration.Ticks > 0);
+                Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").CandidateDuration.Ticks > 0);
+            }
         }
     }
 }
