@@ -100,7 +100,7 @@ namespace Scientist.Internals
     /// </summary>
     internal class Chrono
     {
-        public TimeSpan Timespan { get; set; }
+        public TimeSpan Timespan { get; set; } = TimeSpan.Zero;
     }
 
 
