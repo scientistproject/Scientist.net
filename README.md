@@ -10,11 +10,11 @@ Here's a sample usage.
 ```csharp
 public bool MayPush(IUser user)
 {
-  return Scientist.Science<bool>("experiment-name", experiment =>
-  {
-      experiment.Use(() => IsCollaborator(user));
-      experiment.Try(() => HasAccess(user));
-  });
+    return Scientist.Science<bool>("experiment-name", experiment =>
+    {
+        experiment.Use(() => IsCollaborator(user));
+        experiment.Try(() => HasAccess(user));
+    });
 }
 
 ```
