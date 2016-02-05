@@ -4,6 +4,10 @@ using System.Threading.Tasks;
 
 namespace GitHub.Internals
 {
+    /// <summary>
+    /// An instance of an experiment. This actually runs the control and the candidate and measures the result.
+    /// </summary>
+    /// <typeparam name="T">The return type of the experiment</typeparam>
     internal class ExperimentInstance<T>
     {
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
@@ -53,14 +57,19 @@ namespace GitHub.Internals
                 controlResult = await Run(_control);
             }
 
-            // If a comparison Func has been set, use that, otherwise try a straight equals. 
-            bool success = _resultComparison?.Invoke(controlResult.Result, candidateResult.Result) ?? controlResult.Result.Equals(candidateResult.Result);
+            // TODO: We need to compare that thrown exceptions are equivalent too https://github.com/github/scientist/blob/master/lib/scientist/observation.rb#L76
+            // TODO: We're going to have to be a bit more sophisticated about this.
+            bool success = 
+                controlResult.Result == null && candidateResult.Result == null
+                || controlResult.Result != null && controlResult.Result.Equals(candidateResult.Result)
+                || controlResult.Result == null && candidateResult.Result != null;
 
-            var measurement = new Measurement(_name, success, controlResult.Duration, candidateResult.Duration);
+            // TODO: Get that duration!
+            var observation = new Observation(_name, success, controlResult.Duration, candidateResult.Duration);
 
             // TODO: Make this Fire and forget so we don't have to wait for this
             // to complete before we return a result
-            await Scientist.MeasurementPublisher.Publish(measurement);
+            await Scientist.ObservationPublisher.Publish(observation);
 
             if (controlResult.ThrownException != null) throw controlResult.ThrownException;
             return controlResult.Result;

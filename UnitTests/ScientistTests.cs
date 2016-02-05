@@ -30,7 +30,7 @@ public class TheScientistClass
             Assert.Equal(42, result);
             Assert.True(candidateRan);
             Assert.True(controlRan);
-            Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").Success);
+            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").Success);
         }
 
         [Fact]
@@ -52,7 +52,30 @@ public class TheScientistClass
             Assert.Equal(42, result);
             Assert.True(candidateRan);
             Assert.True(controlRan);
-            Assert.False(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "failure").Success);
+            Assert.False(TestHelper.Observation.First(m => m.Name == "failure").Success);
+        }
+
+        [Fact]
+        public void AllowsReturningNullFromControlOrTest()
+        {
+            var result = Scientist.Science<object>("failure", experiment =>
+            {
+                experiment.Use(() => null);
+                experiment.Try(() => null);
+            });
+
+            Assert.Null(result);
+            Assert.True(TestHelper.Observation.First(m => m.Name == "failure").Success);
+        }
+
+        [Fact]
+        public void EnsureNullGuardIsWorking()
+        {
+#if !DEBUG
+            Assert.Throws<ArgumentNullException>(() =>
+                Scientist.Science<object>(null, _ => { })
+            );
+#endif
         }
 
         [Fact]
@@ -75,9 +98,9 @@ public class TheScientistClass
             Assert.Equal(42, result);
             Assert.True(candidateRan);
             Assert.True(controlRan);
-            Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").Success);
-            Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").ControlDuration.Ticks > 0);
-            Assert.True(((InMemoryPublisher)Scientist.MeasurementPublisher).Measurements.First(m => m.Name == "success").CandidateDuration.Ticks > 0);
+            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").Success);
+            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").ControlDuration.Ticks > 0);
+            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").CandidateDuration.Ticks > 0);
         }
 
         [Fact]
