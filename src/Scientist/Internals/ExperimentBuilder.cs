@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace GitHub.Internals
@@ -10,6 +11,7 @@ namespace GitHub.Internals
         Func<Task<T>> _candidate;
 
         public Func<T, T, bool> ResultComparison { get; set; }
+        public IEqualityComparer<T> ResultEqualityCompare { get; set; }
 
         public Experiment(string name)
         {
@@ -27,7 +29,12 @@ namespace GitHub.Internals
 
         internal ExperimentInstance<T> Build()
         {
-            return new ExperimentInstance<T>(_name, _control, _candidate, ResultComparison);
+            if (ResultComparison!= null)
+            {
+                return new ExperimentInstance<T>(_name, _control, _candidate, ResultComparison);
+            }
+
+            return new ExperimentInstance<T>(_name, _control, _candidate, ResultEqualityCompare);
         }
     }
 }
