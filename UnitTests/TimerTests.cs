@@ -42,9 +42,9 @@ namespace UnitTests
                 Console.WriteLine($"Time taken: {chrono3.Timespan.Ticks} (in Ticks)");
                 //Assert
                 
-                Assert.InRange(chrono1.Timespan.Ticks, 0, 20);              //first run takes less than 20 ticks
-                Assert.InRange(chrono2.Timespan.Ticks, 0, 20);              //second run also takes less than 20 ticks
-                Assert.InRange(chrono3.Timespan.Ticks, 100000, 120000);     //Actually measures something (Thread.Sleep(10) >= 10ms, 10ms == 100000 Ticks)
+                Assert.InRange(chrono1.Timespan.Ticks, 0, 50);              //first run takes less than 50 ticks
+                Assert.InRange(chrono2.Timespan.Ticks, 0, 50);              //second run also takes less than 50 ticks
+                Assert.InRange(chrono3.Timespan.Ticks, 100000, 200000);     //Actually measures something (Thread.Sleep(10) >= 10ms, 10ms == 100000 Ticks)
 
             }
         }
