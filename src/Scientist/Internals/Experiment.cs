@@ -91,6 +91,24 @@ namespace GitHub.Internals
             return controlResult.Result;
         }
 
+
+        /// <summary>
+        /// Checks if two ExperimentResults are equal
+        /// </summary>
+        /// <param name="controlResult">Control ExperimentResult</param>
+        /// <param name="candidateResult">Candidate ExperimentResult</param>
+        /// <returns>
+        ///  Returns true if: 
+        /// 
+        ///  The values of the observations are equal (using .Equals()) 
+        ///  The values of the observations are equal according to Ts IEquatable&lt;T&gt; implementation, if implemented
+        ///  The values of the observations are equal according to a comparison function, if given
+        ///  The values of the observations are equal according to an IEqualityComparer&lt;T&gt; expression, if given  
+        ///  Both observations raised an exception with the same Type and message.
+        ///  Both values of the observation are null
+        ///  
+        ///  Returns false otherwise. 
+        /// </returns>
         private bool CompareResults(ExperimentResult controlResult, ExperimentResult candidateResult)
         {
             if (_resultComparison != null)
