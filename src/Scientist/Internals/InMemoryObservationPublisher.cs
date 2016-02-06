@@ -5,12 +5,14 @@ namespace GitHub.Internals
 {
     public class InMemoryObservationPublisher : IObservationPublisher
     {
-        public Task Publish(Observation observation)
+        readonly static Task _completed = Task.FromResult(0);
+
+        public Task Publish(IResult result)
         {
-            Observations.Add(observation);
-            return Task.FromResult(0);
+            Observations.Add(result);
+            return _completed;
         }
 
-        public ConcurrentBag<Observation> Observations { get; } = new ConcurrentBag<Observation>();
+        public ConcurrentBag<IResult> Observations { get; } = new ConcurrentBag<IResult>();
     }
 }

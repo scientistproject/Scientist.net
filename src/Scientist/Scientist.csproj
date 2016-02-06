@@ -52,6 +52,7 @@
     <Compile Include="IExperiment.cs" />
     <Compile Include="Observation.cs" />
     <Compile Include="Internals\InMemoryObservationPublisher.cs" />
+    <Compile Include="Result.cs" />
     <Compile Include="Scientist.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

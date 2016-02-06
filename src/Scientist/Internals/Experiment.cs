@@ -18,6 +18,7 @@ namespace GitHub.Internals
 
         public void Use(Func<T> control) { _control = () => Task.FromResult(control()); }
 
+        // TODO add optional name parameter, and store all delegates into a dictionary.
 
         public void Try(Func<Task<T>> candidate) { _candidate = candidate; }
 

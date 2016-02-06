@@ -4,6 +4,6 @@ using GitHub.Internals;
 
 public static class TestHelper
 {
-    public static IEnumerable<Observation> Observation =>
+    public static IEnumerable<IResult> Observation =>
         ((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations;
 }

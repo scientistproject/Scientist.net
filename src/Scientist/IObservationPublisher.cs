@@ -8,10 +8,10 @@ namespace GitHub
     public interface IObservationPublisher
     {
         /// <summary>
-        /// Publishes the results of an experiment's observation.
+        /// Publishes the results of an experiment.
         /// </summary>
-        /// <param name="observation">The observation of an experiment's run.</param>
-        /// <returns>A task that publishes the observation's results asynchronously.</returns>
-        Task Publish(Observation observation);
+        /// <param name="result">The result of the experiment.</param>
+        /// <returns>A task that publishes the results asynchronously.</returns>
+        Task Publish(IResult result);
     }
 }
