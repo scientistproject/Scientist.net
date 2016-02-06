@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using GitHub;
 using GitHub.Internals;
-using Moq;
+using NSubstitute;
 using UnitTests;
 using Xunit;
 
@@ -14,42 +14,42 @@ public class TheScientistClass
         [Fact]
         public void RunsBothBranchesOfTheExperimentAndReportsSuccess()
         {
-            Mock<IControlCandidate<int> > mock = new Mock<IControlCandidate<int>>();
-            mock.Setup(s => s.Control()).Returns(42);
-            mock.Setup(s => s.Candidate()).Returns(42);
-            var fake = mock.Object;
+            var mock = Substitute.For< IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+           
 
             var result = Scientist.Science<int>("success", experiment =>
             {
-                experiment.Use(fake.Control);
-                experiment.Try(fake.Candidate);
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
             });
 
             Assert.Equal(42, result);
-            mock.Verify(x => x.Control(), Times.Once);
-            mock.Verify(x => x.Candidate(), Times.Once);
+            mock.Received().Control();
+            mock.Received().Candidate();
             Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").Success);
         }
 
         [Fact]
         public async Task RunsBothBranchesOfTheExperimentAsyncAndReportsFailure()
         {
-            var mock = new Mock<IControlCandidateTask<int>>();
-            mock.Setup(s => s.Control()).Returns(Task.FromResult(42));
-            mock.Setup(s => s.Candidate()).Returns(Task.FromResult(43));
-            var fake = mock.Object;
+            var mock = Substitute.For<IControlCandidateTask<int>>();
+            mock.Control().Returns(Task.FromResult(42));
+            mock.Candidate().Returns(Task.FromResult(43));
+           
 
 
 
             var result = await Scientist.ScienceAsync<int>("failure", experiment =>
             {
-                experiment.Use(fake.Control);
-                experiment.Try(fake.Candidate);
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
             });
 
             Assert.Equal(42, result);
-            mock.Verify(x => x.Control(), Times.Once);
-            mock.Verify(x => x.Candidate(), Times.Once);
+            await mock.Received().Control();
+            await mock.Received().Candidate();
             Assert.False(TestHelper.Observation.First(m => m.Name == "failure").Success);
         }
 
@@ -79,21 +79,19 @@ public class TheScientistClass
         [Fact]
         public void RunsBothBranchesOfTheExperimentAndReportsSuccessWithDurations()
         {
-            Mock<IControlCandidate<int>> mock = new Mock<IControlCandidate<int>>();
-            mock.Setup(s => s.Control()).Returns(42);
-            mock.Setup(s => s.Candidate()).Returns(42);
-            var fake = mock.Object;
-
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
 
             var result = Scientist.Science<int>("success", experiment =>
             {
-                experiment.Use(fake.Control);
-                experiment.Try(fake.Candidate);
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
             });
 
             Assert.Equal(42, result);
-            mock.Verify(x => x.Control(), Times.Once);
-            mock.Verify(x => x.Candidate(), Times.Once);
+            mock.Received().Control();
+            mock.Received().Candidate();
             Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").Success);
             Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").ControlDuration.Ticks > 0);
             Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").CandidateDuration.Ticks > 0);
