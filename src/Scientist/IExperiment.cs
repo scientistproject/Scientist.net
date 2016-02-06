@@ -21,6 +21,7 @@ namespace GitHub.Internals
         void Try(Func<Task<T>> candidate);
 
         void Use(Func<Task<T>> control);
+
     }
 
 }

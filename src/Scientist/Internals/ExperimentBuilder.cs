@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Scientist.Internals;
 
 namespace GitHub.Internals
 {
@@ -29,12 +30,10 @@ namespace GitHub.Internals
 
         internal ExperimentInstance<T> Build()
         {
-            if (ResultComparison!= null)
-            {
-                return new ExperimentInstance<T>(_name, _control, _candidate, ResultComparison);
-            }
+            var experimentResultComparer = new ExperimentResultComparer<T>(ResultEqualityCompare, ResultComparison);
 
-            return new ExperimentInstance<T>(_name, _control, _candidate, ResultEqualityCompare);
+            return new ExperimentInstance<T>(_name, _control, _candidate, experimentResultComparer);
+
         }
     }
 }
