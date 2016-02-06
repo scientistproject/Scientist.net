@@ -47,7 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Internals\Experiment.cs" />
-    <Compile Include="IMeasurementPublisher.cs" />
+    <Compile Include="IObservationPublisher.cs" />
     <Compile Include="Internals\ExperimentBuilder.cs" />
     <Compile Include="IExperiment.cs" />
     <Compile Include="Internals\ExperimentResultComparer.cs" />
