@@ -46,12 +46,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Internals\Experiment.cs" />
+    <Compile Include="Internals\ExperimentInstance.cs" />
     <Compile Include="IObservationPublisher.cs" />
-    <Compile Include="Internals\ExperimentBuilder.cs" />
+    <Compile Include="Internals\Experiment.cs" />
     <Compile Include="IExperiment.cs" />
     <Compile Include="Observation.cs" />
-    <Compile Include="Internals\InMemoryPublisher.cs" />
+    <Compile Include="Internals\InMemoryObservationPublisher.cs" />
     <Compile Include="Scientist.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
