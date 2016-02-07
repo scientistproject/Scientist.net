@@ -12,16 +12,17 @@ namespace GitHub.Internals
     internal class ExperimentInstance<T>
     {
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
-        
+
         readonly Dictionary<string, Func<Task<T>>> _behaviors;
         readonly string _name;
+        readonly Func<Task<bool>> _runIf;
 
-        public ExperimentInstance(string name, Func<T> control, Func<T> candidate)
-            : this(name, () => Task.FromResult(control()), () => Task.FromResult(candidate()))
+        public ExperimentInstance(string name, Func<T> control, Func<T> candidate, Func<bool> runIf)
+            : this(name, () => Task.FromResult(control()), () => Task.FromResult(candidate()), () => Task.FromResult(runIf()))
         {
         }
 
-        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate)
+        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, Func<Task<bool>> runIf)
         {
             _name = name;
             _behaviors = new Dictionary<string, Func<Task<T>>>
@@ -29,13 +30,18 @@ namespace GitHub.Internals
                 { "control", control },
                 { "candidate", candidate }
             };
+            _runIf = runIf;
         }
 
         public async Task<T> Run()
         {
             const string name = "control";
 
-            // TODO determine if experiments should be run.
+            // Determine if experiments should be run.
+            if (!await _runIf())
+            {
+                return await _behaviors[name]();
+            }
 
             // Randomize ordering...
             var observations = new List<Observation<T>>();

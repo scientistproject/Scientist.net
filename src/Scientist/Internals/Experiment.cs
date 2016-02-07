@@ -5,14 +5,20 @@ namespace GitHub.Internals
 {
     internal class Experiment<T> : IExperiment<T>, IExperimentAsync<T>
     {
+        readonly static Func<Task<bool>> _alwaysRun = () => Task.FromResult(true);
+
         string _name;
         Func<Task<T>> _control;
         Func<Task<T>> _candidate;
+        Func<Task<bool>> _runIf = _alwaysRun;
 
         public Experiment(string name)
         {
             _name = name;
         }
+
+        public void RunIf(Func<Task<bool>> block) { _runIf = block; }
+        public void RunIf(Func<bool> block) { _runIf = () => Task.FromResult(block()); }
 
         public void Use(Func<Task<T>> control) { _control = control; }
 
@@ -26,7 +32,7 @@ namespace GitHub.Internals
 
         internal ExperimentInstance<T> Build()
         {
-            return new ExperimentInstance<T>(_name, _control, _candidate);
+            return new ExperimentInstance<T>(_name, _control, _candidate, _runIf);
         }
     }
 }

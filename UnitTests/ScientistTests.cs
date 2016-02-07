@@ -10,6 +10,32 @@ public class TheScientistClass
     public class TheScienceMethod
     {
         [Fact]
+        public void DoesntRunCandidate()
+        {
+            bool candidateRan = false;
+            bool controlRan = false;
+
+            // We introduce side effects for testing. Don't do this in real life please.
+            // Do we do a deep comparison?
+            const int expectedResult = 42;
+            Func<int> control = () => { controlRan = true; return expectedResult; };
+            Func<int> candidate = () => { candidateRan = true; return expectedResult; };
+
+            const string experimentName = "successRunIf";
+
+            var result = Scientist.Science<int>(experimentName, experiment =>
+            {
+                experiment.RunIf(() => false);
+                experiment.Use(control);
+                experiment.Try(candidate);
+            });
+            Assert.Equal(expectedResult, result);
+            Assert.False(candidateRan);
+            Assert.True(controlRan);
+            Assert.False(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.Any(m => m.ExperimentName == experimentName));
+        }
+
+        [Fact]
         public void RunsBothBranchesOfTheExperimentAndMatchesExceptions()
         {
             bool candidateRan = false;

@@ -10,6 +10,12 @@ namespace GitHub.Internals
     public interface IExperiment<T>
     {
         /// <summary>
+        /// Defines the check to run to determine if the experiment should run.
+        /// </summary>
+        /// <param name="check">The delegate to evaluate.</param>
+        void RunIf(Func<bool> check);
+
+        /// <summary>
         /// Defines the operation to try.
         /// </summary>
         /// <param name="candidate">The delegate to execute.</param>
@@ -28,6 +34,12 @@ namespace GitHub.Internals
     /// <typeparam name="T">The return result for the experiment.</typeparam>
     public interface IExperimentAsync<T>
     {
+        /// <summary>
+        /// Defines the check to run to determine if the experiment should run.
+        /// </summary>
+        /// <param name="check">The delegate to evaluate.</param>
+        void RunIf(Func<Task<bool>> block);
+
         /// <summary>
         /// Defines the operation to try.
         /// </summary>
