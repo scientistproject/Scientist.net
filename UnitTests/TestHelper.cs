@@ -2,13 +2,8 @@
 using GitHub;
 using GitHub.Internals;
 
-namespace UnitTests
+public static class TestHelper
 {
-    using GitHub;
-
-    public static class TestHelper
-    {
-        public static IEnumerable<Observation> Observation =>
-            ((InMemoryObservationPublisher) Scientist.ObservationPublisher).Observations;
-    }
+    public static IEnumerable<Observation> Observation =>
+        ((InMemoryObservationPublisher)GitHub.Scientist.ObservationPublisher).Observations;
 }
