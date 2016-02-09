@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using GitHub;
 using GitHub.Internals;
@@ -100,6 +101,49 @@ public class TheScientistClass
             Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").Success);
             Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").ControlDuration.Ticks > 0);
             Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").CandidateDuration.Ticks > 0);
+        }
+
+        [Fact]
+        public void CannotCompareDifferentReturnTypesWithoutCustomComparer()
+        {
+            var candidateRan = false;
+            var controlRan = false;
+
+            // We introduce side effects for testing. Don't do this in real life please.
+            // Do we do a deep comparison?
+            Func<int> control = () => { controlRan = true; return 42; };
+            Func<string> candidate = () => { candidateRan = true; return "42"; };
+
+            Assert.Throws<NoComparerException>(()=>
+            Scientist.Science<int, string>("success", experiment =>
+            {
+                experiment.Use(control);
+                experiment.Try(candidate);
+            }));
+        }
+
+        [Fact]
+        public void DifferentReturnTypesComparedUsingCustomComparer()
+        {
+            var candidateRan = false;
+            var controlRan = false;
+
+            // We introduce side effects for testing. Don't do this in real life please.
+            // Do we do a deep comparison?
+            Func<int> control = () => { controlRan = true; return 42; };
+            Func<string> candidate = () => { candidateRan = true; return "42"; };
+
+            var result = Scientist.Science<int, string>("success", experiment =>
+            {
+                experiment.Use(control);
+                experiment.Try(candidate);
+                experiment.Comparer((controlResult, candidateResult) => controlResult.ToString() == candidateResult);
+            });
+
+            Assert.Equal(42, result);
+            Assert.True(candidateRan);
+            Assert.True(controlRan);
+            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").Success);
         }
     }
 }
