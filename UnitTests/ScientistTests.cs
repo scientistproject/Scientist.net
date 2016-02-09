@@ -4,6 +4,8 @@ using System.Runtime.Remoting.Messaging;
 using System.Threading.Tasks;
 using GitHub;
 using GitHub.Internals;
+using NSubstitute;
+using UnitTests;
 using Xunit;
 
 public class TheScientistClass
@@ -13,45 +15,42 @@ public class TheScientistClass
         [Fact]
         public void RunsBothBranchesOfTheExperimentAndReportsSuccess()
         {
-            bool candidateRan = false;
-            bool controlRan = false;
-
-            // We introduce side effects for testing. Don't do this in real life please.
-            // Do we do a deep comparison?
-            Func<int> control = () => { controlRan = true; return 42; };
-            Func<int> candidate = () => { candidateRan = true; return 42; };
+            var mock = Substitute.For< IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+           
 
             var result = Scientist.Science<int>("success", experiment =>
             {
-                experiment.Use(control);
-                experiment.Try(candidate);
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
             });
 
             Assert.Equal(42, result);
-            Assert.True(candidateRan);
-            Assert.True(controlRan);
+            mock.Received().Control();
+            mock.Received().Candidate();
             Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").Success);
         }
 
         [Fact]
         public async Task RunsBothBranchesOfTheExperimentAsyncAndReportsFailure()
         {
-            bool candidateRan = false;
-            bool controlRan = false;
+            var mock = Substitute.For<IControlCandidateTask<int>>();
+            mock.Control().Returns(Task.FromResult(42));
+            mock.Candidate().Returns(Task.FromResult(43));
+           
 
-            // We introduce side effects for testing. Don't do this in real life please.
-            Func<Task<int>> control = () => { controlRan = true; return Task.FromResult(42); };
-            Func<Task<int>> candidate = () => { candidateRan = true; return Task.FromResult(43); };
+
 
             var result = await Scientist.ScienceAsync<int>("failure", experiment =>
             {
-                experiment.Use(control);
-                experiment.Try(candidate);
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
             });
 
             Assert.Equal(42, result);
-            Assert.True(candidateRan);
-            Assert.True(controlRan);
+            await mock.Received().Control();
+            await mock.Received().Candidate();
             Assert.False(TestHelper.Observation.First(m => m.Name == "failure").Success);
         }
 
@@ -81,15 +80,36 @@ public class TheScientistClass
         [Fact]
         public void RunsBothBranchesOfTheExperimentAndReportsSuccessWithDurations()
         {
-            bool candidateRan = false;
-            bool controlRan = false;
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+
+            var result = Scientist.Science<int>("success", experiment =>
+            {
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
+            });
+
+            Assert.Equal(42, result);
+            mock.Received().Control();
+            mock.Received().Candidate();
+            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").Success);
+            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").ControlDuration.Ticks > 0);
+            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").CandidateDuration.Ticks > 0);
+        }
+
+        [Fact]
+        public void AnExceptionReportsDuration()
+        {
+            var candidateRan = false;
+            var controlRan = false;
 
             // We introduce side effects for testing. Don't do this in real life please.
             // Do we do a deep comparison?
             Func<int> control = () => { controlRan = true; return 42; };
-            Func<int> candidate = () => { candidateRan = true; return 42; };
+            Func<int> candidate = () => { candidateRan = true; throw new InvalidOperationException(); };
 
-            var result = Scientist.Science<int>("success", experiment =>
+            var result = Scientist.Science<int>("failure", experiment =>
             {
                 experiment.Use(control);
                 experiment.Try(candidate);
@@ -98,9 +118,9 @@ public class TheScientistClass
             Assert.Equal(42, result);
             Assert.True(candidateRan);
             Assert.True(controlRan);
-            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").Success);
-            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").ControlDuration.Ticks > 0);
-            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").CandidateDuration.Ticks > 0);
+            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "failure").Success == false);
+            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "failure").ControlDuration.Ticks > 0);
+            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "failure").CandidateDuration.Ticks > 0);
         }
 
         [Fact]

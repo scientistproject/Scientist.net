@@ -91,11 +91,11 @@ namespace GitHub.Internals
 
         static async Task<ExperimentResult> Run(Func<Task<T>> experimentCase)
         {
+            var sw = new Stopwatch();
+            sw.Start();
             try
             {
                 // TODO: Refactor this into helper function?  
-                var sw = new Stopwatch();
-                sw.Start();
                 var result = await experimentCase();
                 sw.Stop();
 
@@ -103,7 +103,8 @@ namespace GitHub.Internals
             }
             catch (Exception e)
             {
-                return new ExperimentResult(e, TimeSpan.Zero);
+                sw.Stop();
+                return new ExperimentResult(e, new TimeSpan(sw.ElapsedTicks));
             }
         }
 
