@@ -50,7 +50,7 @@ namespace GitHub.Internals
 
             // TODO: We need to compare that thrown exceptions are equivalent too https://github.com/github/scientist/blob/master/lib/scientist/observation.rb#L76
             // TODO: We're going to have to be a bit more sophisticated about this.
-            bool success = 
+            bool success =
                 controlResult.Result == null && candidateResult.Result == null
                 || controlResult.Result != null && controlResult.Result.Equals(candidateResult.Result)
                 || controlResult.Result == null && candidateResult.Result != null;
@@ -68,11 +68,11 @@ namespace GitHub.Internals
 
         static async Task<ExperimentResult> Run(Func<Task<T>> experimentCase)
         {
+            var sw = new Stopwatch();
+            sw.Start();
             try
             {
                 // TODO: Refactor this into helper function?  
-                Stopwatch sw = new Stopwatch();
-                sw.Start();
                 var result = await experimentCase();
                 sw.Stop();
 
@@ -80,7 +80,8 @@ namespace GitHub.Internals
             }
             catch (Exception e)
             {
-                return new ExperimentResult(e, TimeSpan.Zero);
+                sw.Stop();
+                return new ExperimentResult(e, new TimeSpan(sw.ElapsedTicks));
             }
         }
 
