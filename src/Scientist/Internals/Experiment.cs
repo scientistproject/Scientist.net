@@ -11,6 +11,9 @@ namespace GitHub.Internals
     internal class ExperimentInstance<T, T1>
     {
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
+        static Func<T, T1, bool> _defaultComparer = (controlResult, candidateResult) => (controlResult == null && candidateResult == null)
+                                                                                        || (controlResult != null && controlResult.Equals(candidateResult))
+                                                                                        || (controlResult == null && candidateResult != null);
 
         readonly Func<Task<T>> _control;
         readonly Func<Task<T1>> _candidate;
@@ -22,11 +25,13 @@ namespace GitHub.Internals
             _name = name;
             _control = () => Task.FromResult(control());
             _candidate = () => Task.FromResult(candidate());
+
             if (typeof(T) != typeof(T1) && comparer == null)
             {
                 throw new NoComparerException(typeof(T), typeof(T1));
             }
-            _comparer = comparer ?? ((controlResult, candidateResult) => controlResult.Equals(candidateResult));
+
+            _comparer = comparer ?? _defaultComparer;
         }
 
         public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T1>> candidate, Func<T, T1, bool> comparer)
@@ -34,11 +39,13 @@ namespace GitHub.Internals
             _name = name;
             _control = control;
             _candidate = candidate;
+
             if (typeof(T) != typeof(T1) && comparer == null)
             {
                 throw new NoComparerException(typeof(T), typeof(T1));
             }
-            _comparer = comparer ?? ((controlResult, candidateResult) => controlResult.Equals(candidateResult));
+
+            _comparer = comparer ?? _defaultComparer;
         }
 
         public async Task<T> Run()
@@ -61,7 +68,7 @@ namespace GitHub.Internals
 
             // TODO: We need to compare that thrown exceptions are equivalent too https://github.com/github/scientist/blob/master/lib/scientist/observation.rb#L76
             // TODO: We're going to have to be a bit more sophisticated about this.
-            var success = CompareResults(controlResult, candidateResult);
+            var success = _comparer(controlResult.Result, candidateResult.Result);
 
             // TODO: Get that duration!
             var observation = new Observation(_name, success, controlResult.Duration, candidateResult.Duration);
@@ -72,17 +79,6 @@ namespace GitHub.Internals
 
             if (controlResult.ThrownException != null) throw controlResult.ThrownException;
             return controlResult.Result;
-        }
-
-        private bool CompareResults(ExperimentResult<T> controlResult, ExperimentResult<T1> candidateResult)
-        {
-            if (controlResult.Result == null && candidateResult.Result == null)
-                return true;
-
-            if (controlResult.Result != null && candidateResult.Result != null)
-                return _comparer(controlResult.Result, candidateResult.Result);
-
-            return false;
         }
 
         static async Task<ExperimentResult<TC>> RunCase<TC>(Func<Task<TC>> experimentCase)
