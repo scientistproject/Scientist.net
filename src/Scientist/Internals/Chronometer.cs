@@ -22,18 +22,28 @@ namespace Github.Internals
     /// </summary>
     internal class Chronometer : IDisposable
     {
-        public Stopwatch Stopwatch { get; } = new Stopwatch();
+        private Stopwatch Stopwatch { get; } = new Stopwatch();
 
         public Chrono ElapsedTime { get; } = new Chrono();
 
-        private static bool _warmedUp;
+        public bool WarmedUp { get; }
+        static Lazy<bool> PreJitWarmup { get; } = new Lazy<bool>(Warmup);
+
+        /// <summary>
+        /// This private constructor is only to be called by the Warmup() method  
+        /// (So we don't get into an infinite recursive warm-up loop)
+        /// </summary>
+        private Chronometer()
+        {
+            Stopwatch.Start();
+        }
 
         private Chronometer(out Chrono timespan)
         {
             timespan = ElapsedTime;
 
-            Warmup();
-            Stopwatch.Start();
+            WarmedUp = PreJitWarmup.Value;//Force the methods in this class to be
+            Stopwatch.Start();//Start stopwatch at the last possible moment
         }
 
 
@@ -51,39 +61,36 @@ namespace Github.Internals
         /// Because of jitting, the first run takes longer.
         /// This method reduces the first timing overhead, from 1000s of ticks, to less than 20 ticks.
         /// </summary>
-        private void Warmup()
+        private static bool Warmup()
         {
-            
-
             //Try to pre jit methods used by this class
-            if (!_warmedUp)
-            {
-                _warmedUp = true;
+            var coldTimer = new Chronometer();
 
-                List<Type> typesUsedInClass = new List<Type>()
+            List<Type> typesUsedInClass = new List<Type>()
                 {
-                    GetType(),//this
-                    Stopwatch.GetType(),
-                    ElapsedTime.GetType(),
-                    ElapsedTime.Timespan.GetType()
+                    coldTimer.GetType(),
+                    coldTimer.Stopwatch.GetType(),
+                    coldTimer.ElapsedTime.GetType(),
+                    coldTimer.ElapsedTime.Timespan.GetType()
                 };
 
-                BindingFlags allBindingFlags = (BindingFlags) (~0);
+            BindingFlags allBindingFlags = (BindingFlags)(~0);
 
-                typesUsedInClass
-                    .SelectMany(s => s.GetMethods(allBindingFlags))
-                    .ToList()
-                    .ForEach(method => RuntimeHelpers.PrepareMethod(method.MethodHandle));
+            typesUsedInClass
+                .SelectMany(s => s.GetMethods(allBindingFlags))
+                .ToList()
+                .ForEach(method => RuntimeHelpers.PrepareMethod(method.MethodHandle));
 
-                //It's weird, but you totally need to do this (even though we tried pre jitting. You need both!)
-                using (this)
-                {
-                    //Yup this should be empty
-                }
-            
+            //It's weird, but you totally need to do this (even though we tried pre jitting. You need both!)
+            using (coldTimer)
+            {
+                //Yup this should be empty
             }
 
-            Stopwatch.Reset();
+            coldTimer.Stopwatch.Stop();
+            coldTimer.Stopwatch.Reset();
+
+            return true;
         }
 
         public void Dispose()
