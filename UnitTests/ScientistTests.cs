@@ -101,5 +101,30 @@ public class TheScientistClass
             Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").ControlDuration.Ticks > 0);
             Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").CandidateDuration.Ticks > 0);
         }
+
+        [Fact]
+        public void AnExceptionReportsDuration()
+        {
+            var candidateRan = false;
+            var controlRan = false;
+
+            // We introduce side effects for testing. Don't do this in real life please.
+            // Do we do a deep comparison?
+            Func<int> control = () => { controlRan = true; return 42; };
+            Func<int> candidate = () => { candidateRan = true; throw new InvalidOperationException(); };
+
+            var result = Scientist.Science<int>("failure", experiment =>
+            {
+                experiment.Use(control);
+                experiment.Try(candidate);
+            });
+
+            Assert.Equal(42, result);
+            Assert.True(candidateRan);
+            Assert.True(controlRan);
+            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "failure").Success == false);
+            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "failure").ControlDuration.Ticks > 0);
+            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "failure").CandidateDuration.Ticks > 0);
+        }
     }
 }
