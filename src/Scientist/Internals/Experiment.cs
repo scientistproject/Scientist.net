@@ -51,7 +51,7 @@ namespace GitHub.Internals
 
             // TODO: We need to compare that thrown exceptions are equivalent too https://github.com/github/scientist/blob/master/lib/scientist/observation.rb#L76
             // TODO: We're going to have to be a bit more sophisticated about this.
-            bool success = 
+            bool success =
                 controlResult.Result == null && candidateResult.Result == null
                 || controlResult.Result != null && controlResult.Result.Equals(candidateResult.Result)
                 || controlResult.Result == null && candidateResult.Result != null;

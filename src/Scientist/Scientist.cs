@@ -6,7 +6,7 @@ using NullGuard;
 namespace GitHub
 {
     /// <summary>
-    ///  A class for carefully refactoring critical paths. Use <see cref="Scientist"/> 
+    /// A class for carefully refactoring critical paths. Use <see cref="Scientist"/> 
     /// </summary>
     public static class Scientist
     {
@@ -27,7 +27,7 @@ namespace GitHub
         /// <typeparam name="T">The return type of the experiment</typeparam>
         /// <param name="name">Name of the experiment</param>
         /// <param name="experiment">Experiment callback used to configure the experiment</param>
-        /// <returns>The value of the experiment's contrtol function.</returns>
+        /// <returns>The value of the experiment's control function.</returns>
         [return: AllowNull]
         public static T Science<T>(string name, Action<IExperiment<T>> experiment)
         {
@@ -46,7 +46,7 @@ namespace GitHub
         /// <typeparam name="T">The return type of the experiment</typeparam>
         /// <param name="name">Name of the experiment</param>
         /// <param name="experiment">Experiment callback used to configure the experiment</param>
-        /// <returns>The value of the experiment's contrtol function.</returns>
+        /// <returns>The value of the experiment's control function.</returns>
         [return: AllowNull]
         public static Task<T> ScienceAsync<T>(string name, Action<IExperimentAsync<T>> experiment)
         {
