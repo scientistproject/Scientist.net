@@ -42,7 +42,7 @@ namespace Github.Internals
         {
             timespan = ElapsedTime;
 
-            WarmedUp = PreJitWarmup.Value;//Force the methods in this class to be
+            WarmedUp = PreJitWarmup.Value;//Force the methods in this class to be jit-ed before we use them. (Other wise the first timing will include the jitting time)
             Stopwatch.Start();//Start stopwatch at the last possible moment
         }
 
