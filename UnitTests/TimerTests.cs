@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Xunit;
 using GitHub;
 using GitHub.Internals;
-using Scientist.Internals;
+using Github.Internals;
 
 public class TimerTests
 {

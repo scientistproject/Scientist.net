@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Scientist.Internals;
+using Github.Internals;
 
 namespace GitHub.Internals
 {

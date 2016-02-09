@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 
 
-namespace Scientist.Internals
+namespace Github.Internals
 {
     /// <summary>
     /// General purpose timing helper object.
