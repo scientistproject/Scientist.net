@@ -9,15 +9,31 @@ namespace GitHub.Internals
     /// <typeparam name="T">The return result for the experiment.</typeparam>
     public interface IExperiment<TControl, TCandidate>
     {
+        /// <summary>
+        /// Defines the operation to try.
+        /// </summary>
+        /// <param name="candidate">The delegate to execute.</param>
         void Try(Func<TCandidate> candidate);
 
+        /// <summary>
+        /// Defines the operation to actually use.
+        /// </summary>
+        /// <param name="control">The delegate to execute.</param>
         void Use(Func<TControl> control);
     }
 
     public interface IExperimentAsync<TControl, TCandidate>
     {
+        /// <summary>
+        /// Defines the operation to try.
+        /// </summary>
+        /// <param name="candidate">The delegate to execute.</param>
         void Try(Func<Task<TCandidate>> candidate);
 
+        /// <summary>
+        /// Defines the operation to actually use.
+        /// </summary>
+        /// <param name="control">The delegate to execute.</param>
         void Use(Func<Task<TControl>> control);
     }
 
