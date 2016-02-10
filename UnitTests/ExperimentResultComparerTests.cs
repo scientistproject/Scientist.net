@@ -13,56 +13,119 @@ namespace UnitTests
 
     public class ExperimentResultComparerTests
     {
+       
+
         [Fact]
-        public void RunsBothBranchesOfTheExperimentAndReportsSuccess()
+        public void BothResultsAreBaseClassEquals()
         {
-            var mock = Substitute.For<IControlCandidate<int>>();
-            mock.Control().Returns(42);
-            mock.Candidate().Returns(42);
+            //Arrange
+            var comparer = new ExperimentResultComparer<int>(null, null);
+            var controlresult = new ExperimentInstance<int>.ExperimentResult(42, TimeSpan.FromMilliseconds(1));
+            var candidateresult = new ExperimentInstance<int>.ExperimentResult(42, TimeSpan.FromMilliseconds(1));
 
+            //Act
+            bool areEqual = comparer.Equals(controlresult, candidateresult);
 
-            var result = Scientist.Science<int>("success", experiment =>
-            {
-                experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
-            });
-
-            Assert.Equal(42, result);
-            mock.Received().Control();
-            mock.Received().Candidate();
-            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").Success);
+            //Assert
+            Assert.True(areEqual);
         }
 
         [Fact]
-        public void BothResultsAreNull()
+        public void BothResultsAreNull_AreEqual()
         {
-
-
             //Arrange
-            //ExperimentResultComparer<int> comparer = new ExperimentResultComparer<int>(null,null);
+            var comparer = new ExperimentResultComparer<int>(null, null);
+            var controlresult = new ExperimentInstance<int>.ExperimentResult(null, TimeSpan.FromMilliseconds(1));
+            var candidateresult = new ExperimentInstance<int>.ExperimentResult(null, TimeSpan.FromMilliseconds(1));
+
             //Act
+            bool areEqual = comparer.Equals(controlresult, candidateresult);
 
             //Assert
+            Assert.True(areEqual);
+        }
 
+        [Fact]
+        public void CandadateResult_IsNull_AreNotEqual()
+        {
+            //Arrange
+            var comparer = new ExperimentResultComparer<int>(null, null);
+            var controlresult = new ExperimentInstance<int>.ExperimentResult(42, TimeSpan.FromMilliseconds(1));
+            var candidateresult = new ExperimentInstance<int>.ExperimentResult(null, TimeSpan.FromMilliseconds(1));
 
+            //Act
+            bool areEqual = comparer.Equals(controlresult, candidateresult);
 
+            //Assert
+            Assert.False(areEqual);
+        }
 
+        [Fact]
+        public void ControlResult_IsNull_AreNotEqual()
+        {
+            //Arrange
+            var comparer = new ExperimentResultComparer<int>(null, null);
+            var controlresult = new ExperimentInstance<int>.ExperimentResult(null, TimeSpan.FromMilliseconds(1));
+            var candidateresult = new ExperimentInstance<int>.ExperimentResult(42, TimeSpan.FromMilliseconds(1));
 
-            var mock = Substitute.For<IControlCandidate<int>>();
-            mock.Control().Returns(42);
-            mock.Candidate().Returns(42);
+            //Act
+            bool areEqual = comparer.Equals(controlresult, candidateresult);
 
+            //Assert
+            Assert.False(areEqual);
+        }
+        [Fact]
+        public void ControlAndCandidateAreDiffrent_But_ComparisonFunction_says_AreEqual()
+        {
+            //Arrange
 
-            var result = Scientist.Science<int>("success", experiment =>
-            {
-                experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
-            });
+            Func<int, int, bool> equalsFunction = (control, candidate) => true;
 
-            Assert.Equal(42, result);
-            mock.Received().Control();
-            mock.Received().Candidate();
-            Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").Success);
+            var comparer = new ExperimentResultComparer<int>(null, equalsFunction);
+            var controlresult = new ExperimentInstance<int>.ExperimentResult(0, TimeSpan.FromMilliseconds(1));
+            var candidateresult = new ExperimentInstance<int>.ExperimentResult(42, TimeSpan.FromMilliseconds(1));
+
+            //Act
+            bool areEqual = comparer.Equals(controlresult, candidateresult);
+
+            //Assert
+            Assert.True(areEqual);
+        }       [Fact]
+        public void ControlAndCandidateAreComplexObjects_AndImplement_IEqualitable_AreEqual()
+        {
+            //Arrange
+
+            IEquatable<ComplexResult> controlComplexResult = new ComplexResult() { Count = 42, Name = "42" };
+            IEquatable<ComplexResult> candidateComplexResult = new ComplexResult() { Count = 42, Name = "42" };
+
+            var comparer = new ExperimentResultComparer<ComplexResult>(null, null);
+            var controlresult = new ExperimentInstance<ComplexResult>.ExperimentResult((ComplexResult)controlComplexResult, TimeSpan.FromMilliseconds(1));
+            var candidateresult = new ExperimentInstance<ComplexResult>.ExperimentResult((ComplexResult)candidateComplexResult, TimeSpan.FromMilliseconds(1));
+
+            //Act
+            bool areEqual = comparer.Equals(controlresult, candidateresult);
+
+            //Assert
+            Assert.True(areEqual);
+        }
+        [Fact]
+        public void ControlAndCandidateAreDiffrent_But_IEqualityComparer_says_AreEqual()
+        {
+            //Arrange
+
+            var mock = Substitute.For<IEqualityComparer<int>>();
+
+            mock.Equals(0, 42).Returns(true);
+
+            var comparer = new ExperimentResultComparer<int>(mock, null);
+            var controlresult = new ExperimentInstance<int>.ExperimentResult(0, TimeSpan.FromMilliseconds(1));
+            var candidateresult = new ExperimentInstance<int>.ExperimentResult(42, TimeSpan.FromMilliseconds(1));
+
+            //Act
+            bool areEqual = comparer.Equals(controlresult, candidateresult);
+
+            //Assert
+            Assert.True(areEqual);
         }
     }
 }
