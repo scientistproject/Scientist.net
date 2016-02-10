@@ -126,98 +126,82 @@ public class TheScientistClass
         [Fact]
         public void RunsBothBranchesOfTheExperimentWithResultComparisonSetAndReportsSuccess()
         {
-            bool candidateRan = false;
-            bool controlRan = false;
-
-            // We introduce side effects for testing. Don't do this in real life please.
-            // Do we do a deep comparison?
-            Func<ComplexResult> control = () => { controlRan = true; return new ComplexResult {Count = 10, Name = "Tester"}; };
-            Func<ComplexResult> candidate = () => { candidateRan = true; return new ComplexResult {Count = 10, Name = "Tester"}; };
+            var mock = Substitute.For<IControlCandidate<ComplexResult>>();
+            mock.Control().Returns(new ComplexResult { Count = 10, Name = "Tester" });
+            mock.Candidate().Returns(new ComplexResult { Count = 10, Name = "Tester" });
 
             var result = Scientist.Science<ComplexResult>("success", experiment =>
             {
                 experiment.ResultComparison = (a, b) => a.Count == b.Count && a.Name == b.Name;
-                experiment.Use(control);
-                experiment.Try(candidate);
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
             });
 
             Assert.Equal(10, result.Count);
             Assert.Equal("Tester", result.Name);
-            Assert.True(candidateRan);
-            Assert.True(controlRan);
+            mock.Received().Control();
+            mock.Received().Candidate();
             Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").Success);
         }
 
         [Fact]
         public void RunsBothBranchesOfTheExperimentWithResultComparisonSetAndReportsFailure()
         {
-            bool candidateRan = false;
-            bool controlRan = false;
-
-            // We introduce side effects for testing. Don't do this in real life please.
-            // Do we do a deep comparison?
-            Func<ComplexResult> control = () => { controlRan = true; return new ComplexResult { Count = 10, Name = "Tester" }; };
-            Func<ComplexResult> candidate = () => { candidateRan = true; return new ComplexResult { Count = 10, Name = "Tester2" }; };
+            var mock = Substitute.For<IControlCandidate<ComplexResult>>();
+            mock.Control().Returns(new ComplexResult { Count = 10, Name = "Tester" });
+            mock.Candidate().Returns(new ComplexResult { Count = 10, Name = "Tester2" });
 
             var result = Scientist.Science<ComplexResult>("success", experiment =>
             {
                 experiment.ResultComparison = (a, b) => a.Count == b.Count && a.Name == b.Name;
-                experiment.Use(control);
-                experiment.Try(candidate);
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
             });
 
             Assert.Equal(10, result.Count);
             Assert.Equal("Tester", result.Name);
-            Assert.True(candidateRan);
-            Assert.True(controlRan);
+            mock.Received().Control();
+            mock.Received().Candidate();
             Assert.False(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").Success);
         }
 
         [Fact]
         public void RunsBothBranchesOfTheExperimentWithIEqualitySetAndReportsSuccess()
         {
-            bool candidateRan = false;
-            bool controlRan = false;
-
-            // We introduce side effects for testing. Don't do this in real life please.
-            // Do we do a deep comparison?
-            Func<ComplexResult> control = () => { controlRan = true; return new ComplexResult { Count = 10, Name = "Tester" }; };
-            Func<ComplexResult> candidate = () => { candidateRan = true; return new ComplexResult { Count = 10, Name = "Tester" }; };
+            var mock = Substitute.For<IControlCandidate<ComplexResult>>();
+            mock.Control().Returns(new ComplexResult { Count = 10, Name = "Tester" });
+            mock.Candidate().Returns(new ComplexResult { Count = 10, Name = "Tester" });
 
             var result = Scientist.Science<ComplexResult>("success", experiment =>
             {
-                experiment.Use(control);
-                experiment.Try(candidate);
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
             });
 
             Assert.Equal(10, result.Count);
             Assert.Equal("Tester", result.Name);
-            Assert.True(candidateRan);
-            Assert.True(controlRan);
+            mock.Received().Control();
+            mock.Received().Candidate();
             Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").Success);
         }
 
         [Fact]
         public void RunsBothBranchesOfTheExperimentWithIEqualitySetAndReportsFailure()
         {
-            bool candidateRan = false;
-            bool controlRan = false;
-
-            // We introduce side effects for testing. Don't do this in real life please.
-            // Do we do a deep comparison?
-            Func<ComplexResult> control = () => { controlRan = true; return new ComplexResult { Count = 10, Name = "Tester" }; };
-            Func<ComplexResult> candidate = () => { candidateRan = true; return new ComplexResult { Count = 10, Name = "Tester2" }; };
+            var mock = Substitute.For<IControlCandidate<ComplexResult>>();
+            mock.Control().Returns(new ComplexResult { Count = 10, Name = "Tester" });
+            mock.Candidate().Returns(new ComplexResult { Count = 10, Name = "Tester2" });
 
             var result = Scientist.Science<ComplexResult>("success", experiment =>
             {
-                experiment.Use(control);
-                experiment.Try(candidate);
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
             });
 
             Assert.Equal(10, result.Count);
             Assert.Equal("Tester", result.Name);
-            Assert.True(candidateRan);
-            Assert.True(controlRan);
+            mock.Received().Control();
+            mock.Received().Candidate();
             Assert.False(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "success").Success);
         }
     }

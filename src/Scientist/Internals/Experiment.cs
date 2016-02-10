@@ -14,7 +14,7 @@ namespace GitHub.Internals
 
         readonly Func<Task<T>> _control;
         readonly Func<Task<T>> _candidate;
-        private readonly Func<T, T, bool> _resultComparison;
+        readonly Func<T, T, bool> _resultComparer;
         readonly string _name;
 
         public ExperimentInstance(string name, Func<T> control, Func<T> candidate)
@@ -31,12 +31,12 @@ namespace GitHub.Internals
             _candidate = candidate;
         }
 
-        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, Func<T, T, bool> resultComparison)
+        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, Func<T, T, bool> resultComparer)
         {
             _name = name;
             _control = control;
             _candidate = candidate;
-            _resultComparison = resultComparison;
+            _resultComparer = resultComparer;
         }
 
         public async Task<T> Run()
@@ -61,7 +61,6 @@ namespace GitHub.Internals
             // TODO: We're going to have to be a bit more sophisticated about this.
             bool success = CompareResults(controlResult, candidateResult);
 
-            // TODO: Get that duration!
             var observation = new Observation(_name, success, controlResult.Duration, candidateResult.Duration);
 
             // TODO: Make this Fire and forget so we don't have to wait for this
@@ -74,9 +73,21 @@ namespace GitHub.Internals
 
         private bool CompareResults(ExperimentResult controlResult, ExperimentResult candidateResult)
         {
-            if (_resultComparison != null)
+            // Check nulls before calling passed in comparer
+            if (controlResult.Result == null && candidateResult.Result == null)
             {
-                return _resultComparison(controlResult.Result, candidateResult.Result);                
+                return true;
+            }
+
+            if ((controlResult.Result == null && candidateResult.Result != null)
+                || (controlResult.Result != null && candidateResult.Result == null))
+            {
+                return false;
+            }
+
+            if (_resultComparer != null)
+            {
+                return _resultComparer(controlResult.Result, candidateResult.Result);                
             }
 
             var equatableResult = controlResult.Result as IEquatable<T>;
@@ -85,9 +96,7 @@ namespace GitHub.Internals
                 return equatableResult.Equals(candidateResult.Result);
             }
 
-            return (controlResult.Result == null && candidateResult.Result == null
-                        || controlResult.Result != null && controlResult.Result.Equals(candidateResult.Result)
-                        || controlResult.Result == null && candidateResult.Result != null);
+            return controlResult.Result != null && controlResult.Result.Equals(candidateResult.Result);          
         }
 
         static async Task<ExperimentResult> Run(Func<Task<T>> experimentCase)
