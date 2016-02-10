@@ -57,7 +57,6 @@ namespace GitHub.Internals
 
             // TODO: Get that duration!
             var observation = new Observation(_name, success, controlResult.Duration, candidateResult.Duration);
-
           
             await Task.Run( ()=> { Scientist.ObservationPublisher.Publish(observation); });
 

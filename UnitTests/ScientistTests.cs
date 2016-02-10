@@ -37,9 +37,6 @@ public class TheScientistClass
             var mock = Substitute.For<IControlCandidateTask<int>>();
             mock.Control().Returns(Task.FromResult(42));
             mock.Candidate().Returns(Task.FromResult(43));
-           
-
-
 
             var result = await Scientist.ScienceAsync<int>("failure", experiment =>
             {
