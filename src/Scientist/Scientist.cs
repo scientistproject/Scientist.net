@@ -34,7 +34,7 @@ namespace GitHub
             // TODO: Maybe we could automatically generate the name if none is provided using the calling method name. We'd have to 
             // make sure we don't inline this method though.
             var experimentBuilder = new Experiment<T>(name);
-            
+
             experiment(experimentBuilder);
 
             return experimentBuilder.Build().Run().Result;
@@ -51,6 +51,44 @@ namespace GitHub
         public static Task<T> ScienceAsync<T>(string name, Action<IExperimentAsync<T>> experiment)
         {
             var experimentBuilder = new Experiment<T>(name);
+
+            experiment(experimentBuilder);
+
+            return experimentBuilder.Build().Run();
+        }
+
+        /// <summary>
+        /// Conduct a synchronous experiment
+        /// </summary>
+        /// <typeparam name="TControl">The control type of the experiment</typeparam>
+        /// <typeparam name="TCandidate">The candidate type of the experiment</typeparam>
+        /// <param name="name">Name of the experiment</param>
+        /// <param name="experiment">Experiment callback used to configure the experiment</param>
+        /// <returns>The value of the experiment's contrtol function.</returns>
+        [return: AllowNull]
+        public static TControl Science<TControl, TCandidate>(string name, Action<IExperiment<TControl, TCandidate>> experiment)
+        {
+            // TODO: Maybe we could automatically generate the name if none is provided using the calling method name. We'd have to 
+            // make sure we don't inline this method though.
+            var experimentBuilder = new Experiment<TControl, TCandidate>(name);
+            
+            experiment(experimentBuilder);
+
+            return experimentBuilder.Build().Run().Result;
+        }
+
+        /// <summary>
+        /// Conduct an asynchronous experiment
+        /// </summary>
+        /// <typeparam name="TControl">The control type of the experiment</typeparam>
+        /// <typeparam name="TCandidate">The candidate type of the experiment</typeparam>
+        /// <param name="name">Name of the experiment</param>
+        /// <param name="experiment">Experiment callback used to configure the experiment</param>
+        /// <returns>The value of the experiment's contrtol function.</returns>
+        [return: AllowNull]
+        public static Task<TControl> ScienceAsync<TControl, TCandidate>(string name, Action<IExperimentAsync<TControl, TCandidate>> experiment)
+        {
+            var experimentBuilder = new Experiment<TControl, TCandidate>(name);
             
             experiment(experimentBuilder);
 

@@ -8,34 +8,54 @@ namespace GitHub.Internals
     /// An instance of an experiment. This actually runs the control and the candidate and measures the result.
     /// </summary>
     /// <typeparam name="T">The return type of the experiment</typeparam>
-    internal class ExperimentInstance<T>
+    internal class ExperimentInstance<T> : ExperimentInstance<T, T>
+    {
+        public ExperimentInstance(string name, Func<T> control, Func<T> candidate)
+            : base(name, control, candidate)
+        {
+
+        }
+
+        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate)
+            : base(name, control, candidate)
+        {
+            
+        }
+    }
+
+    /// <summary>
+    /// An instance of an experiment. This actually runs the control and the candidate and measures the result.
+    /// </summary>
+    /// <typeparam name="TControl">The control type of the experiment</typeparam>
+    /// <typeparam name="TCandidate">The candidate type of the experiment</typeparam>
+    internal class ExperimentInstance<TControl, TCandidate>
     {
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
 
-        readonly Func<Task<T>> _control;
-        readonly Func<Task<T>> _candidate;
+        readonly Func<Task<TControl>> _control;
+        readonly Func<Task<TCandidate>> _candidate;
         readonly string _name;
 
-        public ExperimentInstance(string name, Func<T> control, Func<T> candidate)
+        public ExperimentInstance(string name, Func<TControl> control, Func<TCandidate> candidate)
         {
             _name = name;
             _control = () => Task.FromResult(control());
             _candidate = () => Task.FromResult(candidate());
         }
 
-        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate)
+        public ExperimentInstance(string name, Func<Task<TControl>> control, Func<Task<TCandidate>> candidate)
         {
             _name = name;
             _control = control;
             _candidate = candidate;
         }
 
-        public async Task<T> Run()
+        public async Task<TControl> Run()
         {
             // Randomize ordering...
             var runControlFirst = _random.Next(0, 2) == 0;
-            ExperimentResult controlResult;
-            ExperimentResult candidateResult;
+            ExperimentResult<TControl> controlResult;
+            ExperimentResult<TCandidate> candidateResult;
 
             if (runControlFirst)
             {
@@ -66,7 +86,7 @@ namespace GitHub.Internals
             return controlResult.Result;
         }
 
-        static async Task<ExperimentResult> Run(Func<Task<T>> experimentCase)
+        static async Task<ExperimentResult<TResult>> Run<TResult>(Func<Task<TResult>> experimentCase)
         {
             var sw = new Stopwatch();
             sw.Start();
@@ -76,16 +96,16 @@ namespace GitHub.Internals
                 var result = await experimentCase();
                 sw.Stop();
 
-                return new ExperimentResult(result, new TimeSpan(sw.ElapsedTicks));
+                return new ExperimentResult<TResult>(result, new TimeSpan(sw.ElapsedTicks));
             }
             catch (Exception e)
             {
                 sw.Stop();
-                return new ExperimentResult(e, new TimeSpan(sw.ElapsedTicks));
+                return new ExperimentResult<TResult>(e,  new TimeSpan(sw.ElapsedTicks));
             }
         }
 
-        class ExperimentResult
+        class ExperimentResult<T>
         {
             public ExperimentResult(T result, TimeSpan duration)
             {

@@ -7,6 +7,20 @@ namespace GitHub.Internals
     /// Provides an interface for defining a synchronous experiment.
     /// </summary>
     /// <typeparam name="T">The return result for the experiment.</typeparam>
+    public interface IExperiment<TControl, TCandidate>
+    {
+        void Try(Func<TCandidate> candidate);
+
+        void Use(Func<TControl> control);
+    }
+
+    public interface IExperimentAsync<TControl, TCandidate>
+    {
+        void Try(Func<Task<TCandidate>> candidate);
+
+        void Use(Func<Task<TControl>> control);
+    }
+
     public interface IExperiment<T>
     {
         /// <summary>
@@ -40,5 +54,4 @@ namespace GitHub.Internals
         /// <param name="control">The delegate to execute.</param>
         void Use(Func<Task<T>> control);
     }
-
 }
