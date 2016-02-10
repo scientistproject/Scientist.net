@@ -25,7 +25,7 @@ namespace GitHub.Internals
         public void Try(Func<T> candidate) { _candidate = () => Task.FromResult(candidate()); }
 
         internal ExperimentInstance<T> Build()
-        {
+            {
             return new ExperimentInstance<T>(_name, _control, _candidate);
         }
     }
