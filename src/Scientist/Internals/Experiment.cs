@@ -96,9 +96,6 @@ namespace GitHub.Internals
             sw.Start();
             try
             {
-                // TODO: Refactor this into helper function?  
-                var sw = new Stopwatch();
-                sw.Start();
                 var result = await experimentCase();
                 sw.Stop();
 
