@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Scientist.Internals;
+
 
 namespace GitHub.Internals
 {
@@ -27,7 +27,6 @@ namespace GitHub.Internals
             _name = name;
             _control = () => Task.FromResult(control());
             _candidate = () => Task.FromResult(candidate());
-            //_experimentResultComparer = experimentResultComparer;
         }
         public ExperimentInstance(string name, Func<T> control, Func<T> candidate, ExperimentResultComparer<T> experimentResultComparer)
         {

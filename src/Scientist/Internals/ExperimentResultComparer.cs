@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using GitHub.Internals;
 
-namespace Scientist.Internals
+namespace GitHub.Internals
 {
     internal class ExperimentResultComparer<T> : IEqualityComparer<ExperimentInstance<T>.ExperimentResult>
     {
