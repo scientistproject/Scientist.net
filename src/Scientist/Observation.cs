@@ -170,6 +170,7 @@ namespace GitHub
             {
                 Exception = ex.GetBaseException();
             }
+            stopwatch.Stop();
 
             Duration = stopwatch.Elapsed;
         }
