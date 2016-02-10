@@ -58,9 +58,8 @@ namespace GitHub.Internals
             // TODO: Get that duration!
             var observation = new Observation(_name, success, controlResult.Duration, candidateResult.Duration);
 
-            // TODO: Make this Fire and forget so we don't have to wait for this
-            // to complete before we return a result
-            await Scientist.ObservationPublisher.Publish(observation);
+          
+            await Task.Run( ()=> { Scientist.ObservationPublisher.Publish(observation); });
 
             if (controlResult.ThrownException != null) throw controlResult.ThrownException;
             return controlResult.Result;
