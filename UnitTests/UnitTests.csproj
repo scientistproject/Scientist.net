@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ComplexResult.cs" />
+    <Compile Include="ExperimentResultComparerTests.cs" />
     <Compile Include="IControlCandidate.cs" />
     <Compile Include="ScientistTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
