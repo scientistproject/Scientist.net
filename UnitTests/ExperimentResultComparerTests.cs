@@ -10,13 +10,9 @@ using Xunit;
 
 namespace UnitTests
 {
-
     public class ExperimentResultComparerTests
     {
-
-
         [Fact]
-
         public void BothResultsAreBaseClassEquals()
         {
             //Arrange
@@ -32,7 +28,6 @@ namespace UnitTests
         }
 
         [Fact]
-
         public void BothResultsAreNull_AreEqual()
         {
             //Arrange
@@ -48,7 +43,6 @@ namespace UnitTests
         }
 
         [Fact]
-
         public void BothResultsAreNotIEquatable_AndSame_AreEqual()
         {
             //Arrange
@@ -64,7 +58,6 @@ namespace UnitTests
         }
 
         [Fact]
-
         public void CandadateResult_IsNull_AreNotEqual()
         {
             //Arrange
@@ -80,7 +73,6 @@ namespace UnitTests
         }
 
         [Fact]
-
         public void ControlResult_IsNull_AreNotEqual()
         {
             //Arrange
@@ -94,12 +86,11 @@ namespace UnitTests
             //Assert
             Assert.False(areEqual);
         }
-        [Fact]
 
+        [Fact]
         public void ControlAndCandidateAreDiffrent_But_ComparisonFunction_says_AreEqual()
         {
             //Arrange
-
             Func<int, int, bool> equalsFunction = (control, candidate) => true;
 
             var comparer = new ExperimentResultComparer<int>(null, equalsFunction);
@@ -112,12 +103,11 @@ namespace UnitTests
             //Assert
             Assert.True(areEqual);
         }
-        [Fact]
 
+        [Fact]
         public void ControlAndCandidateAreComplexObjects_AndImplement_IEqualitable_AreEqual()
         {
             //Arrange
-
             IEquatable<ComplexResult> controlComplexResult = new ComplexResult() { Count = 42, Name = "42" };
             IEquatable<ComplexResult> candidateComplexResult = new ComplexResult() { Count = 42, Name = "42" };
 
@@ -131,14 +121,12 @@ namespace UnitTests
             //Assert
             Assert.True(areEqual);
         }
-        [Fact]
 
+        [Fact]
         public void ControlAndCandidateAreDiffrent_But_IEqualityComparer_says_AreEqual()
         {
             //Arrange
-
             var mock = Substitute.For<IEqualityComparer<int>>();
-
             mock.Equals(0, 42).Returns(true);
 
             var comparer = new ExperimentResultComparer<int>(mock, null);
@@ -152,11 +140,10 @@ namespace UnitTests
             Assert.True(areEqual);
         }
 
+        [Fact]
         public void ControlHasNormalResult_CandidateThrowsException_AreNotEqual()
         {
             //Arrange
-
-
             var comparer = new ExperimentResultComparer<int>(null, null);
             var controlresult = new ExperimentInstance<int>.ExperimentResult(0, TimeSpan.FromMilliseconds(1));
             var candidateresult = new ExperimentInstance<int>.ExperimentResult(new Exception("boom!"), TimeSpan.FromMilliseconds(1));
@@ -168,12 +155,10 @@ namespace UnitTests
             Assert.False(areEqual);
         }
 
-
+        [Fact]
         public void ControlThrowsException_CandidateThrowsException_AreEqual()
         {
             //Arrange
-
-
             var comparer = new ExperimentResultComparer<int>(null, null);
             var controlresult = new ExperimentInstance<int>.ExperimentResult(new Exception("boom!"), TimeSpan.FromMilliseconds(1));
             var candidateresult = new ExperimentInstance<int>.ExperimentResult(new Exception("boom!"), TimeSpan.FromMilliseconds(1));
@@ -188,8 +173,6 @@ namespace UnitTests
         public void ControlThrowsException_CandidateHasNormalResult_AreNotEqual()
         {
             //Arrange
-
-
             var comparer = new ExperimentResultComparer<int>(null, null);
             var controlresult = new ExperimentInstance<int>.ExperimentResult(new Exception("boom!"), TimeSpan.FromMilliseconds(1));
             var candidateresult = new ExperimentInstance<int>.ExperimentResult(42, TimeSpan.FromMilliseconds(1));
@@ -201,11 +184,10 @@ namespace UnitTests
             Assert.False(areEqual);
         }
 
+        [Fact]
         public void Control_And_CandidateThrowsException_WithDiffrentMessages_AreNotEqual()
         {
             //Arrange
-
-
             var comparer = new ExperimentResultComparer<int>(null, null);
             var controlresult = new ExperimentInstance<int>.ExperimentResult(new Exception("boom!"), TimeSpan.FromMilliseconds(1));
             var candidateresult = new ExperimentInstance<int>.ExperimentResult(new Exception("bang!"), TimeSpan.FromMilliseconds(1));
@@ -217,10 +199,10 @@ namespace UnitTests
             Assert.False(areEqual);
         }
 
+        [Fact]
         public void Control_And_CandidateThrowsException_WithDiffrentTypes_AreNotEqual()
         {
             //Arrange
-
             var comparer = new ExperimentResultComparer<int>(null, null);
             var controlresult = new ExperimentInstance<int>.ExperimentResult(new InvalidOperationException("boom!"), TimeSpan.FromMilliseconds(1));
             var candidateresult = new ExperimentInstance<int>.ExperimentResult(new Exception("boom!"), TimeSpan.FromMilliseconds(1));
@@ -233,6 +215,9 @@ namespace UnitTests
         }
     }
 
+    /// <summary>
+    /// Test class with override Equals() method but does not implement IEquatable
+    /// </summary>
     public class NotIEquatable
     {
         public NotIEquatable(string name)
