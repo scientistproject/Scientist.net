@@ -8,7 +8,6 @@ namespace GitHub.Internals
 {
     internal class ExperimentResultComparer<T> : IEqualityComparer<ExperimentInstance<T>.ExperimentResult>
     {
-
         private readonly Func<T, T, bool> _resultComparison;
         private readonly IEqualityComparer<T> _resultEqualityComparer;
 
@@ -18,28 +17,6 @@ namespace GitHub.Internals
             _resultComparison = resultComparison;
         }
 
-
-
-
-
-        private bool BothResultsAreNull(T controlResult, T candidateResult)
-        {
-            return controlResult == null && candidateResult == null;
-        }
-        private bool BothResultsEqual(T controlResult, T candidateResult)
-        {
-            return controlResult != null && controlResult.Equals(candidateResult);
-        }
-
-
-        private bool ExceptionsAreEqual(Exception controlException, Exception candidateException)
-        {
-            //*Both observations raised an exception with the same class and message.
-            bool bothExceptionsSameType = controlException != null && controlException.GetType().FullName.Equals(candidateException.GetType().FullName);
-            bool bothExceptionsSameMessage = controlException != null && controlException.Message.Equals(candidateException.Message);
-
-            return bothExceptionsSameType && bothExceptionsSameMessage;
-        }
 
         /// <summary>
         /// Checks if two ExperimentResults are equal
@@ -102,6 +79,26 @@ namespace GitHub.Internals
             var equatableResult = controlResult as IEquatable<T>;
             return equatableResult != null && equatableResult.Equals(candidateResult);
         }
+
+        private bool BothResultsAreNull(T controlResult, T candidateResult)
+        {
+            return controlResult == null && candidateResult == null;
+        }
+
+        private bool BothResultsEqual(T controlResult, T candidateResult)
+        {
+            return controlResult != null && controlResult.Equals(candidateResult);
+        }
+
+        private bool ExceptionsAreEqual(Exception controlException, Exception candidateException)
+        {
+            //Both observations raised an exception with the same class and message.
+            bool bothExceptionsSameType = controlException != null && controlException.GetType().FullName.Equals(candidateException.GetType().FullName);
+            bool bothExceptionsSameMessage = controlException != null && controlException.Message.Equals(candidateException.Message);
+
+            return bothExceptionsSameType && bothExceptionsSameMessage;
+        }
+
 
         public int GetHashCode(ExperimentInstance<T>.ExperimentResult obj)
         {
