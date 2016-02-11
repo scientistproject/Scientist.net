@@ -18,8 +18,8 @@ namespace GitHub.Internals
             _resultComparison = resultComparison;
         }
 
-       
-   
+
+
 
 
         private bool BothResultsAreNull(T controlResult, T candidateResult)
@@ -49,12 +49,13 @@ namespace GitHub.Internals
         /// <returns>
         ///  Returns true if: 
         /// 
-        ///  The values of the observations are equal (using .Equals()) 
-        ///  The values of the observations are equal according to Ts IEquatable&lt;T&gt; implementation, if implemented
-        ///  The values of the observations are equal according to a comparison function, if given
-        ///  The values of the observations are equal according to an IEqualityComparer&lt;T&gt; expression, if given  
+        /// 
+        ///  The values of the observations are equal according to an IEqualityComparer&lt;T&gt; expression, if given 
+        ///  The values of the observations are equal according to a comparison function, if given  
         ///  Both observations raised an exception with the same Type and message.
-        ///  Both values of the observation are null
+        ///  The values of the observation are both null 
+        ///  The values of the observations are equal according to Ts IEquatable&lt;T&gt; implementation, if implemented 
+        ///  The values of the observations are equal (using .Equals()) 
         ///  
         ///  Returns false otherwise. 
         /// </returns>
@@ -70,20 +71,36 @@ namespace GitHub.Internals
                 return _resultEqualityComparer.Equals(controlResult.Result, candidateResult.Result);
             }
 
-            var equatableResult = controlResult.Result as IEquatable<T>;
-            if (equatableResult != null)
+            
+            if (AnyExceptions(controlResult, candidateResult))
             {
-                return equatableResult.Equals(candidateResult.Result);
+                return !OnlyOneExecption(controlResult, candidateResult) 
+                    && ExceptionsAreEqual(controlResult.ThrownException, candidateResult.ThrownException);
             }
-
 
             bool success =
                   BothResultsAreNull(controlResult.Result, candidateResult.Result)
                || BothResultsEqual(controlResult.Result, candidateResult.Result)
-               || ExceptionsAreEqual(controlResult.ThrownException, candidateResult.ThrownException);
+               || BothResultsAreEquatableAndEqual(controlResult.Result, candidateResult.Result);
 
 
             return success;
+        }
+
+        private bool OnlyOneExecption(ExperimentInstance<T>.ExperimentResult controlResult, ExperimentInstance<T>.ExperimentResult candidateResult)
+        {
+            return controlResult.ThrownException == null || candidateResult.ThrownException == null;
+        }
+
+        private bool AnyExceptions(ExperimentInstance<T>.ExperimentResult controlResult, ExperimentInstance<T>.ExperimentResult candidateResult)
+        {
+            return controlResult.ThrownException != null || candidateResult.ThrownException != null;
+        }
+
+        private bool BothResultsAreEquatableAndEqual(T controlResult, T candidateResult)
+        {
+            var equatableResult = controlResult as IEquatable<T>;
+            return equatableResult != null && equatableResult.Equals(candidateResult);
         }
 
         public int GetHashCode(ExperimentInstance<T>.ExperimentResult obj)
