@@ -6,12 +6,14 @@ namespace GitHub.Internals
     internal class Experiment<T> : IExperiment<T>, IExperimentAsync<T>
     {
         string _name;
+        private readonly string _callingmethodName;
         Func<Task<T>> _control;
         Func<Task<T>> _candidate;
 
-        public Experiment(string name)
+        public Experiment(string name, String callingmethodName = "")
         {
             _name = name;
+            _callingmethodName = callingmethodName;
         }
 
         public void Use(Func<Task<T>> control) { _control = control; }
@@ -25,7 +27,7 @@ namespace GitHub.Internals
 
         internal ExperimentInstance<T> Build()
         {
-            return new ExperimentInstance<T>(_name, _control, _candidate);
+            return new ExperimentInstance<T>(_name, _control, _candidate, _callingmethodName);
         }
     }
 }
