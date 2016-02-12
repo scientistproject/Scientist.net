@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 using GitHub.Internals;
 using NullGuard;
@@ -23,7 +22,7 @@ namespace GitHub
             () =>
             {
                 var qbservations = ObservationsToPublish.ToObservable(TaskPoolScheduler.Default).AsQbservable();
-                qbservations.Subscribe((observation) => { ObservationPublisher.Publish(observation); });// So ObservationPublisher still works
+                qbservations.Subscribe(observation => { ObservationPublisher.Publish(observation); });// So ObservationPublisher still works
 
                 return qbservations;
 

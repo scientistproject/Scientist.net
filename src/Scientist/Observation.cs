@@ -1,6 +1,4 @@
-﻿using GitHub.Internals;
-using System;
-using System.Threading.Tasks;
+﻿using System;
 
 namespace GitHub
 {
