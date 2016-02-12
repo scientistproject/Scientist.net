@@ -84,19 +84,5 @@ namespace GitHub
         {
             ObservationsToPublish.Add(observation);
         }
-
-        private static void RelayObservations(CancellationToken cancellationToken)
-        {
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                var observation = ObservationsToPublish.Take(cancellationToken);
-                Scientist.ObservationPublisher.Publish(observation);
-            }
-        }
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public static String GetCallingMethodName([CallerMemberName] string memberName = "")
-        {
-            return memberName;
-        }
     }
 }
