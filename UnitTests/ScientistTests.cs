@@ -134,14 +134,5 @@ public class TheScientistClass
             Assert.True(observation.ControlDuration.Ticks > 0);
             Assert.True(observation.CandidateDuration.Ticks > 0);
         }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        public string GetCurrentMethod()
-        {
-            StackTrace st = new StackTrace();
-            StackFrame sf = st.GetFrame(1);
-
-            return sf.GetMethod().Name;
-        }
     }
 }
