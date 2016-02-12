@@ -14,7 +14,7 @@ namespace GitHub
         /// </summary>
         /// <param name="name">The name of the experiment that was observed.</param>
         /// <param name="success">Whether the experiment was a success.</param>
-        /// <param name="controlDuration">The total duration for the controlled experiment.</param>
+        /// <param name="controlDuration">The total duration for the control experiment.</param>
         /// <param name="candidateDuration">The total duration for the candidate experiment.</param>
         /// <param name="callingMethodName">The name of the method where the experiment that was performed.</param>
         public Observation(string name, bool success, TimeSpan controlDuration, TimeSpan candidateDuration, string callingMethodName)
@@ -32,7 +32,7 @@ namespace GitHub
         public bool Success { get; }
         
         /// <summary>
-        /// Total duration of the controlled experiment.
+        /// Total duration of the control experiment.
         /// <see cref="IExperiment{T}.Use(Func{T})" /> or <see cref="IExperimentAsync{T}.Use(Func{Task{T}})" />.
         /// </summary>
         public TimeSpan ControlDuration { get; }
