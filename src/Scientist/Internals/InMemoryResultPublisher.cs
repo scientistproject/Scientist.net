@@ -3,16 +3,16 @@ using System.Threading.Tasks;
 
 namespace GitHub.Internals
 {
-    public class InMemoryObservationPublisher : IObservationPublisher
+    public class InMemoryResultPublisher : IResultPublisher
     {
         readonly static Task _completed = Task.FromResult(0);
 
         public Task Publish(IResult result)
         {
-            Observations.Add(result);
+            Results.Add(result);
             return _completed;
         }
 
-        public ConcurrentBag<IResult> Observations { get; } = new ConcurrentBag<IResult>();
+        public ConcurrentBag<IResult> Results { get; } = new ConcurrentBag<IResult>();
     }
 }

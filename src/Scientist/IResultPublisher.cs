@@ -3,9 +3,9 @@
 namespace GitHub
 {
     /// <summary>
-    /// Provides an interface for publishing observed experiments.
+    /// Provides an interface for publishing experiment results.
     /// </summary>
-    public interface IObservationPublisher
+    public interface IResultPublisher
     {
         /// <summary>
         /// Publishes the results of an experiment.

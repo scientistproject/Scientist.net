@@ -11,48 +11,78 @@ namespace GitHub.Internals
     /// <typeparam name="T">The return type of the experiment</typeparam>
     internal class ExperimentInstance<T>
     {
+        internal const string CandidateExperimentName = "candidate";
+        internal const string ControlExperimentName = "control";
+
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
         
-        readonly Dictionary<string, Func<Task<T>>> _behaviors;
+        readonly List<NamedBehavior> _behaviors;
         readonly string _name;
 
         public ExperimentInstance(string name, Func<T> control, Func<T> candidate)
-            : this(name, () => Task.FromResult(control()), () => Task.FromResult(candidate()))
+            : this(name, new NamedBehavior(ControlExperimentName, control), new NamedBehavior(CandidateExperimentName, candidate))
         {
         }
 
         public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate)
+            : this(name, new NamedBehavior(ControlExperimentName, control), new NamedBehavior(CandidateExperimentName, candidate))
+        {
+        }
+
+        internal ExperimentInstance(string name, NamedBehavior control, NamedBehavior candidate)
         {
             _name = name;
-            _behaviors = new Dictionary<string, Func<Task<T>>>
+            _behaviors = new List<NamedBehavior>
             {
-                { "control", control },
-                { "candidate", candidate }
+                control,
+                candidate
             };
         }
 
         public async Task<T> Run()
         {
-            const string name = "control";
-
             // TODO determine if experiments should be run.
 
             // Randomize ordering...
             var observations = new List<Observation<T>>();
-            foreach (string key in _behaviors.Keys.OrderBy(k => _random.Next()))
+            foreach (var behavior in _behaviors.OrderBy(k => _random.Next()))
             {
-                observations.Add(await Observation<T>.New(key, _behaviors[key]));
+                observations.Add(await Observation<T>.New(behavior.Name, behavior.Behavior));
             }
 
-            Observation<T> controlObservation = observations.FirstOrDefault(o => o.Name == name);
-            Result<T> result = new Result<T>(_name, observations, controlObservation);
+            var controlObservation = observations.FirstOrDefault(o => o.Name == ControlExperimentName);
+            var result = new Result<T>(_name, observations, controlObservation);
 
             // TODO: Make this Fire and forget so we don't have to wait for this
             // to complete before we return a result
-            await Scientist.ObservationPublisher.Publish(result);
+            await Scientist.ResultPublisher.Publish(result);
 
             if (controlObservation.Thrown) throw controlObservation.Exception;
             return controlObservation.Value;
+        }
+        
+        internal class NamedBehavior
+        {
+            public NamedBehavior(string name, Func<T> behavior)
+                : this(name, () => Task.FromResult(behavior()))
+            {
+            }
+
+            public NamedBehavior(string name, Func<Task<T>> behavior)
+            {
+                Behavior = behavior;
+                Name = name;
+            }
+
+            /// <summary>
+            /// Gets the behavior to execute during an experiment.
+            /// </summary>
+            public Func<Task<T>> Behavior { get; }
+
+            /// <summary>
+            /// Gets the name of the behavior.
+            /// </summary>
+            public string Name { get; }
         }
     }
 }

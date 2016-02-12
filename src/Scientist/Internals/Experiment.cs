@@ -14,19 +14,21 @@ namespace GitHub.Internals
             _name = name;
         }
 
-        public void Use(Func<Task<T>> control) { _control = control; }
+        public void Use(Func<Task<T>> control) =>
+            _control = control;
 
-        public void Use(Func<T> control) { _control = () => Task.FromResult(control()); }
+        public void Use(Func<T> control) =>
+            _control = () => Task.FromResult(control());
 
         // TODO add optional name parameter, and store all delegates into a dictionary.
 
-        public void Try(Func<Task<T>> candidate) { _candidate = candidate; }
+        public void Try(Func<Task<T>> candidate) =>
+            _candidate = candidate;
 
-        public void Try(Func<T> candidate) { _candidate = () => Task.FromResult(candidate()); }
+        public void Try(Func<T> candidate) =>
+            _candidate = () => Task.FromResult(candidate());
 
-        internal ExperimentInstance<T> Build()
-            {
-            return new ExperimentInstance<T>(_name, _control, _candidate);
-        }
+        internal ExperimentInstance<T> Build() =>
+            new ExperimentInstance<T>(_name, _control, _candidate);
     }
 }
