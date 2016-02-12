@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Github.Internals;
 
 namespace GitHub.Internals
 {
@@ -68,20 +69,19 @@ namespace GitHub.Internals
 
         static async Task<ExperimentResult> Run(Func<Task<T>> experimentCase)
         {
-            var sw = new Stopwatch();
-            sw.Start();
+            Chrono chrono = new Chrono();
             try
             {
-                // TODO: Refactor this into helper function?  
-                var result = await experimentCase();
-                sw.Stop();
-
-                return new ExperimentResult(result, new TimeSpan(sw.ElapsedTicks));
+                T result;
+                using (Chronometer.New(out chrono))
+                {
+                    result = await experimentCase();
+                }
+                return new ExperimentResult(result, chrono.Timespan);
             }
             catch (Exception e)
             {
-                sw.Stop();
-                return new ExperimentResult(e, new TimeSpan(sw.ElapsedTicks));
+                return new ExperimentResult(e, chrono.Timespan);
             }
         }
 

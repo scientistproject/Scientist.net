@@ -63,9 +63,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IControlCandidate.cs" />
     <Compile Include="ScientistTests.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TimerTests.cs" />
     <Compile Include="TestHelper.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -73,9 +74,6 @@
       <Project>{89039ba2-9f7d-4aef-b0a8-46935cf3e678}</Project>
       <Name>Scientist</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
