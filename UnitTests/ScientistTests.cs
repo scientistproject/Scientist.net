@@ -15,7 +15,7 @@ public class TheScientistClass
     public class TheScienceMethod
     {
         [Fact]
-        public async void RunsBothBranchesOfTheExperimentAndReportsSuccess()
+        public async Task RunsBothBranchesOfTheExperimentAndReportsSuccess()
         {
             var mock = Substitute.For<IControlCandidate<int>>();
             mock.Control().Returns(42);
@@ -58,7 +58,7 @@ public class TheScientistClass
         }
 
         [Fact]
-        public async void AllowsReturningNullFromControlOrTest()
+        public async Task AllowsReturningNullFromControlOrTest()
         {
             var result = Scientist.Science<object>("failure", experiment =>
                 {
@@ -84,7 +84,7 @@ public class TheScientistClass
         }
 
         [Fact]
-        public async void RunsBothBranchesOfTheExperimentAndReportsSuccessWithDurations()
+        public async Task RunsBothBranchesOfTheExperimentAndReportsSuccessWithDurations()
         {
             var mock = Substitute.For<IControlCandidate<int>>();
             mock.Control().Returns(42);
@@ -107,7 +107,7 @@ public class TheScientistClass
         }
 
         [Fact]
-        public async void AnExceptionReportsDuration()
+        public async Task AnExceptionReportsDuration()
         {
             var candidateRan = false;
             var controlRan = false;
