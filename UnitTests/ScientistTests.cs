@@ -121,5 +121,46 @@ public class TheScientistClass
             Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "failure").ControlDuration.Ticks > 0);
             Assert.True(((InMemoryObservationPublisher)Scientist.ObservationPublisher).Observations.First(m => m.Name == "failure").CandidateDuration.Ticks > 0);
         }
+
+        [Fact]
+        public void RunsBeforeRun()
+        {
+            var beforeRunRan = false;
+
+            // We introduce side effects for testing. Don't do this in real life please.
+            // Do we do a deep comparison?
+            Func<int> control = () => 42;
+            Func<int> candidate = () => 42;
+            Action beforeRun = () => { beforeRunRan = true; };
+
+            var result = Scientist.Science<int>("failure", experiment =>
+            {
+                experiment.BeforeRun(beforeRun);
+                experiment.Use(control);
+                experiment.Try(candidate);
+            });
+
+            Assert.Equal(42, result);
+            Assert.True(beforeRunRan);
+        }
+
+        [Fact]
+        public void BeforeRunNullIsIgnored()
+        {
+            // We introduce side effects for testing. Don't do this in real life please.
+            // Do we do a deep comparison?
+            Func<int> control = () => 42;
+            Func<int> candidate = () => 42;
+            Action beforeRun = null;
+
+            var result = Scientist.Science<int>("failure", experiment =>
+            {
+                experiment.BeforeRun(beforeRun);
+                experiment.Use(control);
+                experiment.Try(candidate);
+            });
+
+            Assert.Equal(42, result);
+        }
     }
 }

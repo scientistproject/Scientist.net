@@ -8,6 +8,7 @@ namespace GitHub.Internals
         string _name;
         Func<Task<T>> _control;
         Func<Task<T>> _candidate;
+        Func<Task> _beforeRun;
 
         public Experiment(string name)
         {
@@ -25,7 +26,17 @@ namespace GitHub.Internals
 
         internal ExperimentInstance<T> Build()
         {
-            return new ExperimentInstance<T>(_name, _control, _candidate);
+            return new ExperimentInstance<T>(_name, _control, _candidate, _beforeRun);
         }
+
+        public void BeforeRun(Action action)
+        {
+            if (action != null)
+            {
+                _beforeRun = async () => { action(); await Task.FromResult(0); };
+            }
+        }
+
+        public void BeforeRun(Func<Task> action) { _beforeRun = action; }
     }
 }

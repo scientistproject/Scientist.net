@@ -10,6 +10,11 @@ namespace GitHub.Internals
     public interface IExperiment<T>
     {
         /// <summary>
+        /// Define any expensive setup here before the experiment is run.
+        /// </summary>
+        void BeforeRun(Action action);
+
+        /// <summary>
         /// Defines the operation to try.
         /// </summary>
         /// <param name="candidate">The delegate to execute.</param>
@@ -28,6 +33,11 @@ namespace GitHub.Internals
     /// <typeparam name="T">The return result for the experiment.</typeparam>
     public interface IExperimentAsync<T>
     {
+        /// <summary>
+        /// Define any expensive setup here before the experiment is run.
+        /// </summary>
+        void BeforeRun(Func<Task> action);
+
         /// <summary>
         /// Defines the operation to try.
         /// </summary>

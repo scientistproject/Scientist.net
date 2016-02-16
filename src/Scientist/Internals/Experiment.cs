@@ -15,23 +15,35 @@ namespace GitHub.Internals
         readonly Func<Task<T>> _control;
         readonly Func<Task<T>> _candidate;
         readonly string _name;
+        readonly Func<Task> _beforeRun;
 
-        public ExperimentInstance(string name, Func<T> control, Func<T> candidate)
+        public ExperimentInstance(string name, Func<T> control, Func<T> candidate, Action beforeRun)
         {
             _name = name;
             _control = () => Task.FromResult(control());
             _candidate = () => Task.FromResult(candidate());
+
+            if (beforeRun != null)
+            {
+                _beforeRun = async () => { beforeRun(); await Task.FromResult(0); };
+            }
         }
 
-        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate)
+        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, Func<Task> beforeRun)
         {
             _name = name;
             _control = control;
             _candidate = candidate;
+            _beforeRun = beforeRun;
         }
 
         public async Task<T> Run()
         {
+            if (_beforeRun != null)
+            {
+                await _beforeRun();
+            }
+
             // Randomize ordering...
             var runControlFirst = _random.Next(0, 2) == 0;
             ExperimentResult controlResult;
