@@ -32,7 +32,7 @@ public class TheScientistClass
             Assert.IsType<InvalidOperationException>(baseException);
             mock.Received().Control();
             mock.Received().Candidate();
-            Assert.True(((InMemoryResultPublisher)Scientist.ResultPublisher).Results.First(m => m.ExperimentName == experimentName).Matched);
+            Assert.True(((InMemoryResultPublisher)Scientist.ResultPublisher).Results<int>().First(m => m.ExperimentName == experimentName).Matched);
         }
 
         [Fact]
@@ -52,7 +52,7 @@ public class TheScientistClass
             Assert.Equal(42, result);
             mock.Received().Control();
             mock.Received().Candidate();
-            Assert.True(((InMemoryResultPublisher)Scientist.ResultPublisher).Results.First(m => m.ExperimentName == "success").Matched);
+            Assert.True(((InMemoryResultPublisher)Scientist.ResultPublisher).Results<int>().First(m => m.ExperimentName == "success").Matched);
         }
 
         [Fact]
@@ -74,7 +74,7 @@ public class TheScientistClass
             Assert.Equal(42, result);
             await mock.Received().Control();
             await mock.Received().Candidate();
-            Assert.False(TestHelper.Results.First(m => m.ExperimentName == "failure").Matched);
+            Assert.False(TestHelper.Results<int>().First(m => m.ExperimentName == "failure").Matched);
         }
 
         [Fact]
@@ -87,7 +87,7 @@ public class TheScientistClass
             });
 
             Assert.Null(result);
-            Assert.True(TestHelper.Results.First(m => m.ExperimentName == "failure").Matched);
+            Assert.True(TestHelper.Results<object>().First(m => m.ExperimentName == "failure").Matched);
         }
 
         [Fact]
@@ -116,9 +116,9 @@ public class TheScientistClass
             Assert.Equal(42, result);
             mock.Received().Control();
             mock.Received().Candidate();
-            Assert.True(((InMemoryResultPublisher)Scientist.ResultPublisher).Results.First(m => m.ExperimentName == "success").Matched);
-            Assert.True(((InMemoryResultPublisher)Scientist.ResultPublisher).Results.First(m => m.ExperimentName == "success").Control.Duration.Ticks > 0);
-            Assert.True(((InMemoryResultPublisher)Scientist.ResultPublisher).Results.First(m => m.ExperimentName == "success").Observations.All(o => o.Duration.Ticks > 0));
+            Assert.True(((InMemoryResultPublisher)Scientist.ResultPublisher).Results<int>().First(m => m.ExperimentName == "success").Matched);
+            Assert.True(((InMemoryResultPublisher)Scientist.ResultPublisher).Results<int>().First(m => m.ExperimentName == "success").Control.Duration.Ticks > 0);
+            Assert.True(((InMemoryResultPublisher)Scientist.ResultPublisher).Results<int>().First(m => m.ExperimentName == "success").Observations.All(o => o.Duration.Ticks > 0));
         }
 
         [Fact]
@@ -141,7 +141,7 @@ public class TheScientistClass
             Assert.Equal(42, result);
             Assert.True(candidateRan);
             Assert.True(controlRan);
-            IResult observedResult = ((InMemoryResultPublisher)Scientist.ResultPublisher).Results.First(m => m.ExperimentName == "success");
+            Result<int> observedResult = ((InMemoryResultPublisher)Scientist.ResultPublisher).Results<int>().First(m => m.ExperimentName == "success");
             Assert.True(observedResult.Matched);
             Assert.True(observedResult.Control.Duration.Ticks > 0);
             Assert.True(observedResult.Observations.All(o => o.Duration.Ticks > 0));

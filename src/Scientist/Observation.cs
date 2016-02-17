@@ -8,35 +8,9 @@ using System.Threading.Tasks;
 namespace GitHub
 {
     /// <summary>
-    /// Provides an interface for an observation of an experiment's execution.
-    /// </summary>
-    public interface IObservation
-    {
-        /// <summary>
-        /// Gets the total time that the experiment behavior ran for.
-        /// </summary>
-        TimeSpan Duration { get; }
-
-        /// <summary>
-        /// Gets an exception if one was thrown from the experiment behavior.
-        /// </summary>
-        Exception Exception { get; }
-
-        /// <summary>
-        /// Gets the name of the experiment behavior.
-        /// </summary>
-        string Name { get; }
-
-        /// <summary>
-        /// Gets whether an exception was observed.
-        /// </summary>
-        bool Thrown { get; }
-    }
-
-    /// <summary>
     /// Defines an observation of an experiment's execution.
     /// </summary>
-    public class Observation<T> : IEquatable<Observation<T>>, IObservation
+    public class Observation<T> : IEquatable<Observation<T>>
     {
         internal Observation(string name)
         {

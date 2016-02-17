@@ -4,6 +4,8 @@ using GitHub.Internals;
 
 public static class TestHelper
 {
-    public static IEnumerable<IResult> Results =>
-        ((InMemoryResultPublisher)Scientist.ResultPublisher).Results;
+    public static IEnumerable<Result<T>> Results<T>()
+    {
+        return ((InMemoryResultPublisher)Scientist.ResultPublisher).Results<T>();
+    }
 }
