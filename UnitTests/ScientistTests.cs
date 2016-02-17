@@ -138,8 +138,8 @@ public class TheScientistClass
             Assert.Equal(42, result);
             mock.Received().Control();
             mock.Received().Candidate();
-            Result<int> observedResult = TestHelper.Results<int>().First(m => m.ExperimentName == "success");
-            Assert.True(observedResult.Matched);
+            Result<int> observedResult = TestHelper.Results<int>().First(m => m.ExperimentName == "failure");
+            Assert.False(observedResult.Matched);
             Assert.True(observedResult.Control.Duration.Ticks > 0);
             Assert.True(observedResult.Observations.All(o => o.Duration.Ticks > 0));
         }
