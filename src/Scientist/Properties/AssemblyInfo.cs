@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Scientist")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("A .NET library for carefully refactoring critical paths. It's a port of GitHub's Ruby Scientist library.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("GitHub, Inc.")]
 [assembly: AssemblyProduct("Scientist")]
-[assembly: AssemblyCopyright("Copyright ©  2016")]
+[assembly: AssemblyCopyright("Copyright © 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -33,4 +33,4 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: AssemblyInformationalVersionAttribute("1.0.0-alpha2")]
+[assembly: AssemblyInformationalVersionAttribute("1.0.0-alpha3")]
