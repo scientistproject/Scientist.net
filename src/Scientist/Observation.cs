@@ -1,5 +1,6 @@
-﻿using GitHub.Internals;
+﻿using NullGuard;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace GitHub
@@ -7,43 +8,108 @@ namespace GitHub
     /// <summary>
     /// Defines an observation of an experiment's execution.
     /// </summary>
-    public class Observation
+    public class Observation<T>
     {
-        /// <summary>
-        /// Creates a new observation.
-        /// </summary>
-        /// <param name="name">The name of the experiment that was observed.</param>
-        /// <param name="success">Whether the experiment was a success.</param>
-        /// <param name="controlDuration">The total duration for the controlled experiment.</param>
-        /// <param name="candidateDuration">The total duration for the candidate experiment.</param>
-        public Observation(string name, bool success, TimeSpan controlDuration, TimeSpan candidateDuration)
+        internal Observation(string name)
         {
             Name = name;
-            Success = success;
-            ControlDuration = controlDuration;
-            CandidateDuration = candidateDuration;
         }
 
         /// <summary>
-        /// Gets whether the experiment was a success.
+        /// Gets the total time that the experiment behavior ran for.
         /// </summary>
-        public bool Success { get; }
-        
+        public TimeSpan Duration { get; private set; }
+
         /// <summary>
-        /// Gets the total duration for the controlled experiment that was executed through
-        /// <see cref="IExperiment{T}.Use(Func{T})" /> or <see cref="IExperimentAsync{T}.Use(Func{Task{T}})" />.
+        /// Gets an exception if one was thrown from the experiment behavior.
         /// </summary>
-        public TimeSpan ControlDuration { get; }
-        
+        public Exception Exception
+        {
+            [return: AllowNull]
+            get;
+            private set;
+        }
+
         /// <summary>
-        /// Gets the total duration for the candidate experiment that was executed through
-        /// <see cref="IExperiment{T}.Try(Func{T})" /> or <see cref="IExperimentAsync{T}.Try(Func{Task{T}})" />.
-        /// </summary>
-        public TimeSpan CandidateDuration { get; }
-        
-        /// <summary>
-        /// Gets the name of the experiment that was observed.
+        /// Gets the name of the experiment behavior.
         /// </summary>
         public string Name { get; }
-     }
+
+        /// <summary>
+        /// Gets whether an exception was observed.
+        /// </summary>
+        public bool Thrown => Exception != null;
+
+        /// <summary>
+        /// Gets the value of the experiment behavior if successful.
+        /// </summary>
+        public T Value
+        {
+            [return: AllowNull]
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Determines if another <see cref="Observation{T}"/> matches this instance.
+        /// </summary>
+        /// <param name="other">The other observation.</param>
+        /// <param name="comparator">Used to compare two observations</param>
+        /// <returns>True when the observations values/exceptions match.</returns>
+        public bool EquivalentTo(Observation<T> other, Func<T, T, bool> comparator)
+        {
+            bool valuesAreEqual = false;
+            bool bothRaised = other.Thrown && Thrown;
+            bool neitherRaised = !other.Thrown && !Thrown;
+
+            if (neitherRaised)
+            {
+                // TODO if block_given?
+                valuesAreEqual = comparator(other.Value, Value);
+            }
+
+            bool exceptionsAreEquivalent =
+                bothRaised &&
+                other.Exception.GetType() == Exception.GetType() &&
+                other.Exception.Message == Exception.Message;
+
+            return (neitherRaised && valuesAreEqual) ||
+                (bothRaised && exceptionsAreEquivalent);
+        }
+        
+        /// <summary>
+        /// Creates a new observation, and runs the experiment.
+        /// </summary>
+        /// <param name="name">The name of the observation.</param>
+        /// <param name="block">The experiment to run.</param>
+        /// <returns>The observed experiment.</returns>
+        public static async Task<Observation<T>> New(string name, Func<Task<T>> block, Func<T, T, bool> comparison)
+        {
+            Observation<T> observation = new Observation<T>(name);
+
+            await observation.Run(block);
+
+            return observation;
+        }
+
+        /// <summary>
+        /// Runs the experiment.
+        /// </summary>
+        internal async Task Run(Func<Task<T>> block)
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            try
+            {
+                Value = await block();
+            }
+            catch (Exception ex)
+            {
+                Exception = ex.GetBaseException();
+            }
+            stopwatch.Stop();
+
+            Duration = stopwatch.Elapsed;
+        }
+    }
 }

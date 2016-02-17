@@ -10,6 +10,8 @@ namespace GitHub.Internals
         Func<Task<T>> _candidate;
         Func<Task> _beforeRun;
 
+        public Func<T, T, bool> ResultComparison { get; set; }
+
         public Experiment(string name)
         {
             _name = name;
@@ -26,7 +28,7 @@ namespace GitHub.Internals
 
         internal ExperimentInstance<T> Build()
         {
-            return new ExperimentInstance<T>(_name, _control, _candidate, _beforeRun);
+            return new ExperimentInstance<T>(_name, _control, _candidate, ResultComparison, _beforeRun);
         }
 
         public void BeforeRun(Action action)

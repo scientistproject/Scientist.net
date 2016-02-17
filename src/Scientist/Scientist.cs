@@ -15,11 +15,11 @@ namespace GitHub
 
         // Should be configured once before starting observations.
         // TODO: How can we guide the developer to the pit of success
-        public static IObservationPublisher ObservationPublisher
+        public static IResultPublisher ResultPublisher
         {
             get;
             set;
-        } = new InMemoryObservationPublisher();
+        } = new InMemoryResultPublisher();
 
         /// <summary>
         /// Conduct a synchronous experiment
