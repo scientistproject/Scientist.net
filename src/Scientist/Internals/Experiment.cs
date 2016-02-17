@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+
 
 namespace GitHub.Internals
 {
@@ -14,6 +16,10 @@ namespace GitHub.Internals
 
         readonly Func<Task<T>> _control;
         readonly Func<Task<T>> _candidate;
+
+        readonly ExperimentResultComparer<T> _experimentResultComparer;
+        
+
         readonly string _name;
 
         public ExperimentInstance(string name, Func<T> control, Func<T> candidate)
@@ -22,6 +28,22 @@ namespace GitHub.Internals
             _control = () => Task.FromResult(control());
             _candidate = () => Task.FromResult(candidate());
         }
+        public ExperimentInstance(string name, Func<T> control, Func<T> candidate, ExperimentResultComparer<T> experimentResultComparer)
+        {
+            _name = name;
+            _control = () => Task.FromResult(control());
+            _candidate = () => Task.FromResult(candidate());
+            _experimentResultComparer = experimentResultComparer;
+        }
+
+        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, ExperimentResultComparer<T> experimentResultComparer)
+        {
+            _name = name;
+            _control = control;
+            _candidate = candidate;
+            _experimentResultComparer = experimentResultComparer;
+        }
+  
 
         public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate)
         {
@@ -30,12 +52,16 @@ namespace GitHub.Internals
             _candidate = candidate;
         }
 
+       
+
+
         public async Task<T> Run()
         {
             // Randomize ordering...
             var runControlFirst = _random.Next(0, 2) == 0;
             ExperimentResult controlResult;
             ExperimentResult candidateResult;
+
 
             if (runControlFirst)
             {
@@ -48,14 +74,8 @@ namespace GitHub.Internals
                 controlResult = await Run(_control);
             }
 
-            // TODO: We need to compare that thrown exceptions are equivalent too https://github.com/github/scientist/blob/master/lib/scientist/observation.rb#L76
-            // TODO: We're going to have to be a bit more sophisticated about this.
-            bool success =
-                controlResult.Result == null && candidateResult.Result == null
-                || controlResult.Result != null && controlResult.Result.Equals(candidateResult.Result)
-                || controlResult.Result == null && candidateResult.Result != null;
+            bool success = _experimentResultComparer.Equals(controlResult, candidateResult);
 
-            // TODO: Get that duration!
             var observation = new Observation(_name, success, controlResult.Duration, candidateResult.Duration);
 
             // TODO: Make this Fire and forget so we don't have to wait for this
@@ -65,6 +85,8 @@ namespace GitHub.Internals
             if (controlResult.ThrownException != null) throw controlResult.ThrownException;
             return controlResult.Result;
         }
+
+        
 
         static async Task<ExperimentResult> Run(Func<Task<T>> experimentCase)
         {
@@ -85,7 +107,7 @@ namespace GitHub.Internals
             }
         }
 
-        class ExperimentResult
+        internal class ExperimentResult
         {
             public ExperimentResult(T result, TimeSpan duration)
             {

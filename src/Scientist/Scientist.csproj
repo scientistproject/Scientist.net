@@ -50,6 +50,7 @@
     <Compile Include="IObservationPublisher.cs" />
     <Compile Include="Internals\ExperimentBuilder.cs" />
     <Compile Include="IExperiment.cs" />
+    <Compile Include="Internals\ExperimentResultComparer.cs" />
     <Compile Include="Observation.cs" />
     <Compile Include="Internals\InMemoryPublisher.cs" />
     <Compile Include="Scientist.cs" />

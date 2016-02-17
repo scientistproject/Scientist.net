@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace GitHub.Internals
@@ -20,6 +21,11 @@ namespace GitHub.Internals
         /// </summary>
         /// <param name="control">The delegate to execute.</param>
         void Use(Func<T> control);
+
+        Func<T, T, bool> ResultComparison { get; set; }
+
+        IEqualityComparer<T> ResultEqualityCompare { get; set; }
+
     }
 
     /// <summary>
@@ -39,6 +45,7 @@ namespace GitHub.Internals
         /// </summary>
         /// <param name="control">The delegate to execute.</param>
         void Use(Func<Task<T>> control);
+
     }
 
 }
