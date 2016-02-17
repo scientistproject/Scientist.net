@@ -125,42 +125,20 @@ public class TheScientistClass
         [Fact]
         public void RunsBeforeRun()
         {
-            var beforeRunRan = false;
-
             // We introduce side effects for testing. Don't do this in real life please.
-            // Do we do a deep comparison?
-            Func<int> control = () => 42;
-            Func<int> candidate = () => 42;
-            Action beforeRun = () => { beforeRunRan = true; };
-
-            var result = Scientist.Science<int>("failure", experiment =>
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+            
+            var result = Scientist.Science<int>("beforeRun", experiment =>
             {
-                experiment.BeforeRun(beforeRun);
-                experiment.Use(control);
-                experiment.Try(candidate);
+                experiment.BeforeRun(mock.BeforeRun);
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
             });
 
             Assert.Equal(42, result);
-            Assert.True(beforeRunRan);
-        }
-
-        [Fact]
-        public void BeforeRunNullIsIgnored()
-        {
-            // We introduce side effects for testing. Don't do this in real life please.
-            // Do we do a deep comparison?
-            Func<int> control = () => 42;
-            Func<int> candidate = () => 42;
-            Action beforeRun = null;
-
-            var result = Scientist.Science<int>("failure", experiment =>
-            {
-                experiment.BeforeRun(beforeRun);
-                experiment.Use(control);
-                experiment.Try(candidate);
-            });
-
-            Assert.Equal(42, result);
+            mock.Received().BeforeRun();
         }
     }
 }

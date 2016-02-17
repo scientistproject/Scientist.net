@@ -10,17 +10,20 @@ namespace UnitTests
     {
         void Control();
         void Candidate();
+        void BeforeRun();
     }
 
     public interface IControlCandidate<out T>
     {
         T Control();
         T Candidate();
+        void BeforeRun();
     }
 
     public interface IControlCandidateTask<T>
     {
         Task<T> Control();
         Task<T>  Candidate();
+        void BeforeRun();
     }
 }
