@@ -125,23 +125,19 @@ public class TheScientistClass
         [Fact]
         public void AnExceptionReportsDuration()
         {
-            var candidateRan = false;
-            var controlRan = false;
-
-            // We introduce side effects for testing. Don't do this in real life please.
-            // Do we do a deep comparison?
-            Func<int> control = () => { controlRan = true; return 42; };
-            Func<int> candidate = () => { candidateRan = true; throw new InvalidOperationException(); };
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Throws(new InvalidOperationException());
 
             var result = Scientist.Science<int>("failure", experiment =>
             {
-                experiment.Use(control);
-                experiment.Try(candidate);
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
             });
 
             Assert.Equal(42, result);
-            Assert.True(candidateRan);
-            Assert.True(controlRan);
+            mock.Received().Control();
+            mock.Received().Candidate();
             Result<int> observedResult = TestHelper.Results<int>().First(m => m.ExperimentName == "success");
             Assert.True(observedResult.Matched);
             Assert.True(observedResult.Control.Duration.Ticks > 0);
@@ -233,7 +229,6 @@ public class TheScientistClass
         [Fact]
         public void RunsBeforeRun()
         {
-            // We introduce side effects for testing. Don't do this in real life please.
             var mock = Substitute.For<IControlCandidate<int>>();
             mock.Control().Returns(42);
             mock.Candidate().Returns(42);
