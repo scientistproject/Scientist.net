@@ -19,16 +19,18 @@ namespace GitHub.Internals
         readonly string _name;
         readonly List<NamedBehavior> _behaviors;
         readonly Func<T, T, bool> _comparator;
+        readonly Func<Task> _beforeRun;
 
-        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, Func<T, T, bool> comparator)
+        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, Func<T, T, bool> comparator, Func<Task> beforeRun)
             : this(name,
                   new NamedBehavior(ControlExperimentName, control),
                   new NamedBehavior(CandidateExperimentName, candidate),
-                  comparator)
+                  comparator,
+                  beforeRun)
         {
         }
 
-        internal ExperimentInstance(string name, NamedBehavior control, NamedBehavior candidate, Func<T, T, bool> comparator)
+        internal ExperimentInstance(string name, NamedBehavior control, NamedBehavior candidate, Func<T, T, bool> comparator, Func<Task> beforeRun)
         {
             _name = name;
             _behaviors = new List<NamedBehavior>
@@ -37,11 +39,17 @@ namespace GitHub.Internals
                 candidate
             };
             _comparator = comparator;
+            _beforeRun = beforeRun;
         }
 
         public async Task<T> Run()
         {
             // TODO determine if experiments should be run.
+
+            if (_beforeRun != null)
+            {
+                await _beforeRun();
+            }
 
             // Randomize ordering...
             var observations = new List<Observation<T>>();

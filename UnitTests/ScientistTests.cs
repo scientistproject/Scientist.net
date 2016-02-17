@@ -229,5 +229,24 @@ public class TheScientistClass
             mock.Received().Candidate();
             Assert.False(TestHelper.Results<ComplexResult>().First().Matched);
         }
+
+        [Fact]
+        public void RunsBeforeRun()
+        {
+            // We introduce side effects for testing. Don't do this in real life please.
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+            
+            var result = Scientist.Science<int>("beforeRun", experiment =>
+            {
+                experiment.BeforeRun(mock.BeforeRun);
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
+            });
+
+            Assert.Equal(42, result);
+            mock.Received().BeforeRun();
+        }
     }
 }

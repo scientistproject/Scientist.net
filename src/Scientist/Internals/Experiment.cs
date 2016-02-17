@@ -9,6 +9,7 @@ namespace GitHub.Internals
         Func<Task<T>> _control;
         Func<Task<T>> _candidate;
         Func<T, T, bool> _comparison = DefaultComparison;
+        Func<Task> _beforeRun;
 
         public Experiment(string name)
         {
@@ -30,7 +31,7 @@ namespace GitHub.Internals
             _candidate = () => Task.FromResult(candidate());
 
         internal ExperimentInstance<T> Build() =>
-            new ExperimentInstance<T>(_name, _control, _candidate, _comparison);
+            new ExperimentInstance<T>(_name, _control, _candidate, _comparison, _beforeRun);
 
         public void Compare(Func<T, T, bool> comparison)
         {
@@ -45,5 +46,15 @@ namespace GitHub.Internals
         };
 
         static bool CompareInstances(IEquatable<T> instance, T comparand) => instance != null && instance.Equals(comparand);
+
+        public void BeforeRun(Action action)
+        {
+            _beforeRun = async () => { action(); await Task.FromResult(0); };
+        }
+
+        public void BeforeRun(Func<Task> action)
+        {
+            _beforeRun = action;
+        }
     }
 }
