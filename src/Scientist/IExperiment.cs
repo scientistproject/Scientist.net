@@ -20,6 +20,11 @@ namespace GitHub.Internals
         /// </summary>
         /// <param name="control">The delegate to execute.</param>
         void Use(Func<T> control);
+
+        /// <summary>
+        /// Defines a custom func used to compare results.
+        /// </summary>
+        void Compare(Func<T, T, bool> comparison);
     }
 
     /// <summary>
@@ -39,6 +44,10 @@ namespace GitHub.Internals
         /// </summary>
         /// <param name="control">The delegate to execute.</param>
         void Use(Func<Task<T>> control);
-    }
 
+        /// <summary>
+        /// Defines a func used to compare results.
+        /// </summary>
+        void Compare(Func<T, T, bool> comparison);
+    }
 }

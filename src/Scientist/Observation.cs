@@ -1,8 +1,6 @@
 ﻿using NullGuard;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace GitHub
@@ -10,7 +8,7 @@ namespace GitHub
     /// <summary>
     /// Defines an observation of an experiment's execution.
     /// </summary>
-    public class Observation<T> : IEquatable<Observation<T>>
+    public class Observation<T>
     {
         internal Observation(string name)
         {
@@ -52,19 +50,13 @@ namespace GitHub
             private set;
         }
 
-        public override bool Equals(object obj)
-        {
-            var other = obj as Observation<T>;
-            if (other == null) { return false; }
-            else { return Equals(other); }
-        }
-
         /// <summary>
         /// Determines if another <see cref="Observation{T}"/> matches this instance.
         /// </summary>
         /// <param name="other">The other observation.</param>
+        /// <param name="comparator">Used to compare two observations</param>
         /// <returns>True when the observations values/exceptions match.</returns>
-        public bool Equals(Observation<T> other)
+        public bool EquivalentTo(Observation<T> other, Func<T, T, bool> comparator)
         {
             bool valuesAreEqual = false;
             bool bothRaised = other.Thrown && Thrown;
@@ -73,8 +65,7 @@ namespace GitHub
             if (neitherRaised)
             {
                 // TODO if block_given?
-                valuesAreEqual = (other.Value == null && Value == null) ||
-                    other.Value.Equals(Value);
+                valuesAreEqual = comparator(other.Value, Value);
             }
 
             bool exceptionsAreEquivalent =
@@ -87,40 +78,12 @@ namespace GitHub
         }
         
         /// <summary>
-        /// Calculates the unique hash code for the observation.
-        /// </summary>
-        public override int GetHashCode()
-        {
-            IEnumerable<int> hashCodes = new object[] { Value, Exception, typeof(Observation<T>) }
-                .Where(o => o != null).Select(o => o.GetHashCode());
-
-            int? result = null;
-            foreach (int hashCode in hashCodes)
-            {
-                if (result.HasValue) { result = result.Value ^ hashCode; }
-                else { result = hashCode; }
-            }
-
-            return result.Value;
-        }
-
-        public static bool operator ==(Observation<T> o1, Observation<T> o2)
-        {
-            return o1?.Equals(o2) ?? false;
-        }
-
-        public static bool operator !=(Observation<T> o1, Observation<T> o2)
-        {
-            return !(o1?.Equals(o2)) ?? true;
-        }
-
-        /// <summary>
         /// Creates a new observation, and runs the experiment.
         /// </summary>
         /// <param name="name">The name of the observation.</param>
         /// <param name="block">The experiment to run.</param>
         /// <returns>The observed experiment.</returns>
-        public static async Task<Observation<T>> New(string name, Func<Task<T>> block)
+        public static async Task<Observation<T>> New(string name, Func<Task<T>> block, Func<T, T, bool> comparison)
         {
             Observation<T> observation = new Observation<T>(name);
 
