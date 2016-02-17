@@ -1,109 +1,34 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace GitHub.Internals
 {
-    /// <summary>
-    /// An instance of an experiment. This actually runs the control and the candidate and measures the result.
-    /// </summary>
-    /// <typeparam name="T">The return type of the experiment</typeparam>
-    internal class ExperimentInstance<T>
+    internal class Experiment<T> : IExperiment<T>, IExperimentAsync<T>
     {
-        static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
+        string _name;
+        Func<Task<T>> _control;
+        Func<Task<T>> _candidate;
 
-        readonly Func<Task<T>> _control;
-        readonly Func<Task<T>> _candidate;
-        readonly string _name;
-
-        public ExperimentInstance(string name, Func<T> control, Func<T> candidate)
+        public Experiment(string name)
         {
             _name = name;
-            _control = () => Task.FromResult(control());
-            _candidate = () => Task.FromResult(candidate());
         }
 
-        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate)
-        {
-            _name = name;
+        public void Use(Func<Task<T>> control) =>
             _control = control;
+
+        public void Use(Func<T> control) =>
+            _control = () => Task.FromResult(control());
+
+        // TODO add optional name parameter, and store all delegates into a dictionary.
+
+        public void Try(Func<Task<T>> candidate) =>
             _candidate = candidate;
-        }
 
-        public async Task<T> Run()
-        {
-            // Randomize ordering...
-            var runControlFirst = _random.Next(0, 2) == 0;
-            ExperimentResult controlResult;
-            ExperimentResult candidateResult;
+        public void Try(Func<T> candidate) =>
+            _candidate = () => Task.FromResult(candidate());
 
-            if (runControlFirst)
-            {
-                controlResult = await Run(_control);
-                candidateResult = await Run(_candidate);
-            }
-            else
-            {
-                candidateResult = await Run(_candidate);
-                controlResult = await Run(_control);
-            }
-
-            // TODO: We need to compare that thrown exceptions are equivalent too https://github.com/github/scientist/blob/master/lib/scientist/observation.rb#L76
-            // TODO: We're going to have to be a bit more sophisticated about this.
-            bool success =
-                controlResult.Result == null && candidateResult.Result == null
-                || controlResult.Result != null && controlResult.Result.Equals(candidateResult.Result)
-                || controlResult.Result == null && candidateResult.Result != null;
-
-            // TODO: Get that duration!
-            var observation = new Observation(_name, success, controlResult.Duration, candidateResult.Duration);
-
-            // TODO: Make this Fire and forget so we don't have to wait for this
-            // to complete before we return a result
-            await Scientist.ObservationPublisher.Publish(observation);
-
-            if (controlResult.ThrownException != null) throw controlResult.ThrownException;
-            return controlResult.Result;
-        }
-
-        static async Task<ExperimentResult> Run(Func<Task<T>> experimentCase)
-        {
-            var sw = new Stopwatch();
-            sw.Start();
-            try
-            {
-                // TODO: Refactor this into helper function?  
-                var result = await experimentCase();
-                sw.Stop();
-
-                return new ExperimentResult(result, new TimeSpan(sw.ElapsedTicks));
-            }
-            catch (Exception e)
-            {
-                sw.Stop();
-                return new ExperimentResult(e, new TimeSpan(sw.ElapsedTicks));
-            }
-        }
-
-        class ExperimentResult
-        {
-            public ExperimentResult(T result, TimeSpan duration)
-            {
-                Result = result;
-                Duration = duration;
-            }
-
-            public ExperimentResult(Exception exception, TimeSpan duration)
-            {
-                ThrownException = exception;
-                Duration = duration;
-            }
-
-            public T Result { get; }
-
-            public Exception ThrownException { get; }
-
-            public TimeSpan Duration { get; }
-        }
+        internal ExperimentInstance<T> Build() =>
+            new ExperimentInstance<T>(_name, _control, _candidate);
     }
 }
