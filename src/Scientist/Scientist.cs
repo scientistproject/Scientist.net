@@ -1,7 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-using GitHub.Internals;
+﻿using GitHub.Internals;
 using NullGuard;
+using System;
+using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace GitHub
 {
@@ -10,9 +11,11 @@ namespace GitHub
     /// </summary>
     public static class Scientist
     {
-        // TODO: Evaluate the distribution of Random and whether it's good enough.
-        static readonly Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);                                
-
+        /// <summary>
+        /// Gets or sets the random number generator.
+        /// </summary>
+        public static RandomNumberGenerator Random { get; set; } = new RNGCryptoServiceProvider();
+        
         // Should be configured once before starting observations.
         // TODO: How can we guide the developer to the pit of success
         public static IResultPublisher ResultPublisher
@@ -37,7 +40,7 @@ namespace GitHub
             
             experiment(experimentBuilder);
 
-            return experimentBuilder.Build().Run().Result;
+            return experimentBuilder.Build().Run(Random).Result;
         }
 
         /// <summary>
@@ -54,7 +57,7 @@ namespace GitHub
             
             experiment(experimentBuilder);
 
-            return experimentBuilder.Build().Run();
+            return experimentBuilder.Build().Run(Random);
         }
     }
 }

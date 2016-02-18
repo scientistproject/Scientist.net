@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace GitHub.Internals
@@ -13,9 +14,7 @@ namespace GitHub.Internals
     {
         internal const string CandidateExperimentName = "candidate";
         internal const string ControlExperimentName = "control";
-
-        static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
-
+        
         readonly string _name;
         readonly List<NamedBehavior> _behaviors;
         readonly Func<T, T, bool> _comparator;
@@ -42,7 +41,7 @@ namespace GitHub.Internals
             _beforeRun = beforeRun;
         }
 
-        public async Task<T> Run()
+        public async Task<T> Run(RandomNumberGenerator random)
         {
             // TODO determine if experiments should be run.
 
@@ -53,7 +52,12 @@ namespace GitHub.Internals
 
             // Randomize ordering...
             var observations = new List<Observation<T>>();
-            foreach (var behavior in _behaviors.OrderBy(k => _random.Next()))
+            byte[] randomData = new byte[1];
+            foreach (var behavior in _behaviors.OrderBy(k =>
+            {
+                random.GetBytes(randomData);
+                return randomData[0];
+            }))
             {
                 observations.Add(await Observation<T>.New(behavior.Name, behavior.Behavior, _comparator));
             }
