@@ -47,11 +47,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Internals\ExperimentInstance.cs" />
-    <Compile Include="IObservationPublisher.cs" />
+    <Compile Include="IResultPublisher.cs" />
     <Compile Include="Internals\Experiment.cs" />
     <Compile Include="IExperiment.cs" />
     <Compile Include="Observation.cs" />
-    <Compile Include="Internals\InMemoryObservationPublisher.cs" />
+    <Compile Include="Internals\InMemoryResultPublisher.cs" />
     <Compile Include="Result.cs" />
     <Compile Include="Scientist.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

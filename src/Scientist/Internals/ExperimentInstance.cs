@@ -11,54 +11,94 @@ namespace GitHub.Internals
     /// <typeparam name="T">The return type of the experiment</typeparam>
     internal class ExperimentInstance<T>
     {
-        static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
+        internal const string CandidateExperimentName = "candidate";
+        internal const string ControlExperimentName = "control";
 
-        readonly Dictionary<string, Func<Task<T>>> _behaviors;
+        static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
+        
         readonly string _name;
+        readonly List<NamedBehavior> _behaviors;
+        readonly Func<T, T, bool> _comparator;
+        readonly Func<Task> _beforeRun;
         readonly Func<Task<bool>> _runIf;
 
-        public ExperimentInstance(string name, Func<T> control, Func<T> candidate, Func<bool> runIf)
-            : this(name, () => Task.FromResult(control()), () => Task.FromResult(candidate()), () => Task.FromResult(runIf()))
+        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf)
+            : this(name,
+                  new NamedBehavior(ControlExperimentName, control),
+                  new NamedBehavior(CandidateExperimentName, candidate),
+                  comparator,
+                  beforeRun,
+                  runIf)
         {
         }
 
-        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, Func<Task<bool>> runIf)
+        internal ExperimentInstance(string name, NamedBehavior control, NamedBehavior candidate, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf)
         {
             _name = name;
-            _behaviors = new Dictionary<string, Func<Task<T>>>
+            _behaviors = new List<NamedBehavior>
             {
-                { "control", control },
-                { "candidate", candidate }
+                control,
+                candidate
             };
+            _comparator = comparator;
+            _beforeRun = beforeRun;
             _runIf = runIf;
         }
 
         public async Task<T> Run()
         {
-            const string name = "control";
-
             // Determine if experiments should be run.
             if (!await _runIf())
             {
-                return await _behaviors[name]();
+                // Run the control behavior.
+                return await _behaviors[0].Behavior();
+            }
+
+            if (_beforeRun != null)
+            {
+                await _beforeRun();
             }
 
             // Randomize ordering...
             var observations = new List<Observation<T>>();
-            foreach (string key in _behaviors.Keys.OrderBy(k => _random.Next()))
+            foreach (var behavior in _behaviors.OrderBy(k => _random.Next()))
             {
-                observations.Add(await Observation<T>.New(key, _behaviors[key]));
+                observations.Add(await Observation<T>.New(behavior.Name, behavior.Behavior, _comparator));
             }
 
-            Observation<T> controlObservation = observations.FirstOrDefault(o => o.Name == name);
-            Result<T> result = new Result<T>(_name, observations, controlObservation);
+            var controlObservation = observations.FirstOrDefault(o => o.Name == ControlExperimentName);
+            var result = new Result<T>(_name, observations, controlObservation, _comparator);
 
             // TODO: Make this Fire and forget so we don't have to wait for this
             // to complete before we return a result
-            await Scientist.ObservationPublisher.Publish(result);
+            await Scientist.ResultPublisher.Publish(result);
 
             if (controlObservation.Thrown) throw controlObservation.Exception;
             return controlObservation.Value;
+        }
+        
+        internal class NamedBehavior
+        {
+            public NamedBehavior(string name, Func<T> behavior)
+                : this(name, () => Task.FromResult(behavior()))
+            {
+            }
+
+            public NamedBehavior(string name, Func<Task<T>> behavior)
+            {
+                Behavior = behavior;
+                Name = name;
+            }
+
+            /// <summary>
+            /// Gets the behavior to execute during an experiment.
+            /// </summary>
+            public Func<Task<T>> Behavior { get; }
+
+            /// <summary>
+            /// Gets the name of the behavior.
+            /// </summary>
+            public string Name { get; }
         }
     }
 }

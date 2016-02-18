@@ -10,6 +10,11 @@ namespace GitHub.Internals
     public interface IExperiment<T>
     {
         /// <summary>
+        /// Define any expensive setup here before the experiment is run.
+        /// </summary>
+        void BeforeRun(Action action);
+
+        /// <summary>
         /// Defines the check to run to determine if the experiment should run.
         /// </summary>
         /// <param name="check">The delegate to evaluate.</param>
@@ -26,6 +31,11 @@ namespace GitHub.Internals
         /// </summary>
         /// <param name="control">The delegate to execute.</param>
         void Use(Func<T> control);
+
+        /// <summary>
+        /// Defines a custom func used to compare results.
+        /// </summary>
+        void Compare(Func<T, T, bool> comparison);
     }
 
     /// <summary>
@@ -34,6 +44,11 @@ namespace GitHub.Internals
     /// <typeparam name="T">The return result for the experiment.</typeparam>
     public interface IExperimentAsync<T>
     {
+        /// <summary>
+        /// Define any expensive setup here before the experiment is run.
+        /// </summary>
+        void BeforeRun(Func<Task> action);
+
         /// <summary>
         /// Defines the check to run to determine if the experiment should run.
         /// </summary>
@@ -51,6 +66,10 @@ namespace GitHub.Internals
         /// </summary>
         /// <param name="control">The delegate to execute.</param>
         void Use(Func<Task<T>> control);
-    }
 
+        /// <summary>
+        /// Defines a func used to compare results.
+        /// </summary>
+        void Compare(Func<T, T, bool> comparison);
+    }
 }

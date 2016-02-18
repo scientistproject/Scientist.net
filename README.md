@@ -16,11 +16,24 @@ public bool MayPush(IUser user)
         experiment.Try(() => HasAccess(user));
     });
 }
+```
 
+You can also specify a custom comparator.
+
+```csharp
+public bool GetCurrentUser(string hash)
+{
+    return Scientist.Science<IUser>("experiment-name", experiment =>
+    {
+        experiment.Use(() => LookupUser(hash));
+        experiment.Try(() => RetrieveUser(hash));
+		experiment.Compare((x, y) => x.Name == y.Name);
+    });
+}
 ```
 
 By default observations are stored in an in-memory publisher. For production use, you'll
-probably want to implement an `IObservationPublisher`.
+probably want to implement an `IResultPublisher`.
 
 To give it a twirl, use NuGet to install it.
 
