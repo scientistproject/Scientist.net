@@ -15,21 +15,22 @@ namespace GitHub.Internals
         internal const string ControlExperimentName = "control";
 
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
-        
-        readonly List<NamedBehavior> _behaviors;
+
         readonly string _name;
+        readonly List<NamedBehavior> _behaviors;
+        readonly Func<T, T, bool> _comparator;
+        readonly Func<Task> _beforeRun;
 
-        public ExperimentInstance(string name, Func<T> control, Func<T> candidate)
-            : this(name, new NamedBehavior(ControlExperimentName, control), new NamedBehavior(CandidateExperimentName, candidate))
+        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, Func<T, T, bool> comparator, Func<Task> beforeRun)
+            : this(name,
+                  new NamedBehavior(ControlExperimentName, control),
+                  new NamedBehavior(CandidateExperimentName, candidate),
+                  comparator,
+                  beforeRun)
         {
         }
 
-        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate)
-            : this(name, new NamedBehavior(ControlExperimentName, control), new NamedBehavior(CandidateExperimentName, candidate))
-        {
-        }
-
-        internal ExperimentInstance(string name, NamedBehavior control, NamedBehavior candidate)
+        internal ExperimentInstance(string name, NamedBehavior control, NamedBehavior candidate, Func<T, T, bool> comparator, Func<Task> beforeRun)
         {
             _name = name;
             _behaviors = new List<NamedBehavior>
@@ -37,21 +38,28 @@ namespace GitHub.Internals
                 control,
                 candidate
             };
+            _comparator = comparator;
+            _beforeRun = beforeRun;
         }
 
         public async Task<T> Run()
         {
             // TODO determine if experiments should be run.
 
+            if (_beforeRun != null)
+            {
+                await _beforeRun();
+            }
+
             // Randomize ordering...
             var observations = new List<Observation<T>>();
             foreach (var behavior in _behaviors.OrderBy(k => _random.Next()))
             {
-                observations.Add(await Observation<T>.New(behavior.Name, behavior.Behavior));
+                observations.Add(await Observation<T>.New(behavior.Name, behavior.Behavior, _comparator));
             }
 
             var controlObservation = observations.FirstOrDefault(o => o.Name == ControlExperimentName);
-            var result = new Result<T>(_name, observations, controlObservation);
+            var result = new Result<T>(_name, observations, controlObservation, _comparator);
 
             // TODO: Make this Fire and forget so we don't have to wait for this
             // to complete before we return a result
