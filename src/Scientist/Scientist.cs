@@ -28,7 +28,9 @@ namespace GitHub
         /// <param name="name">Name of the experiment</param>
         /// <param name="experiment">Experiment callback used to configure the experiment</param>
         /// <returns>The value of the experiment's control function.</returns>
+#if NET451
         [return: AllowNull]
+#endif
         public static T Science<T>(string name, Action<IExperiment<T>> experiment)
         {
             // TODO: Maybe we could automatically generate the name if none is provided using the calling method name. We'd have to 
@@ -47,7 +49,9 @@ namespace GitHub
         /// <param name="name">Name of the experiment</param>
         /// <param name="experiment">Experiment callback used to configure the experiment</param>
         /// <returns>The value of the experiment's control function.</returns>
+#if NET451
         [return: AllowNull]
+#endif
         public static Task<T> ScienceAsync<T>(string name, Action<IExperimentAsync<T>> experiment)
         {
             var experimentBuilder = new Experiment<T>(name);
