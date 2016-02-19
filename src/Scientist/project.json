@@ -1,0 +1,21 @@
+﻿{
+  "version": "1.0.0-*",
+  "description": "Scientist Class Library",
+  "authors": [ "david.zych" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+
+  "frameworks": {
+    "net451": { },
+    "dotnet5.4": {
+      "dependencies": {
+        "Microsoft.CSharp": "4.0.1-rc1-final",
+        "System.Collections": "4.0.11-rc1-final",
+        "System.Linq": "4.0.1-rc1-final",
+        "System.Runtime": "4.0.21-rc1-final",
+        "System.Threading": "4.0.11-rc1-final"
+      }
+    }
+  }
+}

@@ -70,12 +70,6 @@
     <Compile Include="TestHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\src\Scientist\Scientist.csproj">
-      <Project>{89039ba2-9f7d-4aef-b0a8-46935cf3e678}</Project>
-      <Name>Scientist</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
