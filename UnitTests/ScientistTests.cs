@@ -18,7 +18,7 @@ public class TheScientistClass
             var mock = Substitute.For<IControlCandidate<int>>();
             mock.Control().Returns(x => { throw new InvalidOperationException(); });
             mock.Candidate().Returns(x => { throw new InvalidOperationException(); });
-            const string experimentName = "RunsBothBranchesOfTheExperimentAndMatchesExceptions";
+            const string experimentName = nameof(RunsBothBranchesOfTheExperimentAndMatchesExceptions);
 
             var ex = Assert.Throws<AggregateException>(() =>
             {
@@ -42,7 +42,7 @@ public class TheScientistClass
             var mock = Substitute.For< IControlCandidate<int>>();
             mock.Control().Returns(42);
             mock.Candidate().Returns(42);
-            const string experimentName = "RunsBothBranchesOfTheExperimentAndReportsSuccess";
+            const string experimentName = nameof(RunsBothBranchesOfTheExperimentAndReportsSuccess);
 
             var result = Scientist.Science<int>(experimentName, experiment =>
             {
@@ -62,7 +62,7 @@ public class TheScientistClass
             var mock = Substitute.For<IControlCandidateTask<int>>();
             mock.Control().Returns(Task.FromResult(42));
             mock.Candidate().Returns(Task.FromResult(43));
-            const string experimentName = "RunsBothBranchesOfTheExperimentAsyncAndReportsFailure";
+            const string experimentName = nameof(RunsBothBranchesOfTheExperimentAsyncAndReportsFailure);
 
             var result = await Scientist.ScienceAsync<int>(experimentName, experiment =>
             {
@@ -79,7 +79,7 @@ public class TheScientistClass
         [Fact]
         public void AllowsReturningNullFromControlOrTest()
         {
-            const string experimentName = "AllowsReturningNullFromControlOrTest";
+            const string experimentName = nameof(AllowsReturningNullFromControlOrTest);
             var result = Scientist.Science<object>(experimentName, experiment =>
             {
                 experiment.Use(() => null);
@@ -106,7 +106,7 @@ public class TheScientistClass
             var mock = Substitute.For<IControlCandidate<int>>();
             mock.Control().Returns(42);
             mock.Candidate().Returns(42);
-            const string experimentName = "RunsBothBranchesOfTheExperimentAndReportsSuccessWithDurations";
+            const string experimentName = nameof(RunsBothBranchesOfTheExperimentAndReportsSuccessWithDurations);
 
             var result = Scientist.Science<int>(experimentName, experiment =>
             {
@@ -130,7 +130,7 @@ public class TheScientistClass
             var mock = Substitute.For<IControlCandidate<int>>();
             mock.Control().Returns(42);
             mock.Candidate().Throws(new InvalidOperationException());
-            const string experimentName = "AnExceptionReportsDuration";
+            const string experimentName = nameof(AnExceptionReportsDuration);
 
             var result = Scientist.Science<int>(experimentName, experiment =>
             {
@@ -153,7 +153,7 @@ public class TheScientistClass
             var mock = Substitute.For<IControlCandidate<ComplexResult>>();
             mock.Control().Returns(new ComplexResult { Count = 10, Name = "Tester" });
             mock.Candidate().Returns(new ComplexResult { Count = 10, Name = "Tester" });
-            const string experimentName = "RunsBothBranchesOfTheExperimentWithResultComparisonSetAndReportsSuccess";
+            const string experimentName = nameof(RunsBothBranchesOfTheExperimentWithResultComparisonSetAndReportsSuccess);
 
             var result = Scientist.Science<ComplexResult>(experimentName, experiment =>
             {
@@ -175,7 +175,7 @@ public class TheScientistClass
             var mock = Substitute.For<IControlCandidate<ComplexResult>>();
             mock.Control().Returns(new ComplexResult { Count = 10, Name = "Tester" });
             mock.Candidate().Returns(new ComplexResult { Count = 10, Name = "Tester2" });
-            const string experimentName = "RunsBothBranchesOfTheExperimentWithResultComparisonSetAndReportsFailure";
+            const string experimentName = nameof(RunsBothBranchesOfTheExperimentWithResultComparisonSetAndReportsFailure);
 
             var result = Scientist.Science<ComplexResult>(experimentName, experiment =>
             {
@@ -197,7 +197,7 @@ public class TheScientistClass
             var mock = Substitute.For<IControlCandidate<ComplexResult>>();
             mock.Control().Returns(new ComplexResult { Count = 10, Name = "Tester" });
             mock.Candidate().Returns(new ComplexResult { Count = 10, Name = "Tester" });
-            const string experimentName = "RunsBothBranchesOfTheExperimentWithIEqualitySetAndReportsSuccess";
+            const string experimentName = nameof(RunsBothBranchesOfTheExperimentWithIEqualitySetAndReportsSuccess);
 
             var result = Scientist.Science<ComplexResult>(experimentName, experiment =>
             {
@@ -218,7 +218,7 @@ public class TheScientistClass
             var mock = Substitute.For<IControlCandidate<ComplexResult>>();
             mock.Control().Returns(new ComplexResult { Count = 10, Name = "Tester" });
             mock.Candidate().Returns(new ComplexResult { Count = 10, Name = "Tester2" });
-            const string experimentName = "RunsBothBranchesOfTheExperimentWithIEqualitySetAndReportsFailure";
+            const string experimentName = nameof(RunsBothBranchesOfTheExperimentWithIEqualitySetAndReportsFailure);
 
             var result = Scientist.Science<ComplexResult>(experimentName, experiment =>
             {
@@ -239,7 +239,7 @@ public class TheScientistClass
             var mock = Substitute.For<IControlCandidate<int>>();
             mock.Control().Returns(42);
             mock.Candidate().Returns(42);
-            const string experimentName = "RunsBeforeRun";
+            const string experimentName = nameof(RunsBeforeRun);
 
             var result = Scientist.Science<int>(experimentName, experiment =>
             {
