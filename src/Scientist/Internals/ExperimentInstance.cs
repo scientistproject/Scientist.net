@@ -15,22 +15,24 @@ namespace GitHub.Internals
         internal const string ControlExperimentName = "control";
 
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
-
+        
         readonly string _name;
         readonly List<NamedBehavior> _behaviors;
         readonly Func<T, T, bool> _comparator;
         readonly Func<Task> _beforeRun;
+        readonly Func<Task<bool>> _runIf;
 
-        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, Func<T, T, bool> comparator, Func<Task> beforeRun)
+        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf)
             : this(name,
                   new NamedBehavior(ControlExperimentName, control),
                   new NamedBehavior(CandidateExperimentName, candidate),
                   comparator,
-                  beforeRun)
+                  beforeRun,
+                  runIf)
         {
         }
 
-        internal ExperimentInstance(string name, NamedBehavior control, NamedBehavior candidate, Func<T, T, bool> comparator, Func<Task> beforeRun)
+        internal ExperimentInstance(string name, NamedBehavior control, NamedBehavior candidate, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf)
         {
             _name = name;
             _behaviors = new List<NamedBehavior>
@@ -40,11 +42,17 @@ namespace GitHub.Internals
             };
             _comparator = comparator;
             _beforeRun = beforeRun;
+            _runIf = runIf;
         }
 
         public async Task<T> Run()
         {
-            // TODO determine if experiments should be run.
+            // Determine if experiments should be run.
+            if (!await _runIf())
+            {
+                // Run the control behavior.
+                return await _behaviors[0].Behavior();
+            }
 
             if (_beforeRun != null)
             {

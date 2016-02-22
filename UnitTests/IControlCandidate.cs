@@ -18,6 +18,7 @@ namespace UnitTests
         T Control();
         T Candidate();
         void BeforeRun();
+        bool RunIf();
     }
 
     public interface IControlCandidateTask<T>

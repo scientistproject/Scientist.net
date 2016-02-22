@@ -13,6 +13,31 @@ public class TheScientistClass
     public class TheScienceMethod
     {
         [Fact]
+        public void DoesntRunCandidate()
+        {
+            const int expectedResult = 42;
+
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(expectedResult);
+            mock.RunIf().Returns(false);
+
+            const string experimentName = "successRunIf";
+
+            var result = Scientist.Science<int>(experimentName, experiment =>
+            {
+                experiment.RunIf(mock.RunIf);
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
+            });
+
+            Assert.Equal(expectedResult, result);
+
+            mock.DidNotReceive().Candidate();
+            mock.Received().Control();
+            Assert.False(TestHelper.Results<int>().Any(m => m.ExperimentName == experimentName));
+        }
+
+        [Fact]
         public void RunsBothBranchesOfTheExperimentAndMatchesExceptions()
         {
             var mock = Substitute.For<IControlCandidate<int>>();
