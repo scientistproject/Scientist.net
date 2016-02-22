@@ -14,7 +14,7 @@ namespace GitHub
         /// <summary>
         /// Gets or sets the random number generator.
         /// </summary>
-        public static RandomNumberGenerator Random { get; set; } = new RNGCryptoServiceProvider();
+        static RandomNumberGenerator _random = new RNGCryptoServiceProvider();
         
         // Should be configured once before starting observations.
         // TODO: How can we guide the developer to the pit of success
@@ -40,7 +40,7 @@ namespace GitHub
             
             experiment(experimentBuilder);
 
-            return experimentBuilder.Build().Run(Random).Result;
+            return experimentBuilder.Build().Run(_random).Result;
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace GitHub
             
             experiment(experimentBuilder);
 
-            return experimentBuilder.Build().Run(Random);
+            return experimentBuilder.Build().Run(_random);
         }
     }
 }
