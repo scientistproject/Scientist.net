@@ -1,0 +1,29 @@
+﻿{
+  "version": "1.0.0-*",
+  "description": "Scientist.Test Class Library",
+  "authors": [ "david.zych" ],
+  "tags": [ "" ],
+  "projectUrl": "",
+  "licenseUrl": "",
+  "dependencies": {
+    "Microsoft.CSharp": "4.0.1-beta-23516",
+    "System.Collections": "4.0.11-beta-23516",
+    "System.Collections.Concurrent": "4.0.11-beta-23516",
+    "System.Linq": "4.0.1-beta-23516",
+    "xunit": "2.1.0",
+    "xunit.runner.dnx": "2.1.0-rc1-build204",
+    "NSubstitute": "1.9.2",
+    "Scientist": ""
+  },
+  "frameworks": {
+    "dnx451": {
+      "frameworkAssemblies": {
+        "System.Runtime": "4.0.10.0",
+        "System.Threading.Tasks": "4.0.0.0"
+      }
+    }
+  },
+  "commands": {
+    "test": "xunit.runner.dnx"
+  }
+}
