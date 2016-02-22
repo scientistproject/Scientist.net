@@ -1,10 +1,11 @@
 ﻿{
   "version": "1.0.0-*",
-  "description": "Scientist Class Library",
-  "authors": [ "david.zych" ],
-  "tags": [ "" ],
-  "projectUrl": "",
-  "licenseUrl": "",
+  "description": "scientist",
+  "authors": [ "Github" ],
+  "tags": [ "scientist", "refactoring" ],
+  "summary": "A .NET library for carefully refactoring critical paths. It's a port of GitHub's Ruby Scientist library.",
+  "projectUrl": "http://github.com/haacked/scientist.net",
+  "licenseUrl": "https://raw.githubusercontent.com/haacked/scientist/master/LICENSE",
   "dependencies": {
     "Microsoft.CSharp": "4.0.1-beta-23516",
     "System.Collections": "4.0.11-beta-23516",
