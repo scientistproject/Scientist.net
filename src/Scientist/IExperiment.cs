@@ -15,6 +15,12 @@ namespace GitHub.Internals
         void BeforeRun(Action action);
 
         /// <summary>
+        /// Defines the check to run to determine if the experiment should run.
+        /// </summary>
+        /// <param name="check">The delegate to evaluate.</param>
+        void RunIf(Func<bool> check);
+
+        /// <summary>
         /// Defines the operation to try.
         /// </summary>
         /// <param name="candidate">The delegate to execute.</param>
@@ -42,6 +48,12 @@ namespace GitHub.Internals
         /// Define any expensive setup here before the experiment is run.
         /// </summary>
         void BeforeRun(Func<Task> action);
+
+        /// <summary>
+        /// Defines the check to run to determine if the experiment should run.
+        /// </summary>
+        /// <param name="check">The delegate to evaluate.</param>
+        void RunIf(Func<Task<bool>> block);
 
         /// <summary>
         /// Defines the operation to try.

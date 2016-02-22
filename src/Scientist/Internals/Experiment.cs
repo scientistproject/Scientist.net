@@ -5,16 +5,24 @@ namespace GitHub.Internals
 {
     internal class Experiment<T> : IExperiment<T>, IExperimentAsync<T>
     {
+        readonly static Func<Task<bool>> _alwaysRun = () => Task.FromResult(true);
+
         string _name;
         Func<Task<T>> _control;
         Func<Task<T>> _candidate;
         Func<T, T, bool> _comparison = DefaultComparison;
         Func<Task> _beforeRun;
+        Func<Task<bool>> _runIf = _alwaysRun;
 
         public Experiment(string name)
         {
             _name = name;
         }
+
+        public void RunIf(Func<Task<bool>> block) =>
+            _runIf = block;
+        public void RunIf(Func<bool> block) =>
+            _runIf = () => Task.FromResult(block());
 
         public void Use(Func<Task<T>> control) =>
             _control = control;
@@ -31,7 +39,7 @@ namespace GitHub.Internals
             _candidate = () => Task.FromResult(candidate());
 
         internal ExperimentInstance<T> Build() =>
-            new ExperimentInstance<T>(_name, _control, _candidate, _comparison, _beforeRun);
+            new ExperimentInstance<T>(_name, _control, _candidate, _comparison, _beforeRun, _runIf);
 
         public void Compare(Func<T, T, bool> comparison)
         {
