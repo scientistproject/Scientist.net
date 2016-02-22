@@ -20,6 +20,8 @@ namespace GitHub.Internals
         readonly Func<T, T, bool> _comparator;
         readonly Func<Task> _beforeRun;
         readonly Func<Task<bool>> _runIf;
+        
+        static RandomNumberGenerator _random = new RNGCryptoServiceProvider();
 
         public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf)
             : this(name,
@@ -44,7 +46,7 @@ namespace GitHub.Internals
             _runIf = runIf;
         }
 
-        public async Task<T> Run(RandomNumberGenerator random)
+        public async Task<T> Run()
         {
             // Determine if experiments should be run.
             if (!await _runIf())
@@ -63,7 +65,7 @@ namespace GitHub.Internals
             byte[] randomData = new byte[1];
             foreach (var behavior in _behaviors.OrderBy(k =>
             {
-                random.GetBytes(randomData);
+                _random.GetBytes(randomData);
                 return randomData[0];
             }))
             {

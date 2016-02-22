@@ -1,7 +1,6 @@
 ﻿using GitHub.Internals;
 using NullGuard;
 using System;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace GitHub
@@ -11,11 +10,6 @@ namespace GitHub
     /// </summary>
     public static class Scientist
     {
-        /// <summary>
-        /// Gets or sets the random number generator.
-        /// </summary>
-        static RandomNumberGenerator _random = new RNGCryptoServiceProvider();
-        
         // Should be configured once before starting observations.
         // TODO: How can we guide the developer to the pit of success
         public static IResultPublisher ResultPublisher
@@ -40,7 +34,7 @@ namespace GitHub
             
             experiment(experimentBuilder);
 
-            return experimentBuilder.Build().Run(_random).Result;
+            return experimentBuilder.Build().Run().Result;
         }
 
         /// <summary>
@@ -57,7 +51,7 @@ namespace GitHub
             
             experiment(experimentBuilder);
 
-            return experimentBuilder.Build().Run(_random);
+            return experimentBuilder.Build().Run();
         }
     }
 }
