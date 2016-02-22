@@ -25,7 +25,9 @@ namespace GitHub
         /// </summary>
         public Exception Exception
         {
+#if net451
             [return: AllowNull]
+#endif
             get;
             private set;
         }
@@ -45,7 +47,9 @@ namespace GitHub
         /// </summary>
         public T Value
         {
+#if net451
             [return: AllowNull]
+#endif
             get;
             private set;
         }

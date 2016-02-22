@@ -1,0 +1,10 @@
+version: 1.0.{build}
+cache: C:\Users\appveyor\.dnx\packages
+before_build:
+- cmd: dnu restore
+build_script:
+- cmd: dnu build src\Scientist test\Scientist.Test
+test_script:
+- cmd: dnx -p test/Scientist.Test test
+build:
+  verbosity: normal
