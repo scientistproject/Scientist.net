@@ -16,12 +16,7 @@
     "Scientist": ""
   },
   "frameworks": {
-    "dnx451": {
-      "frameworkAssemblies": {
-        "System.Runtime": "4.0.10.0",
-        "System.Threading.Tasks": "4.0.0.0"
-      }
-    }
+    "dnx451": { }
   },
   "commands": {
     "test": "xunit.runner.dnx"
