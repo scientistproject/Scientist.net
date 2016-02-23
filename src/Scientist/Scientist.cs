@@ -31,7 +31,7 @@ namespace GitHub
 #if NET451
         [return: AllowNull]
 #endif
-        public static T Science<T>(string name, Action<IExperiment<T>> experiment)
+        public static T Science<T>(string name, Action<Experiment<T>> experiment)
         {
             // TODO: Maybe we could automatically generate the name if none is provided using the calling method name. We'd have to 
             // make sure we don't inline this method though.
@@ -52,9 +52,9 @@ namespace GitHub
 #if NET451
         [return: AllowNull]
 #endif
-        public static Task<T> ScienceAsync<T>(string name, Action<IExperimentAsync<T>> experiment)
+        public static Task<T> ScienceAsync<T>(string name, Action<ExperimentAsync<T>> experiment)
         {
-            var experimentBuilder = new Experiment<T>(name);
+            var experimentBuilder = new ExperimentAsync<T>(name);
             
             experiment(experimentBuilder);
 

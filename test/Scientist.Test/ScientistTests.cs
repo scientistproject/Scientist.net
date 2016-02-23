@@ -25,7 +25,7 @@ public class TheScientistClass
 
             var result = Scientist.Science<int>(experimentName, experiment =>
             {
-                experiment.RunIf(mock.RunIf);
+                experiment.Where(mock.RunIf);
                 experiment.Use(mock.Control);
                 experiment.Try(mock.Candidate);
             });
@@ -182,7 +182,7 @@ public class TheScientistClass
 
             var result = Scientist.Science<ComplexResult>(experimentName, experiment =>
             {
-                experiment.Compare((a, b) => a.Count == b.Count && a.Name == b.Name);
+                experiment.WithComparer((a, b) => a.Count == b.Count && a.Name == b.Name);
                 experiment.Use(mock.Control);
                 experiment.Try(mock.Candidate);
             });
@@ -204,7 +204,7 @@ public class TheScientistClass
 
             var result = Scientist.Science<ComplexResult>(experimentName, experiment =>
             {
-                experiment.Compare((a, b) => a.Count == b.Count && a.Name == b.Name);
+                experiment.WithComparer((a, b) => a.Count == b.Count && a.Name == b.Name);
                 experiment.Use(mock.Control);
                 experiment.Try(mock.Candidate);
             });

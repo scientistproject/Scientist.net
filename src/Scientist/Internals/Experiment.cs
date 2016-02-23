@@ -3,49 +3,25 @@ using System.Threading.Tasks;
 
 namespace GitHub.Internals
 {
-    internal class Experiment<T> : IExperiment<T>, IExperimentAsync<T>
+    public class Experiment<T>
     {
         readonly static Func<Task<bool>> _alwaysRun = () => Task.FromResult(true);
 
         string _name;
-        Func<Task<T>> _control;
-        Func<Task<T>> _candidate;
-        Func<T, T, bool> _comparison = DefaultComparison;
-        Func<Task> _beforeRun;
-        Func<Task<bool>> _runIf = _alwaysRun;
+        internal Func<Task<T>> Control { get; set; }
+        internal Func<Task<T>> Candidate { get; set; }
+        internal Func<T, T, bool> Comparison { get; set; } = DefaultComparison;
+        internal Func<Task> BeforeRun { get; set; }
+        internal Func<Task<bool>> RunIf { get; set; } = _alwaysRun;
 
         public Experiment(string name)
         {
             _name = name;
         }
-
-        public void RunIf(Func<Task<bool>> block) =>
-            _runIf = block;
-        public void RunIf(Func<bool> block) =>
-            _runIf = () => Task.FromResult(block());
-
-        public void Use(Func<Task<T>> control) =>
-            _control = control;
-
-        public void Use(Func<T> control) =>
-            _control = () => Task.FromResult(control());
-
-        // TODO add optional name parameter, and store all delegates into a dictionary.
-
-        public void Try(Func<Task<T>> candidate) =>
-            _candidate = candidate;
-
-        public void Try(Func<T> candidate) =>
-            _candidate = () => Task.FromResult(candidate());
-
+        
         internal ExperimentInstance<T> Build() =>
-            new ExperimentInstance<T>(_name, _control, _candidate, _comparison, _beforeRun, _runIf);
-
-        public void Compare(Func<T, T, bool> comparison)
-        {
-            _comparison = comparison;
-        }
-
+            new ExperimentInstance<T>(_name, Control, Candidate, Comparison, BeforeRun, RunIf);
+        
         static readonly Func<T, T, bool> DefaultComparison = (instance, comparand) =>
         {
             return (instance == null && comparand == null)
@@ -54,15 +30,13 @@ namespace GitHub.Internals
         };
 
         static bool CompareInstances(IEquatable<T> instance, T comparand) => instance != null && instance.Equals(comparand);
+    }
 
-        public void BeforeRun(Action action)
+    public class ExperimentAsync<T> : Experiment<T>
+    {
+        public ExperimentAsync(string name) : base(name)
         {
-            _beforeRun = async () => { action(); await Task.FromResult(0); };
-        }
-
-        public void BeforeRun(Func<Task> action)
-        {
-            _beforeRun = action;
+            
         }
     }
 }
