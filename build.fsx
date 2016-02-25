@@ -74,6 +74,9 @@ let RestoreProjectJson projectJson =
     CopyFile fullJsonPath backupJsonPath
     DeleteFile backupJsonPath
     
+let SetDnxBuildVersion = 
+    setProcessEnvironVar "DNX_BUILD_VERSION" (environVarOrDefault "BuildNumber" "local")
+    
 //Targets
 
 Target "Clean" (fun _ ->
@@ -82,8 +85,8 @@ Target "Clean" (fun _ ->
 
 Target "SetupBuild" (fun _ ->
     DnxHome <- GetDnxHome
-        
-    //setProcessEnvironVar "DNX_BUILD_VERSION" environVar "BuildNumber"
+    
+    SetDnxBuildVersion
     
     let dnvmHome = GetDnvmHome
     Run currentDirectory (dnvmHome + "dnvm.cmd") "install 1.0.0-rc1-update1 -r clr -a x86" |> ignore
