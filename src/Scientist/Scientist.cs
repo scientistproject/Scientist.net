@@ -1,7 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using GitHub.Internals;
+﻿using GitHub.Internals;
 using NullGuard;
+using System;
+using System.Threading.Tasks;
 
 namespace GitHub
 {
@@ -10,9 +10,6 @@ namespace GitHub
     /// </summary>
     public static class Scientist
     {
-        // TODO: Evaluate the distribution of Random and whether it's good enough.
-        static readonly Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);                                
-
         // Should be configured once before starting observations.
         // TODO: How can we guide the developer to the pit of success
         public static IResultPublisher ResultPublisher
