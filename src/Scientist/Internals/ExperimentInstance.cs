@@ -21,7 +21,8 @@ namespace GitHub.Internals
         readonly Func<Task> _beforeRun;
         readonly Func<Task<bool>> _runIf;
         
-        static RandomNumberGenerator _random = new RNGCryptoServiceProvider();
+        static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
+        static object _randomLock = new object();
 
         public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf)
             : this(name,
@@ -61,13 +62,14 @@ namespace GitHub.Internals
             }
 
             // Randomize ordering...
-            var observations = new List<Observation<T>>();
-            byte[] randomData = new byte[1];
-            foreach (var behavior in _behaviors.OrderBy(k =>
+            NamedBehavior[] orderedBehaviors;
+            lock (_randomLock)
             {
-                _random.GetBytes(randomData);
-                return randomData[0];
-            }))
+                orderedBehaviors = _behaviors.OrderBy(b => _random.Next()).ToArray();
+            }
+
+            var observations = new List<Observation<T>>();
+            foreach (var behavior in orderedBehaviors)
             {
                 observations.Add(await Observation<T>.New(behavior.Name, behavior.Behavior, _comparator));
             }
