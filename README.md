@@ -21,13 +21,29 @@ public bool MayPush(IUser user)
 You can also specify a custom comparator.
 
 ```csharp
-public bool GetCurrentUser(string hash)
+public IUser GetCurrentUser(string hash)
 {
     return Scientist.Science<IUser>("experiment-name", experiment =>
     {
+        experiment.Compare((x, y) => x.Name == y.Name);
+
         experiment.Use(() => LookupUser(hash));
         experiment.Try(() => RetrieveUser(hash));
-		experiment.Compare((x, y) => x.Name == y.Name);
+    });
+}
+```
+
+You can also limit the experiments from running.
+
+```csharp
+public decimal GetUserStatistic(IUser user)
+{
+    return Scientist.Science<decimal>("NewStatisticCalculation", experiment =>
+    {
+        experiment.RunIf(() => user.IsTestSubject);
+
+        experiment.Use(() => CalculateStatistic(user));
+        experiment.Try(() => NewCalculateStatistic(user));
     });
 }
 ```
