@@ -12,24 +12,93 @@ let projectName = "Scientist.Net"
 let projectDescription = "A library for carefully refactoring critical paths"
 let projectSummary = projectDescription
 
+let packagingRoot = "./packaging/"
+let packagingDir = packagingRoot @@ "scientist.net"
+
 //let releaseNotes =
 //    ReadFile "ReleaseNotes.md"
 //    |> ReleaseNotesHelper.parseReleaseNotes
     
 //trace releaseNotes.AssemblyVersion
 
-let Exec command args =
-    let result = Shell.Exec(command, args)
-    if result <> 0 then failwithf "%s exited with error %d" command result 
- 
-Target "SetupRuntime" (fun _ ->
-    Exec (__SOURCE_DIRECTORY__ + "\\tools\\dnvm\\dnvm.cmd") "install 1.0.0-rc1-update1 -r clr -a x86"
+let Run workingDirectory fileName args =
+    let errors = new List<string>()
+    let messages = new List<string>()
+    let timout = TimeSpan.MaxValue
+        
+    let error msg =
+        traceError msg
+        errors.Add msg
+        
+    let message msg =
+        traceImportant msg
+        messages.Add msg
+        
+    let code = 
+        ExecProcessWithLambdas (fun info ->
+            info.FileName <- fileName
+            info.WorkingDirectory <- workingDirectory
+            info.Arguments <- args
+        ) timout true error message
+    
+    ProcessResult.New code messages errors
+    
+let GetHomeDirectory =
+    let result = Run currentDirectory "cmd" "/c \"echo %USERPROFILE%\""
+    result.Messages.[0]
+    
+let GetDnvmHome =
+    let homeDirectory = GetHomeDirectory
+    homeDirectory + "\\.dnx\\bin\\"
+    
+let GetDnxHome = 
+    let homeDirectory = GetHomeDirectory
+    homeDirectory + "\\.dnx\\runtimes\\dnx-clr-win-x86.1.0.0-rc1-update1\\bin\\"
+
+//Targets
+
+Target "Clean" (fun _ ->
+    !! "artifacts" ++ "src/*/bin" ++ "test/*/bin"
+        |> DeleteDirs
+)
+
+Target "SetupBuild" (fun _ ->
+    DnxHome <- GetDnxHome
+    
+    trace (environVar "BuildNumber")
+    
+    //setProcessEnvironVar "DNX_BUILD_VERSION" environVar "BuildNumber"
+    
+    let dnvmHome = GetDnvmHome
+    Run currentDirectory (dnvmHome + "dnvm.cmd") "install 1.0.0-rc1-update1 -r clr -a x86" |> ignore
+    Run currentDirectory (dnvmHome + "dnvm.cmd") "use 1.0.0-rc1-update1 -r clr -a x86" |> ignore
 )
  
 Target "BuildApp" (fun _ ->
-    Exec "dnu.cmd" "build --configuration Release"
+    Run currentDirectory (DnxHome + "dnu.cmd") "build .\\src\\Scientist\\ --configuration Release" |> ignore
+    Run currentDirectory (DnxHome + "dnu.cmd") "build .\\test\\Scientist.Test\\ --configuration Release" |> ignore
 )
 
-"SetupRuntime" ==> "BuildApp"
+Target "CreatePackages" (fun _ -> 
+    Run currentDirectory (DnxHome + "dnu.cmd") ("pack .\\src\\Scientist\\ --configuration Release --out " + packagingDir) |> ignore
+)
 
-RunTargetOrDefault "BuildApp"
+Target "RunTests" (fun _ ->
+    Run currentDirectory (DnxHome + "dnx.exe") "-p .\\test\\Scientist.Test\\ test" |> ignore
+)
+
+Target "Default" DoNothing
+
+"SetupBuild" 
+    ==> "BuildApp"
+    
+"SetupBuild"
+    ==> "RunTests"
+    
+"SetupBuild"
+    ==> "CreatePackages"
+
+"Clean"
+    ==> "SetupBuild"
+
+RunTargetOrDefault "Default"

@@ -3,7 +3,9 @@ cache: C:\Users\appveyor\.dnx\packages
 before_build:
 - cmd: dnu restore
 build_script:
-- cmd: build.cmd
+- cmd: build.cmd BuildApp
+- cmd: build.cmd RunTests
+- cmd: build.cmd CreatePackages
 test_script:
 - cmd: dnx -p test/Scientist.Test test
 build:
