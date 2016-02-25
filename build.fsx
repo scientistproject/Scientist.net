@@ -95,6 +95,8 @@ Target "SetupBuild" (fun _ ->
     let dnvmHome = GetDnvmHome
     Run currentDirectory (dnvmHome + "dnvm.cmd") "install 1.0.0-rc1-update1 -r clr -a x86" |> ignore
     Run currentDirectory (dnvmHome + "dnvm.cmd") "use 1.0.0-rc1-update1 -r clr -a x86" |> ignore
+    
+    Run currentDirectory (DnxHome + "dnu.cmd") "restore" |> ignore
 )
 
 Target "BuildApp" (fun _ ->
