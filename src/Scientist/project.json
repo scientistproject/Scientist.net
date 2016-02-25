@@ -23,6 +23,6 @@
     "dotnet5.2": { }
   },
   "packInclude": {
-    "/": "../../LICENSE.txt"
+    "/": [ "../../LICENSE.txt", "../../README.md" ]
   }
 }
