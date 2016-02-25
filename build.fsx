@@ -13,8 +13,11 @@ let projectName = "Scientist.Net"
 let projectDescription = "A library for carefully refactoring critical paths"
 let projectSummary = projectDescription
 
+//Directories
 let packagingRoot = "./packaging/"
 let packagingDir = packagingRoot @@ "scientist.net"
+let buildDir = "./src/Scientist/bin"
+let testBuildDir = "./test/Scientise.Test/bin"
 
 //let releaseNotes =
 //    ReadFile "ReleaseNotes.md"
@@ -70,12 +73,11 @@ let RestoreProjectJson projectJson =
     DeleteFile fullJsonPath
     CopyFile fullJsonPath backupJsonPath
     DeleteFile backupJsonPath
-
+    
 //Targets
 
 Target "Clean" (fun _ ->
-    !! "artifacts" ++ "src/*/bin" ++ "test/*/bin"
-        |> DeleteDirs
+    CleanDirs [packagingDir; packagingRoot; "artifacts"; buildDir; testBuildDir]
 )
 
 Target "SetupBuild" (fun _ ->
