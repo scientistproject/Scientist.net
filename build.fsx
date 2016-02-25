@@ -3,6 +3,7 @@
 open Fake
 open System
 open System.Collections.Generic
+open System.Text
 
 let mutable DnxHome = "[unknown]"
 
@@ -18,8 +19,6 @@ let packagingDir = packagingRoot @@ "scientist.net"
 //let releaseNotes =
 //    ReadFile "ReleaseNotes.md"
 //    |> ReleaseNotesHelper.parseReleaseNotes
-    
-//trace releaseNotes.AssemblyVersion
 
 let Run workingDirectory fileName args =
     let errors = new List<string>()
@@ -54,6 +53,11 @@ let GetDnvmHome =
 let GetDnxHome = 
     let homeDirectory = GetHomeDirectory
     homeDirectory + "\\.dnx\\runtimes\\dnx-clr-win-x86.1.0.0-rc1-update1\\bin\\"
+    
+let UpdateProjectJson projectJson =
+    let fullJsonPath = (__SOURCE_DIRECTORY__ + projectJson)
+    let tempReleaseNotes = "Temporary release notes\\nWith new line"
+    RegexReplaceInFileWithEncoding "\"releaseNotes\": \"\"," ("\"releaseNotes\": \"" + tempReleaseNotes +  "\",") Encoding.Unicode fullJsonPath
 
 //Targets
 
@@ -64,22 +68,22 @@ Target "Clean" (fun _ ->
 
 Target "SetupBuild" (fun _ ->
     DnxHome <- GetDnxHome
-    
-    trace (environVar "BuildNumber")
-    
+        
     //setProcessEnvironVar "DNX_BUILD_VERSION" environVar "BuildNumber"
     
     let dnvmHome = GetDnvmHome
     Run currentDirectory (dnvmHome + "dnvm.cmd") "install 1.0.0-rc1-update1 -r clr -a x86" |> ignore
     Run currentDirectory (dnvmHome + "dnvm.cmd") "use 1.0.0-rc1-update1 -r clr -a x86" |> ignore
 )
- 
+
 Target "BuildApp" (fun _ ->
     Run currentDirectory (DnxHome + "dnu.cmd") "build .\\src\\Scientist\\ --configuration Release" |> ignore
     Run currentDirectory (DnxHome + "dnu.cmd") "build .\\test\\Scientist.Test\\ --configuration Release" |> ignore
 )
 
 Target "CreatePackages" (fun _ -> 
+    UpdateProjectJson "/src/Scientist/project.json"
+    
     Run currentDirectory (DnxHome + "dnu.cmd") ("pack .\\src\\Scientist\\ --configuration Release --out " + packagingDir) |> ignore
 )
 
@@ -89,6 +93,9 @@ Target "RunTests" (fun _ ->
 
 Target "Default" DoNothing
 
+"Clean"
+    ==> "SetupBuild"
+    
 "SetupBuild" 
     ==> "BuildApp"
     
@@ -97,8 +104,8 @@ Target "Default" DoNothing
     
 "SetupBuild"
     ==> "CreatePackages"
-
-"Clean"
-    ==> "SetupBuild"
+    
+"RunTests"
+    ==> "Default"
 
 RunTargetOrDefault "Default"
