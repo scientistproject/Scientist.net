@@ -8,5 +8,6 @@ nuget:
     project_feed: true
 artifacts:
 - path: 'packaging/scientist*.nupkg'
+  name: ScientistPackages
 build:
   verbosity: normal
