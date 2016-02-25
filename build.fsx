@@ -77,10 +77,10 @@ let RestoreProjectJson projectJson =
     DeleteFile fullJsonPath
     CopyFile fullJsonPath backupJsonPath
     DeleteFile backupJsonPath
-    
-let SetDnxBuildVersion = 
-    setProcessEnvironVar "DNX_BUILD_VERSION" (environVarOrDefault "BuildNumber" "local")
-    
+
+let SetDnxBuildVersion =
+    setProcessEnvironVar "DNX_BUILD_VERSION" (environVarOrDefault "APPVEYOR_BUILD_NUMBER" "local")
+
 //Targets
 
 Target "Clean" (fun _ ->
