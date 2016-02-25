@@ -2,6 +2,9 @@
 
 open Fake
 open System
+open System.Collections.Generic
+
+let mutable DnxHome = "[unknown]"
 
 let authors = ["GitHub"]
 
@@ -13,10 +16,20 @@ let projectSummary = projectDescription
 //    ReadFile "ReleaseNotes.md"
 //    |> ReleaseNotesHelper.parseReleaseNotes
     
-trace releaseNotes.AssemblyVersion
-    
-Target "BuildApp" (fun _ ->
-    Exec "dnu" "build --configuration Release"
+//trace releaseNotes.AssemblyVersion
+
+let Exec command args =
+    let result = Shell.Exec(command, args)
+    if result <> 0 then failwithf "%s exited with error %d" command result 
+ 
+Target "SetupRuntime" (fun _ ->
+    Exec (__SOURCE_DIRECTORY__ + "\\tools\\dnvm\\dnvm.cmd") "install 1.0.0-rc1-update1 -r clr -a x86"
 )
+ 
+Target "BuildApp" (fun _ ->
+    Exec "dnu.cmd" "build --configuration Release"
+)
+
+"SetupRuntime" ==> "BuildApp"
 
 RunTargetOrDefault "BuildApp"
