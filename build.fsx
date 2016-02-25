@@ -55,9 +55,21 @@ let GetDnxHome =
     homeDirectory + "\\.dnx\\runtimes\\dnx-clr-win-x86.1.0.0-rc1-update1\\bin\\"
     
 let UpdateProjectJson projectJson =
-    let fullJsonPath = (__SOURCE_DIRECTORY__ + projectJson)
+    let fullJsonPath = (__SOURCE_DIRECTORY__ + projectJson)    
+    let backupJsonPath = (fullJsonPath + ".bak")
+    
+    CopyFile backupJsonPath fullJsonPath
+    
     let tempReleaseNotes = "Temporary release notes\\nWith new line"
-    RegexReplaceInFileWithEncoding "\"releaseNotes\": \"\"," ("\"releaseNotes\": \"" + tempReleaseNotes +  "\",") Encoding.Unicode fullJsonPath
+    RegexReplaceInFileWithEncoding "\"releaseNotes\": \"\"," ("\"releaseNotes\": \"" + tempReleaseNotes +  "\",") Encoding.UTF8 fullJsonPath
+    
+let RestoreProjectJson projectJson = 
+    let fullJsonPath = (__SOURCE_DIRECTORY__ + projectJson)    
+    let backupJsonPath = (fullJsonPath + ".bak")
+    
+    DeleteFile fullJsonPath
+    CopyFile fullJsonPath backupJsonPath
+    DeleteFile backupJsonPath
 
 //Targets
 
@@ -82,9 +94,13 @@ Target "BuildApp" (fun _ ->
 )
 
 Target "CreatePackages" (fun _ -> 
-    UpdateProjectJson "/src/Scientist/project.json"
+    let scientistJsonPath = "/src/Scientist/project.json"
+    
+    UpdateProjectJson scientistJsonPath
     
     Run currentDirectory (DnxHome + "dnu.cmd") ("pack .\\src\\Scientist\\ --configuration Release --out " + packagingDir) |> ignore
+    
+    RestoreProjectJson scientistJsonPath
 )
 
 Target "RunTests" (fun _ ->
