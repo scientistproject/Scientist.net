@@ -46,7 +46,45 @@ namespace GitHub.Internals
             _runIf = runIf;
         }
 
-        public async Task<T> Run()
+        public T Run()
+        {
+            // Determine if experiments should be run.
+            if (!_runIf().Result)
+            {
+                // Run the control behavior.
+                return _behaviors[0].Behavior().Result;
+            }
+
+            if (_beforeRun != null)
+            {
+                _beforeRun();
+            }
+
+            // Randomize ordering...
+            NamedBehavior[] orderedBehaviors;
+            lock (_randomLock)
+            {
+                orderedBehaviors = _behaviors.OrderBy(b => _random.Next()).ToArray();
+            }
+
+            var observations = new List<Observation<T>>();
+            foreach (var behavior in orderedBehaviors)
+            {
+                observations.Add(Observation<T>.New(behavior.Name, behavior.Behavior, _comparator).Result);
+            }
+
+            var controlObservation = observations.FirstOrDefault(o => o.Name == ControlExperimentName);
+            var result = new Result<T>(_name, observations, controlObservation, _comparator);
+
+            // TODO: Make this Fire and forget so we don't have to wait for this
+            // to complete before we return a result
+            Scientist.ResultPublisher.Publish(result);
+
+            if (controlObservation.Thrown) throw controlObservation.Exception;
+            return controlObservation.Value;
+        }
+
+        public async Task<T> RunAsync()
         {
             // Determine if experiments should be run.
             if (!await _runIf())

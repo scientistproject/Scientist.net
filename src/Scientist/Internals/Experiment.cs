@@ -31,12 +31,4 @@ namespace GitHub.Internals
 
         static bool CompareInstances(IEquatable<T> instance, T comparand) => instance != null && instance.Equals(comparand);
     }
-
-    public class ExperimentAsync<T> : Experiment<T>
-    {
-        public ExperimentAsync(string name) : base(name)
-        {
-            
-        }
-    }
 }

@@ -36,7 +36,7 @@ namespace GitHub
             
             experiment(experimentBuilder);
 
-            return experimentBuilder.Build().Run().Result;
+            return experimentBuilder.Build().Run();
         }
 
         /// <summary>
@@ -49,13 +49,13 @@ namespace GitHub
 #if NET451
         [return: AllowNull]
 #endif
-        public static Task<T> ScienceAsync<T>(string name, Action<ExperimentAsync<T>> experiment)
+        public static Task<T> ScienceAsync<T>(string name, Action<Experiment<T>> experiment)
         {
-            var experimentBuilder = new ExperimentAsync<T>(name);
+            var experimentBuilder = new Experiment<T>(name);
             
             experiment(experimentBuilder);
 
-            return experimentBuilder.Build().Run();
+            return experimentBuilder.Build().RunAsync();
         }
     }
 }
