@@ -99,7 +99,7 @@ Target "SetupBuild" (fun _ ->
 )
 
 Target "BuildApp" (fun _ ->
-    Run currentDirectory (DnxHome + "dnu.cmd") ("build .\\src\\Scientist\\ --configuration " + buildMode + "") |> ignore
+    Run currentDirectory (DnxHome + "dnu.cmd") ("build .\\src\\Scientist\\ --configuration " + buildMode) |> ignore
     Run currentDirectory (DnxHome + "dnu.cmd") ("build .\\test\\Scientist.Test\\ --configuration " + buildMode + "") |> ignore
 )
 
