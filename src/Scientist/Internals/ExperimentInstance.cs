@@ -14,13 +14,14 @@ namespace GitHub.Internals
         internal const string CandidateExperimentName = "candidate";
         internal const string ControlExperimentName = "control";
 
-        static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
-        
         readonly string _name;
         readonly List<NamedBehavior> _behaviors;
         readonly Func<T, T, bool> _comparator;
         readonly Func<Task> _beforeRun;
         readonly Func<Task<bool>> _runIf;
+        
+        static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
+        static object _randomLock = new object();
 
         public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf)
             : this(name,
@@ -60,8 +61,14 @@ namespace GitHub.Internals
             }
 
             // Randomize ordering...
+            NamedBehavior[] orderedBehaviors;
+            lock (_randomLock)
+            {
+                orderedBehaviors = _behaviors.OrderBy(b => _random.Next()).ToArray();
+            }
+
             var observations = new List<Observation<T>>();
-            foreach (var behavior in _behaviors.OrderBy(k => _random.Next()))
+            foreach (var behavior in orderedBehaviors)
             {
                 observations.Add(await Observation<T>.New(behavior.Name, behavior.Behavior, _comparator));
             }
