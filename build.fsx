@@ -68,6 +68,7 @@ let UpdateProjectJson projectJson =
 
     let tempReleaseNotes = toLines releaseNotes.Notes
     RegexReplaceInFileWithEncoding "\"releaseNotes\": \"\"," ("\"releaseNotes\": \"" + tempReleaseNotes +  "\",") Encoding.UTF8 fullJsonPath
+    RegexReplaceInFileWithEncoding "(\"version\": \")(\d*\.\d*\.\d*)(.*)" ("${1}" + releaseNotes.AssemblyVersion + "${3}") Encoding.UTF8 fullJsonPath
 
 let RestoreProjectJson projectJson =
     let fullJsonPath = (__SOURCE_DIRECTORY__ + projectJson)
