@@ -21,7 +21,6 @@ namespace GitHub.Internals
         readonly Func<Task<bool>> _runIf;
         
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
-        static object _randomLock = new object();
 
         public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf)
             : this(name,
@@ -62,7 +61,7 @@ namespace GitHub.Internals
 
             // Randomize ordering...
             NamedBehavior[] orderedBehaviors;
-            lock (_randomLock)
+            lock (_random)
             {
                 orderedBehaviors = _behaviors.OrderBy(b => _random.Next()).ToArray();
             }
