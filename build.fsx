@@ -12,6 +12,8 @@ let runtime = getBuildParamOrDefault "runtime" "clr"
 let runtimeVersion = getBuildParamOrDefault "runtimeVersion" "1.0.0-rc1-update1"
 let buildMode = getBuildParamOrDefault "buildMode" "Release"
 
+let versionRegex = "(\"version\": \")(\d*\.\d*\.\d*)(.*)"
+
 //Directories
 let packagingRoot = "./packaging/"
 let packagingDir = packagingRoot @@ "scientist.net"
@@ -69,7 +71,7 @@ let UpdateProjectJson projectJson =
 
     let tempReleaseNotes = toLines releaseNotes.Notes
     RegexReplaceInFileWithEncoding "\"releaseNotes\": \"\"," ("\"releaseNotes\": \"" + tempReleaseNotes +  "\",") Encoding.UTF8 fullJsonPath
-    RegexReplaceInFileWithEncoding "(\"version\": \")(\d*\.\d*\.\d*)(.*)" ("${1}" + releaseNotes.AssemblyVersion + "${3}") Encoding.UTF8 fullJsonPath
+    RegexReplaceInFileWithEncoding versionRegex ("${1}" + releaseNotes.AssemblyVersion + "${3}") Encoding.UTF8 fullJsonPath
 
 let RestoreProjectJson projectJson =
     let fullJsonPath = (__SOURCE_DIRECTORY__ + projectJson)
