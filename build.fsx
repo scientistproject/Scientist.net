@@ -7,11 +7,10 @@ open System.Text
 
 let mutable DnxHome = "[unknown]"
 
-let authors = ["GitHub"]
-
-let projectName = "Scientist.Net"
-let projectDescription = "A library for carefully refactoring critical paths"
-let projectSummary = projectDescription
+let architecture = getBuildParamOrDefault "architecture" "x86"
+let runtime = getBuildParamOrDefault "runtime" "clr"
+let runtimeVersion = getBuildParamOrDefault "runtimeVersion" "1.0.0-rc1-update1"
+let buildMode = getBuildParamOrDefault "buildMode" "Release"
 
 //Directories
 let packagingRoot = "./packaging/"
@@ -59,7 +58,7 @@ let GetDnvmHome =
 
 let GetDnxHome =
     let homeDirectory = GetHomeDirectory
-    homeDirectory + "\\.dnx\\runtimes\\dnx-clr-win-x86.1.0.0-rc1-update1\\bin\\"
+    homeDirectory + ("\\.dnx\\runtimes\\dnx-" + runtime + "-win-" + architecture + "." + runtimeVersion + "\\bin\\")
 
 let UpdateProjectJson projectJson =
     let fullJsonPath = (__SOURCE_DIRECTORY__ + projectJson)
@@ -93,15 +92,15 @@ Target "SetupBuild" (fun _ ->
     SetDnxBuildVersion
 
     let dnvmHome = GetDnvmHome
-    Run currentDirectory (dnvmHome + "dnvm.cmd") "install 1.0.0-rc1-update1 -r clr -a x86" |> ignore
-    Run currentDirectory (dnvmHome + "dnvm.cmd") "use 1.0.0-rc1-update1 -r clr -a x86" |> ignore
+    Run currentDirectory (dnvmHome + "dnvm.cmd") ("install " + runtimeVersion + " -r " + runtime + " -a " + architecture + "") |> ignore
+    Run currentDirectory (dnvmHome + "dnvm.cmd") ("use " + runtimeVersion + " -r " + runtime + " -a " + architecture + "") |> ignore
     
     Run currentDirectory (DnxHome + "dnu.cmd") "restore" |> ignore
 )
 
 Target "BuildApp" (fun _ ->
-    Run currentDirectory (DnxHome + "dnu.cmd") "build .\\src\\Scientist\\ --configuration Release" |> ignore
-    Run currentDirectory (DnxHome + "dnu.cmd") "build .\\test\\Scientist.Test\\ --configuration Release" |> ignore
+    Run currentDirectory (DnxHome + "dnu.cmd") ("build .\\src\\Scientist\\ --configuration " + buildMode + "") |> ignore
+    Run currentDirectory (DnxHome + "dnu.cmd") ("build .\\test\\Scientist.Test\\ --configuration " + buildMode + "") |> ignore
 )
 
 Target "CreatePackages" (fun _ ->
@@ -109,7 +108,7 @@ Target "CreatePackages" (fun _ ->
 
     UpdateProjectJson scientistJsonPath
 
-    Run currentDirectory (DnxHome + "dnu.cmd") ("pack .\\src\\Scientist\\ --configuration Release --out " + packagingDir) |> ignore
+    Run currentDirectory (DnxHome + "dnu.cmd") ("pack .\\src\\Scientist\\ --configuration " + buildMode + " --out " + packagingDir) |> ignore
 
     RestoreProjectJson scientistJsonPath
 )
