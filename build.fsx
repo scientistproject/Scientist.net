@@ -120,17 +120,17 @@ Target "RunTests" (fun _ ->
 
 Target "Default" DoNothing
 
+//Dependencies
 "Clean"
     ==> "SetupBuild"
-
-"SetupBuild"
     ==> "BuildApp"
-
+    
+"Clean"
+    ==> "SetupBuild"
+    ==> "CreatePackages"
+    
 "SetupBuild"
     ==> "RunTests"
-
-"SetupBuild"
-    ==> "CreatePackages"
 
 "RunTests"
     ==> "Default"
