@@ -18,9 +18,9 @@ let packagingDir = packagingRoot @@ "scientist.net"
 let buildDir = "./src/Scientist/bin"
 let testBuildDir = "./test/Scientise.Test/bin"
 
-//let releaseNotes =
-//    ReadFile "ReleaseNotes.md"
-//    |> ReleaseNotesHelper.parseReleaseNotes
+let releaseNotes =
+    ReadFile "ReleaseNotes.md"
+    |> ReleaseNotesHelper.parseReleaseNotes
 
 let Run workingDirectory fileName args =
     let errors = new List<string>()
@@ -66,7 +66,7 @@ let UpdateProjectJson projectJson =
 
     CopyFile backupJsonPath fullJsonPath
 
-    let tempReleaseNotes = "Temporary release notes\\nWith new line"
+    let tempReleaseNotes = toLines releaseNotes.Notes
     RegexReplaceInFileWithEncoding "\"releaseNotes\": \"\"," ("\"releaseNotes\": \"" + tempReleaseNotes +  "\",") Encoding.UTF8 fullJsonPath
 
 let RestoreProjectJson projectJson =
