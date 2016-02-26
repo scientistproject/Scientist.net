@@ -22,6 +22,7 @@ let releaseNotes =
     ReadFile "ReleaseNotes.md"
     |> ReleaseNotesHelper.parseReleaseNotes
 
+//Helper functions
 let Run workingDirectory fileName args =
     let errors = new List<string>()
     let messages = new List<string>()
@@ -82,7 +83,6 @@ let SetDnxBuildVersion =
     setProcessEnvironVar "DNX_BUILD_VERSION" (environVarOrDefault "APPVEYOR_BUILD_NUMBER" "local")
 
 //Targets
-
 Target "Clean" (fun _ ->
     CleanDirs [packagingDir; packagingRoot; "artifacts"; buildDir; testBuildDir]
 )
