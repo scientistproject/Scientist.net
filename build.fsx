@@ -12,7 +12,7 @@ let runtime = getBuildParamOrDefault "runtime" "clr"
 let runtimeVersion = getBuildParamOrDefault "runtimeVersion" "1.0.0-rc1-update1"
 let buildMode = getBuildParamOrDefault "buildMode" "Release"
 
-let versionRegex = "(\"version\": \")(\d*\.\d*\.\d*)(.*)"
+let versionRegex = "(\"version\": \")([^\"]+)(\")"
 
 //Directories
 let packagingRoot = "./packaging/"
@@ -68,10 +68,10 @@ let UpdateProjectJson projectJson =
     let backupJsonPath = (fullJsonPath + ".bak")
 
     CopyFile backupJsonPath fullJsonPath
-
+    
     let tempReleaseNotes = toLines releaseNotes.Notes
     RegexReplaceInFileWithEncoding "\"releaseNotes\": \"\"," ("\"releaseNotes\": \"" + tempReleaseNotes +  "\",") Encoding.UTF8 fullJsonPath
-    RegexReplaceInFileWithEncoding versionRegex ("${1}" + releaseNotes.AssemblyVersion + "${3}") Encoding.UTF8 fullJsonPath
+    RegexReplaceInFileWithEncoding versionRegex ("${1}" + (releaseNotes.SemVer.ToString()) + "${3}") Encoding.UTF8 fullJsonPath
 
 let RestoreProjectJson projectJson =
     let fullJsonPath = (__SOURCE_DIRECTORY__ + projectJson)
