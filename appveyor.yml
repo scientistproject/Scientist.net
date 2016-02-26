@@ -7,7 +7,7 @@ nuget:
     account_feed: true
     project_feed: true
 artifacts:
-- path: 'packaging/scientist*.nupkg'
+- path: 'packaging\**\scientist*.nupkg'
   name: ScientistPackages
 build:
   verbosity: normal
