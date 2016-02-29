@@ -34,24 +34,5 @@ namespace GitHub
             // make sure we don't inline this method though.
             return new Experiment<T>(name);
         }
-
-        /// <summary>
-        /// Conduct an asynchronous experiment
-        /// </summary>
-        /// <typeparam name="T">The return type of the experiment</typeparam>
-        /// <param name="name">Name of the experiment</param>
-        /// <param name="experiment">Experiment callback used to configure the experiment</param>
-        /// <returns>The value of the experiment's control function.</returns>
-#if NET451
-        [return: AllowNull]
-#endif
-        public static Task<T> ScienceAsync<T>(string name, Action<Experiment<T>> experiment)
-        {
-            var experimentBuilder = new Experiment<T>(name);
-            
-            experiment(experimentBuilder);
-
-            return experimentBuilder.Build().RunAsync();
-        }
     }
 }

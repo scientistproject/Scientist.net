@@ -87,11 +87,10 @@ public class TheScientistClass
             mock.Candidate().Returns(Task.FromResult(43));
             const string experimentName = nameof(RunsBothBranchesOfTheExperimentAsyncAndReportsFailure);
 
-            var result = await Scientist.ScienceAsync<int>(experimentName, experiment =>
-            {
-                experiment.Use(mock.Control).Try(mock.Candidate);
-            });
+            var experiment = Scientist.Science<int>(experimentName);
 
+            var result = await experiment.Use(mock.Control).Try(mock.Candidate).ExecuteAsync();
+            
             Assert.Equal(42, result);
             await mock.Received().Control();
             await mock.Received().Candidate();

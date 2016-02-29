@@ -63,5 +63,10 @@ namespace GitHub.Internals
         {
             return experiment.Build().Run();
         }
+
+        public static async Task<T> ExecuteAsync<T>(this Experiment<T> experiment)
+        {
+            return await experiment.Build().RunAsync();
+        }
     }
 }
