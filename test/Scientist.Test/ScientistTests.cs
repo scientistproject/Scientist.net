@@ -23,12 +23,12 @@ public class TheScientistClass
 
             const string experimentName = "successRunIf";
 
-            var result = Scientist.Science<int>(experimentName, experiment =>
-            {
-                experiment.Where(mock.RunIf)
-                    .Use(mock.Control)
-                    .Try(mock.Candidate);
-            });
+            var experiment = Scientist.Science<int>(experimentName);
+
+            var result = experiment.Where(() => mock.RunIf())
+                .Use(() => mock.Control())
+                .Try(() => mock.Candidate())
+                .Execute();
 
             Assert.Equal(expectedResult, result);
 
@@ -45,14 +45,15 @@ public class TheScientistClass
             mock.Candidate().Returns(x => { throw new InvalidOperationException(); });
             const string experimentName = nameof(RunsBothBranchesOfTheExperimentAndMatchesExceptions);
 
-            var ex = Assert.Throws<AggregateException>(() =>
-            {
-                Scientist.Science<int>(experimentName, experiment =>
-                {
-                    experiment.Use(mock.Control).Try(mock.Candidate);
-                });
-            });
+            var experiment = Scientist.Science<int>(experimentName);
 
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+                experiment.Use(() => mock.Control())
+                    .Try(() => mock.Candidate())
+                    .Execute();
+            });
+            
             Exception baseException = ex.GetBaseException();
             Assert.IsType<InvalidOperationException>(baseException);
             mock.Received().Control();
@@ -68,11 +69,10 @@ public class TheScientistClass
             mock.Candidate().Returns(42);
             const string experimentName = nameof(RunsBothBranchesOfTheExperimentAndReportsSuccess);
 
-            var result = Scientist.Science<int>(experimentName, experiment =>
-            {
-                experiment.Use(mock.Control).Try(mock.Candidate);
-            });
+            var experiment = Scientist.Science<int>(experimentName);
 
+            var result = experiment.Use(() => mock.Control()).Try(() => mock.Candidate()).Execute();
+            
             Assert.Equal(42, result);
             mock.Received().Control();
             mock.Received().Candidate();
@@ -102,11 +102,12 @@ public class TheScientistClass
         public void AllowsReturningNullFromControlOrTest()
         {
             const string experimentName = nameof(AllowsReturningNullFromControlOrTest);
-            var result = Scientist.Science<object>(experimentName, experiment =>
-            {
-                experiment.Use(() => null).Try(() => null);
-            });
 
+            var experiment = Scientist.Science<object>(experimentName);
+
+            //Requires (object)null casting, otherwise calls Func<Task<T>> overload and fails
+            var result = experiment.Use(() => (object)null).Try(() => (object)null).Execute();
+            
             Assert.Null(result);
             Assert.True(TestHelper.Results<object>().First(m => m.ExperimentName == experimentName).Matched);
         }
@@ -129,11 +130,10 @@ public class TheScientistClass
             mock.Candidate().Returns(42);
             const string experimentName = nameof(RunsBothBranchesOfTheExperimentAndReportsSuccessWithDurations);
 
-            var result = Scientist.Science<int>(experimentName, experiment =>
-            {
-                experiment.Use(mock.Control).Try(mock.Candidate);
-            });
+            var experiment = Scientist.Science<int>(experimentName);
 
+            var result = experiment.Use(() => mock.Control()).Try(() => mock.Candidate()).Execute();
+            
             Assert.Equal(42, result);
             mock.Received().Control();
             mock.Received().Candidate();
@@ -152,10 +152,9 @@ public class TheScientistClass
             mock.Candidate().Throws(new InvalidOperationException());
             const string experimentName = nameof(AnExceptionReportsDuration);
 
-            var result = Scientist.Science<int>(experimentName, experiment =>
-            {
-                experiment.Use(mock.Control).Try(mock.Candidate);
-            });
+            var experiment = Scientist.Science<int>(experimentName);
+
+            var result = experiment.Use(() => mock.Control()).Try(() => mock.Candidate()).Execute();
 
             Assert.Equal(42, result);
             mock.Received().Control();
@@ -174,13 +173,13 @@ public class TheScientistClass
             mock.Candidate().Returns(new ComplexResult { Count = 10, Name = "Tester" });
             const string experimentName = nameof(RunsBothBranchesOfTheExperimentWithResultComparisonSetAndReportsSuccess);
 
-            var result = Scientist.Science<ComplexResult>(experimentName, experiment =>
-            {
-                experiment.WithComparer((a, b) => a.Count == b.Count && a.Name == b.Name)
-                    .Use(mock.Control)
-                    .Try(mock.Candidate);
-            });
+            var experiment = Scientist.Science<ComplexResult>(experimentName);
 
+            var result = experiment.Use(() => mock.Control())
+                .Try(() => mock.Candidate())
+                .WithComparer((a, b) => a.Count == b.Count && a.Name == b.Name)
+                .Execute();
+            
             Assert.Equal(10, result.Count);
             Assert.Equal("Tester", result.Name);
             mock.Received().Control();
@@ -196,13 +195,13 @@ public class TheScientistClass
             mock.Candidate().Returns(new ComplexResult { Count = 10, Name = "Tester2" });
             const string experimentName = nameof(RunsBothBranchesOfTheExperimentWithResultComparisonSetAndReportsFailure);
 
-            var result = Scientist.Science<ComplexResult>(experimentName, experiment =>
-            {
-                experiment.WithComparer((a, b) => a.Count == b.Count && a.Name == b.Name)
-                    .Use(mock.Control)
-                    .Try(mock.Candidate);
-            });
+            var experiment = Scientist.Science<ComplexResult>(experimentName);
 
+            var result = experiment.Use(() => mock.Control())
+                .Try(() => mock.Candidate())
+                .WithComparer((a, b) => a.Count == b.Count && a.Name == b.Name)
+                .Execute();
+            
             Assert.Equal(10, result.Count);
             Assert.Equal("Tester", result.Name);
             mock.Received().Control();
@@ -218,11 +217,10 @@ public class TheScientistClass
             mock.Candidate().Returns(new ComplexResult { Count = 10, Name = "Tester" });
             const string experimentName = nameof(RunsBothBranchesOfTheExperimentWithIEqualitySetAndReportsSuccess);
 
-            var result = Scientist.Science<ComplexResult>(experimentName, experiment =>
-            {
-                experiment.Use(mock.Control).Try(mock.Candidate);
-            });
+            var experiment = Scientist.Science<ComplexResult>(experimentName);
 
+            var result = experiment.Use(() => mock.Control()).Try(() => mock.Candidate()).Execute();
+            
             Assert.Equal(10, result.Count);
             Assert.Equal("Tester", result.Name);
             mock.Received().Control();
@@ -238,10 +236,9 @@ public class TheScientistClass
             mock.Candidate().Returns(new ComplexResult { Count = 10, Name = "Tester2" });
             const string experimentName = nameof(RunsBothBranchesOfTheExperimentWithIEqualitySetAndReportsFailure);
 
-            var result = Scientist.Science<ComplexResult>(experimentName, experiment =>
-            {
-                experiment.Use(mock.Control).Try(mock.Candidate);
-            });
+            var experiment = Scientist.Science<ComplexResult>(experimentName);
+
+            var result = experiment.Use(() => mock.Control()).Try(() => mock.Candidate()).Execute();
 
             Assert.Equal(10, result.Count);
             Assert.Equal("Tester", result.Name);
@@ -258,13 +255,14 @@ public class TheScientistClass
             mock.Candidate().Returns(42);
             const string experimentName = nameof(RunsBeforeRun);
 
-            var result = Scientist.Science<int>(experimentName, experiment =>
-            {
-                experiment.BeforeRun(mock.BeforeRun)
-                    .Use(mock.Control)
-                    .Try(mock.Candidate);
-            });
+            var experiment = Scientist.Science<int>(experimentName);
 
+            var result =
+                experiment.Use(() => mock.Control())
+                    .Try(() => mock.Candidate())
+                    .BeforeRun(() => mock.BeforeRun())
+                    .Execute();
+            
             Assert.Equal(42, result);
             mock.Received().BeforeRun();
         }

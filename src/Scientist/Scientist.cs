@@ -28,15 +28,11 @@ namespace GitHub
 #if NET451
         [return: AllowNull]
 #endif
-        public static T Science<T>(string name, Action<Experiment<T>> experiment)
+        public static Experiment<T> Science<T>(string name)
         {
             // TODO: Maybe we could automatically generate the name if none is provided using the calling method name. We'd have to 
             // make sure we don't inline this method though.
-            var experimentBuilder = new Experiment<T>(name);
-            
-            experiment(experimentBuilder);
-
-            return experimentBuilder.Build().Run();
+            return new Experiment<T>(name);
         }
 
         /// <summary>
