@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace GitHub.Internals
@@ -9,7 +10,9 @@ namespace GitHub.Internals
 
         string _name;
         Func<Task<T>> _control;
-        Func<Task<T>> _candidate;
+
+        //TODO: Do we need a thread safe dictionary?
+        readonly Dictionary<string, Func<Task<T>>> _candidates;
         Func<T, T, bool> _comparison = DefaultComparison;
         Func<Task> _beforeRun;
         Func<Task<bool>> _runIf = _alwaysRun;
@@ -17,6 +20,7 @@ namespace GitHub.Internals
         public Experiment(string name)
         {
             _name = name;
+            _candidates = new Dictionary<string, Func<Task<T>>>();
         }
 
         public void RunIf(Func<Task<bool>> block) =>
@@ -29,17 +33,15 @@ namespace GitHub.Internals
 
         public void Use(Func<T> control) =>
             _control = () => Task.FromResult(control());
+        
+        public void Try(string name, Func<Task<T>> candidate) =>
+            _candidates.Add(name, candidate);
 
-        // TODO add optional name parameter, and store all delegates into a dictionary.
-
-        public void Try(Func<Task<T>> candidate) =>
-            _candidate = candidate;
-
-        public void Try(Func<T> candidate) =>
-            _candidate = () => Task.FromResult(candidate());
+        public void Try(string name, Func<T> candidate) =>
+            _candidates.Add(name, () => Task.FromResult(candidate()));
 
         internal ExperimentInstance<T> Build() =>
-            new ExperimentInstance<T>(_name, _control, _candidate, _comparison, _beforeRun, _runIf);
+            new ExperimentInstance<T>(_name, _control, _candidates, _comparison, _beforeRun, _runIf);
 
         public void Compare(Func<T, T, bool> comparison)
         {

@@ -27,7 +27,7 @@ public class TheScientistClass
             {
                 experiment.RunIf(mock.RunIf);
                 experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
+                experiment.Try("candidate", mock.Candidate);
             });
 
             Assert.Equal(expectedResult, result);
@@ -50,7 +50,7 @@ public class TheScientistClass
                 Scientist.Science<int>(experimentName, experiment =>
                 {
                     experiment.Use(mock.Control);
-                    experiment.Try(mock.Candidate);
+                    experiment.Try("candidate", mock.Candidate);
                 });
             });
 
@@ -72,7 +72,7 @@ public class TheScientistClass
             var result = Scientist.Science<int>(experimentName, experiment =>
             {
                 experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
+                experiment.Try("candidate", mock.Candidate);
             });
 
             Assert.Equal(42, result);
@@ -92,7 +92,7 @@ public class TheScientistClass
             var result = await Scientist.ScienceAsync<int>(experimentName, experiment =>
             {
                 experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
+                experiment.Try("candidate", mock.Candidate);
             });
 
             Assert.Equal(42, result);
@@ -108,7 +108,7 @@ public class TheScientistClass
             var result = Scientist.Science<object>(experimentName, experiment =>
             {
                 experiment.Use(() => null);
-                experiment.Try(() => null);
+                experiment.Try("candidate", () => null);
             });
 
             Assert.Null(result);
@@ -136,7 +136,7 @@ public class TheScientistClass
             var result = Scientist.Science<int>(experimentName, experiment =>
             {
                 experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
+                experiment.Try("candidate", mock.Candidate);
             });
 
             Assert.Equal(42, result);
@@ -160,7 +160,7 @@ public class TheScientistClass
             var result = Scientist.Science<int>(experimentName, experiment =>
             {
                 experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
+                experiment.Try("candidate", mock.Candidate);
             });
 
             Assert.Equal(42, result);
@@ -184,7 +184,7 @@ public class TheScientistClass
             {
                 experiment.Compare((a, b) => a.Count == b.Count && a.Name == b.Name);
                 experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
+                experiment.Try("candidate", mock.Candidate);
             });
 
             Assert.Equal(10, result.Count);
@@ -206,7 +206,7 @@ public class TheScientistClass
             {
                 experiment.Compare((a, b) => a.Count == b.Count && a.Name == b.Name);
                 experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
+                experiment.Try("candidate", mock.Candidate);
             });
 
             Assert.Equal(10, result.Count);
@@ -227,7 +227,7 @@ public class TheScientistClass
             var result = Scientist.Science<ComplexResult>(experimentName, experiment =>
             {
                 experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
+                experiment.Try("candidate", mock.Candidate);
             });
 
             Assert.Equal(10, result.Count);
@@ -248,7 +248,7 @@ public class TheScientistClass
             var result = Scientist.Science<ComplexResult>(experimentName, experiment =>
             {
                 experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
+                experiment.Try("candidate", mock.Candidate);
             });
 
             Assert.Equal(10, result.Count);
@@ -270,7 +270,7 @@ public class TheScientistClass
             {
                 experiment.BeforeRun(mock.BeforeRun);
                 experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
+                experiment.Try("candidate", mock.Candidate);
             });
 
             Assert.Equal(42, result);

@@ -22,24 +22,26 @@ namespace GitHub.Internals
         
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
 
-        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf)
+        public ExperimentInstance(string name, Func<Task<T>> control, Dictionary<string, Func<Task<T>>> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf)
             : this(name,
                   new NamedBehavior(ControlExperimentName, control),
-                  new NamedBehavior(CandidateExperimentName, candidate),
+                  candidates.Select(c => new NamedBehavior(c.Key, c.Value)),
                   comparator,
                   beforeRun,
                   runIf)
         {
         }
 
-        internal ExperimentInstance(string name, NamedBehavior control, NamedBehavior candidate, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf)
+        internal ExperimentInstance(string name, NamedBehavior control, IEnumerable<NamedBehavior> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf)
         {
             _name = name;
+
             _behaviors = new List<NamedBehavior>
             {
                 control,
-                candidate
             };
+            _behaviors.AddRange(candidates);
+
             _comparator = comparator;
             _beforeRun = beforeRun;
             _runIf = runIf;
