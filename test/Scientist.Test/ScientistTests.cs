@@ -276,5 +276,57 @@ public class TheScientistClass
             Assert.Equal(42, result);
             mock.Received().BeforeRun();
         }
+
+        [Fact]
+        public void AllTrysAreRun()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+            var mockTwo = Substitute.For<IControlCandidate<int>>();
+            mockTwo.Candidate().Returns(42);
+            var mockThree = Substitute.For<IControlCandidate<int>>();
+            mockThree.Candidate().Returns(42);
+
+            const string experimentName = nameof(AllTrysAreRun);
+
+            var result = Scientist.Science<int>(experimentName, experiment =>
+            {
+                experiment.Use(mock.Control);
+                experiment.Try("candidate one", mock.Candidate);
+                experiment.Try("candidate two", mockTwo.Candidate);
+                experiment.Try("candidate three", mockThree.Candidate);
+            });
+
+            Assert.Equal(42, result);
+            mock.Received().Candidate();
+            mockTwo.Received().Candidate();
+            mockThree.Received().Candidate();
+        }
+
+        [Fact]
+        public void SingleCandidateCausesMismatch()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+            var mockTwo = Substitute.For<IControlCandidate<int>>();
+            mockTwo.Candidate().Returns(42);
+            var mockThree = Substitute.For<IControlCandidate<int>>();
+            mockThree.Candidate().Returns(0);
+
+            const string experimentName = nameof(AllTrysAreRun);
+
+            var result = Scientist.Science<int>(experimentName, experiment =>
+            {
+                experiment.Use(mock.Control);
+                experiment.Try("candidate one", mock.Candidate);
+                experiment.Try("candidate two", mockTwo.Candidate);
+                experiment.Try("candidate three", mockThree.Candidate);
+            });
+
+            Assert.Equal(42, result);
+            Assert.False(TestHelper.Results<int>().First().Matched);
+        }
     }
 }
