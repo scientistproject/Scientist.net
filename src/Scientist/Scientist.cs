@@ -1,5 +1,4 @@
 ﻿using GitHub.Internals;
-using NullGuard;
 using System;
 using System.Threading.Tasks;
 
