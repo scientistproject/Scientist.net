@@ -61,7 +61,7 @@ namespace GitHub.Internals
 
         public static T Execute<T>(this Experiment<T> experiment)
         {
-            return experiment.Build().Run();
+            return experiment.Build().RunAsync().Result;
         }
 
         public static async Task<T> ExecuteAsync<T>(this Experiment<T> experiment)

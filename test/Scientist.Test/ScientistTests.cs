@@ -47,7 +47,7 @@ public class TheScientistClass
 
             var experiment = Scientist.Science<int>(experimentName);
 
-            var ex = Assert.Throws<InvalidOperationException>(() =>
+            var ex = Assert.Throws<AggregateException>(() =>
             {
                 experiment.Use(() => mock.Control())
                     .Try(() => mock.Candidate())
