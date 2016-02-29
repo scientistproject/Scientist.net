@@ -12,8 +12,7 @@ namespace GitHub.Internals
 
         string _name;
         Func<Task<T>> _control;
-
-        //TODO: Do we need a thread safe dictionary?
+        
         readonly Dictionary<string, Func<Task<T>>> _candidates;
         Func<T, T, bool> _comparison = DefaultComparison;
         Func<Task> _beforeRun;
