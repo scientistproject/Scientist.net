@@ -40,7 +40,7 @@ namespace GitHub.Internals
         {
             if (_candidates.ContainsKey(CandidateExperimentName))
             {
-                throw new InvalidOperationException("You have already added a default try, name this one something different");
+                throw new InvalidOperationException("You have already added a default try. Give this candidate a new name with the Try(string, Func<Task<T>> overload");
             }
             _candidates.Add(CandidateExperimentName, candidate);
         }
@@ -49,7 +49,7 @@ namespace GitHub.Internals
         {
             if (_candidates.ContainsKey(CandidateExperimentName))
             {
-                throw new InvalidOperationException("You have already added a default try, name this one something different");
+                throw new InvalidOperationException("You have already added a default try. Give this candidate a new name with the Try(string, Func<Task<T>> overload");
             }
             _candidates.Add(CandidateExperimentName, () => Task.FromResult(candidate()));
         }
@@ -58,7 +58,7 @@ namespace GitHub.Internals
         {
             if (_candidates.ContainsKey(name))
             {
-                throw new InvalidOperationException($"You already have a candidate named {name}, name this one something different");
+                throw new InvalidOperationException($"You already have a candidate named {name}. Provide a different name for this test.");
             }
             _candidates.Add(name, candidate);
         }
@@ -67,7 +67,7 @@ namespace GitHub.Internals
         {
             if (_candidates.ContainsKey(name))
             {
-                throw new InvalidOperationException($"You already have a candidate named {name}, name this one something different");
+                throw new InvalidOperationException($"You already have a candidate named {name}. Provide a different name for this test.");
             }
             _candidates.Add(name, () => Task.FromResult(candidate()));
         }
