@@ -23,6 +23,12 @@ namespace GitHub.Internals
         /// <summary>
         /// Defines the operation to try.
         /// </summary>
+        /// <param name="candidate">The delegate to execute.</param>
+        void Try(Func<T> candidate);
+
+        /// <summary>
+        /// Defines the operation to try.
+        /// </summary>
         /// <param name="name"></param>
         /// <param name="candidate">The delegate to execute.</param>
         void Try(string name, Func<T> candidate);
@@ -55,6 +61,12 @@ namespace GitHub.Internals
         /// </summary>
         /// <param name="check">The delegate to evaluate.</param>
         void RunIf(Func<Task<bool>> block);
+
+        /// <summary>
+        /// Defines the operation to try.
+        /// </summary>
+        /// <param name="candidate">The delegate to execute.</param>
+        void Try(Func<Task<T>> candidate);
 
         /// <summary>
         /// Defines the operation to try.

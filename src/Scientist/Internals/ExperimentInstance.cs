@@ -11,7 +11,6 @@ namespace GitHub.Internals
     /// <typeparam name="T">The return type of the experiment</typeparam>
     internal class ExperimentInstance<T>
     {
-        internal const string CandidateExperimentName = "candidate";
         internal const string ControlExperimentName = "control";
 
         readonly string _name;

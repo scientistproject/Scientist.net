@@ -6,6 +6,8 @@ namespace GitHub.Internals
 {
     internal class Experiment<T> : IExperiment<T>, IExperimentAsync<T>
     {
+        internal const string CandidateExperimentName = "candidate";
+
         readonly static Func<Task<bool>> _alwaysRun = () => Task.FromResult(true);
 
         string _name;
@@ -33,12 +35,42 @@ namespace GitHub.Internals
 
         public void Use(Func<T> control) =>
             _control = () => Task.FromResult(control());
-        
-        public void Try(string name, Func<Task<T>> candidate) =>
-            _candidates.Add(name, candidate);
 
-        public void Try(string name, Func<T> candidate) =>
+        public void Try(Func<Task<T>> candidate)
+        {
+            if (_candidates.ContainsKey(CandidateExperimentName))
+            {
+                throw new InvalidOperationException("You have already added a default try, name this one something different");
+            }
+            _candidates.Add(CandidateExperimentName, candidate);
+        }
+
+        public void Try(Func<T> candidate)
+        {
+            if (_candidates.ContainsKey(CandidateExperimentName))
+            {
+                throw new InvalidOperationException("You have already added a default try, name this one something different");
+            }
+            _candidates.Add(CandidateExperimentName, () => Task.FromResult(candidate()));
+        }
+
+        public void Try(string name, Func<Task<T>> candidate)
+        {
+            if (_candidates.ContainsKey(name))
+            {
+                throw new InvalidOperationException($"You already have a candidate named {name}, name this one something different");
+            }
+            _candidates.Add(name, candidate);
+        }
+
+        public void Try(string name, Func<T> candidate)
+        {
+            if (_candidates.ContainsKey(name))
+            {
+                throw new InvalidOperationException($"You already have a candidate named {name}, name this one something different");
+            }
             _candidates.Add(name, () => Task.FromResult(candidate()));
+        }
 
         internal ExperimentInstance<T> Build() =>
             new ExperimentInstance<T>(_name, _control, _candidates, _comparison, _beforeRun, _runIf);

@@ -305,7 +305,7 @@ public class TheScientistClass
         }
 
         [Fact]
-        public void SingleCandidateCausesMismatch()
+        public void SingleCandidateDifferenceCausesMismatch()
         {
             var mock = Substitute.For<IControlCandidate<int>>();
             mock.Control().Returns(42);
@@ -315,7 +315,7 @@ public class TheScientistClass
             var mockThree = Substitute.For<IControlCandidate<int>>();
             mockThree.Candidate().Returns(0);
 
-            const string experimentName = nameof(AllTrysAreRun);
+            const string experimentName = nameof(SingleCandidateDifferenceCausesMismatch);
 
             var result = Scientist.Science<int>(experimentName, experiment =>
             {
@@ -326,7 +326,67 @@ public class TheScientistClass
             });
 
             Assert.Equal(42, result);
-            Assert.False(TestHelper.Results<int>().First().Matched);
+            Assert.False(TestHelper.Results<int>().First(m => m.ExperimentName == experimentName).Matched);
+        }
+
+        [Fact]
+        public void CallingDefaultTryTwiceThrows()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+
+            const string experimentName = nameof(CallingDefaultTryTwiceThrows);
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                var result = Scientist.Science<int>(experimentName, experiment =>
+                {
+                    experiment.Use(mock.Control);
+                    experiment.Try(mock.Candidate);
+                    experiment.Try(mock.Candidate);
+                });
+            });
+        }
+
+        [Fact]
+        public void CallingTryWithSameCandidateNameThrows()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+
+            const string experimentName = nameof(CallingTryWithSameCandidateNameThrows);
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                var result = Scientist.Science<int>(experimentName, experiment =>
+                {
+                    experiment.Use(mock.Control);
+                    experiment.Try("candidate", mock.Candidate);
+                    experiment.Try("candidate", mock.Candidate);
+                });
+            });
+        }
+
+        [Fact]
+        public void CallingTryWithDifferentCandidateNamesIsAllowed()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+
+            const string experimentName = nameof(CallingTryWithDifferentCandidateNamesIsAllowed);
+
+            var result = Scientist.Science<int>(experimentName, experiment =>
+            {
+                experiment.Use(mock.Control);
+                experiment.Try("candidate", mock.Candidate);
+                experiment.Try("candidate2", mock.Candidate);
+            });
+
+            Assert.Equal(42, result);
+            Assert.True(TestHelper.Results<int>().First(m => m.ExperimentName == experimentName).Matched);
         }
     }
 }
