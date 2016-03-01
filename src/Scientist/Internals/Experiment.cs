@@ -14,7 +14,7 @@ namespace GitHub.Internals
         Func<T, T, bool> _comparison = DefaultComparison;
         Func<Task> _beforeRun;
         Func<Task<bool>> _runIf = _alwaysRun;
-        HashSet<Func<Task<bool>>> _ignores { get; set; } = new HashSet<Func<Task<bool>>>();
+        readonly List<Func<Task<bool>>> _ignores = new List<Func<Task<bool>>>();
 
         public Experiment(string name)
         {
