@@ -276,5 +276,120 @@ public class TheScientistClass
             Assert.Equal(42, result);
             mock.Received().BeforeRun();
         }
+
+        [Fact]
+        public void ExperimentIgnoredIfIgnoreTrue()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(-1);
+            const string experimentName = nameof(ExperimentIgnoredIfIgnoreTrue);
+
+            var result = Scientist.Science<int>(experimentName, experiment =>
+            {
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
+                experiment.Ignore(() => true);
+            });
+
+            Assert.Equal(42, result);
+            var experimentResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            Assert.True(experimentResult.IgnoredObservations.Any());
+            Assert.True(experimentResult.Matched);
+        }
+
+        [Fact]
+        public void ExperimentRunsIfIgnoreFalse()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(-1);
+            const string experimentName = nameof(ExperimentRunsIfIgnoreFalse);
+
+            var result = Scientist.Science<int>(experimentName, experiment =>
+            {
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
+                experiment.Ignore(() => false);
+            });
+
+            Assert.Equal(42, result);
+            var experimentResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            Assert.True(experimentResult.MismatchedObservations.Any());
+            Assert.False(experimentResult.IgnoredObservations.Any());
+            Assert.False(experimentResult.Matched);
+        }
+
+        [Fact]
+        public void ExperimentRunsIfMultipleIgnoresAllFalse()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(-1);
+            const string experimentName = nameof(ExperimentRunsIfMultipleIgnoresAllFalse);
+
+            var result = Scientist.Science<int>(experimentName, experiment =>
+            {
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
+                experiment.Ignore(() => false);
+                experiment.Ignore(() => false);
+                experiment.Ignore(() => false);
+            });
+
+            Assert.Equal(42, result);
+            var experimentResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            Assert.True(experimentResult.MismatchedObservations.Any());
+            Assert.False(experimentResult.IgnoredObservations.Any());
+            Assert.False(experimentResult.Matched);
+        }
+
+        [Fact]
+        public void ExperimentIgnoredIfMultipleIgnoresAllTrue()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(-1);
+            const string experimentName = nameof(ExperimentIgnoredIfMultipleIgnoresAllTrue);
+
+            var result = Scientist.Science<int>(experimentName, experiment =>
+            {
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
+                experiment.Ignore(() => true);
+                experiment.Ignore(() => true);
+                experiment.Ignore(() => true);
+            });
+
+            Assert.Equal(42, result);
+            var experimentResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            Assert.False(experimentResult.MismatchedObservations.Any());
+            Assert.True(experimentResult.IgnoredObservations.Any());
+            Assert.True(experimentResult.Matched);
+        }
+
+        [Fact]
+        public void ExperimentIgnoredIfMultipleIgnoresOnlyOneTrue()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(-1);
+            const string experimentName = nameof(ExperimentIgnoredIfMultipleIgnoresOnlyOneTrue);
+
+            var result = Scientist.Science<int>(experimentName, experiment =>
+            {
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
+                experiment.Ignore(() => true);
+                experiment.Ignore(() => false);
+                experiment.Ignore(() => false);
+            });
+
+            Assert.Equal(42, result);
+            var experimentResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            Assert.False(experimentResult.MismatchedObservations.Any());
+            Assert.True(experimentResult.IgnoredObservations.Any());
+            Assert.True(experimentResult.Matched);
+        }
     }
 }

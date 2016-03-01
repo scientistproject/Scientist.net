@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace GitHub.Internals
@@ -13,6 +14,7 @@ namespace GitHub.Internals
         Func<T, T, bool> _comparison = DefaultComparison;
         Func<Task> _beforeRun;
         Func<Task<bool>> _runIf = _alwaysRun;
+        HashSet<Func<Task<bool>>> _ignores { get; set; } = new HashSet<Func<Task<bool>>>();
 
         public Experiment(string name)
         {
@@ -38,8 +40,14 @@ namespace GitHub.Internals
         public void Try(Func<T> candidate) =>
             _candidate = () => Task.FromResult(candidate());
 
+        public void Ignore(Func<bool> block) => 
+            _ignores.Add(() => Task.FromResult(block()));
+
+        public void Ignore(Func<Task<bool>> block) => 
+            _ignores.Add(block);
+
         internal ExperimentInstance<T> Build() =>
-            new ExperimentInstance<T>(_name, _control, _candidate, _comparison, _beforeRun, _runIf);
+            new ExperimentInstance<T>(_name, _control, _candidate, _comparison, _beforeRun, _runIf, _ignores);
 
         public void Compare(Func<T, T, bool> comparison)
         {

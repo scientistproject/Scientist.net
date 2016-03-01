@@ -19,20 +19,22 @@ namespace GitHub.Internals
         readonly Func<T, T, bool> _comparator;
         readonly Func<Task> _beforeRun;
         readonly Func<Task<bool>> _runIf;
+        readonly IEnumerable<Func<Task<bool>>> _ignores;
         
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
 
-        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf)
+        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<Task<bool>>> ignores)
             : this(name,
                   new NamedBehavior(ControlExperimentName, control),
                   new NamedBehavior(CandidateExperimentName, candidate),
                   comparator,
                   beforeRun,
-                  runIf)
+                  runIf,
+                  ignores)
         {
         }
 
-        internal ExperimentInstance(string name, NamedBehavior control, NamedBehavior candidate, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf)
+        internal ExperimentInstance(string name, NamedBehavior control, NamedBehavior candidate, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<Task<bool>>> ignores)
         {
             _name = name;
             _behaviors = new List<NamedBehavior>
@@ -43,6 +45,7 @@ namespace GitHub.Internals
             _comparator = comparator;
             _beforeRun = beforeRun;
             _runIf = runIf;
+            _ignores = ignores;
         }
 
         public async Task<T> Run()
@@ -73,7 +76,14 @@ namespace GitHub.Internals
             }
 
             var controlObservation = observations.FirstOrDefault(o => o.Name == ControlExperimentName);
-            var result = new Result<T>(_name, observations, controlObservation, _comparator);
+
+            var ignored = false;
+            foreach (var ignore in _ignores)
+            {
+                ignored = ignored || await ignore();
+            }
+
+            var result = new Result<T>(_name, observations, controlObservation, _comparator, ignored);
 
             // TODO: Make this Fire and forget so we don't have to wait for this
             // to complete before we return a result
