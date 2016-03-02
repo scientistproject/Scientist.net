@@ -289,7 +289,7 @@ public class TheScientistClass
             {
                 experiment.Use(mock.Control);
                 experiment.Try(mock.Candidate);
-                experiment.Ignore(() => true);
+                experiment.Ignore((control, candidate) => true);
             });
 
             Assert.Equal(42, result);
@@ -310,7 +310,7 @@ public class TheScientistClass
             {
                 experiment.Use(mock.Control);
                 experiment.Try(mock.Candidate);
-                experiment.Ignore(() => false);
+                experiment.Ignore((control, candidate) => false);
             });
 
             Assert.Equal(42, result);
@@ -332,9 +332,9 @@ public class TheScientistClass
             {
                 experiment.Use(mock.Control);
                 experiment.Try(mock.Candidate);
-                experiment.Ignore(() => false);
-                experiment.Ignore(() => false);
-                experiment.Ignore(() => false);
+                experiment.Ignore((control, candidate) => false);
+                experiment.Ignore((control, candidate) => false);
+                experiment.Ignore((control, candidate) => false);
             });
 
             Assert.Equal(42, result);
@@ -356,14 +356,14 @@ public class TheScientistClass
             {
                 experiment.Use(mock.Control);
                 experiment.Try(mock.Candidate);
-                experiment.Ignore(() => true);
-                experiment.Ignore(() => true);
-                experiment.Ignore(() => true);
+                experiment.Ignore((control, candidate) => true);
+                experiment.Ignore((control, candidate) => true);
+                experiment.Ignore((control, candidate) => true);
             });
 
             Assert.Equal(42, result);
             var experimentResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
-            Assert.False(experimentResult.MismatchedObservations.Any());
+            Assert.True(experimentResult.MismatchedObservations.Any());
             Assert.True(experimentResult.IgnoredObservations.Any());
             Assert.True(experimentResult.Matched);
         }
@@ -380,14 +380,14 @@ public class TheScientistClass
             {
                 experiment.Use(mock.Control);
                 experiment.Try(mock.Candidate);
-                experiment.Ignore(() => true);
-                experiment.Ignore(() => false);
-                experiment.Ignore(() => false);
+                experiment.Ignore((control, candidate) => true);
+                experiment.Ignore((control, candidate) => false);
+                experiment.Ignore((control, candidate) => false);
             });
 
             Assert.Equal(42, result);
             var experimentResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
-            Assert.False(experimentResult.MismatchedObservations.Any());
+            Assert.True(experimentResult.MismatchedObservations.Any());
             Assert.True(experimentResult.IgnoredObservations.Any());
             Assert.True(experimentResult.Matched);
         }

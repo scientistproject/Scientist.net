@@ -1,21 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using GitHub.Internals;
 
 namespace GitHub
 {
     public class Result<T>
     {
-        public Result(string experimentName, IEnumerable<Observation<T>> observations, Observation<T> control, Func<T, T, bool> comparator, bool ignored)
+        internal Result(ExperimentInstance<T> experiment, IEnumerable<Observation<T>> observations, Observation<T> control, Func<T, T, bool> comparator)
         {
             Candidates = observations.Where(o => o != control).ToList();
             Control = control;
-            ExperimentName = experimentName;
+            ExperimentName = experiment.Name;
             Observations = observations.ToList();
 
-            MismatchedObservations = Candidates.Where(o => !ignored && !o.EquivalentTo(Control, comparator)).ToList();
+            MismatchedObservations = Candidates.Where(o => !o.EquivalentTo(Control, comparator)).ToList();
 
-            IgnoredObservations = Candidates.Except(MismatchedObservations).ToList();
+            IgnoredObservations = MismatchedObservations.Where(m => experiment.IgnoreMismatchedObservation(control, m).Result).ToList();
         }
 
         /// <summary>
@@ -36,12 +37,12 @@ namespace GitHub
         /// <summary>
         /// Gets whether the candidate observations matched the controlled observation.
         /// </summary>
-        public bool Matched => !MismatchedObservations.Any();
+        public bool Matched => !MismatchedObservations.Any() || IgnoredObservations.Any();
 
         /// <summary>
         /// Gets whether any of the candidate observations did not match the controlled observation.
         /// </summary>
-        public bool Mismatched => MismatchedObservations.Any();
+        public bool Mismatched => !Matched;
 
         /// <summary>
         /// Gets all of the observations that did not match the controlled observation.

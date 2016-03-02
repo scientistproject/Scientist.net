@@ -41,7 +41,7 @@ namespace GitHub.Internals
         /// Defines the check to run to determine if mismatches should be ignored.
         /// </summary>
         /// <param name="block">The delegate to execute</param>
-        void Ignore(Func<bool> block);
+        void Ignore(Func<T, T, bool> block);
     }
 
     /// <summary>
@@ -82,6 +82,6 @@ namespace GitHub.Internals
         /// Defines the check to run to determine if mismatches should be ignored.
         /// </summary>
         /// <param name="block">The delegate to execute</param>
-        void Ignore(Func<Task<bool>> block);
+        void Ignore(Func<T, T, Task<bool>> block);
     }
 }
