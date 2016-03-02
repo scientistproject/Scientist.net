@@ -391,5 +391,27 @@ public class TheScientistClass
             Assert.True(experimentResult.IgnoredObservations.Any());
             Assert.True(experimentResult.Matched);
         }
+
+        [Fact]
+        public void ExperimentIgnoredWithComplexIgnoreFunc()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(-1);
+            const string experimentName = nameof(ExperimentIgnoredWithComplexIgnoreFunc);
+
+            var result = Scientist.Science<int>(experimentName, experiment =>
+            {
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
+                experiment.Ignore((control, candidate) => control > 0 && candidate == -1);
+            });
+
+            Assert.Equal(42, result);
+            var experimentResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            Assert.True(experimentResult.MismatchedObservations.Any());
+            Assert.True(experimentResult.IgnoredObservations.Any());
+            Assert.True(experimentResult.Matched);
+        }
     }
 }
