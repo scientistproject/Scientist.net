@@ -13,9 +13,11 @@ namespace GitHub
             ExperimentName = experiment.Name;
             Observations = observations.ToList();
 
-            MismatchedObservations = Candidates.Where(o => !o.EquivalentTo(Control, experiment.Comparator)).ToList();
+            var mismatchedObservations = Candidates.Where(o => !o.EquivalentTo(Control, experiment.Comparator)).ToList();
 
-            IgnoredObservations = MismatchedObservations.Where(m => experiment.IgnoreMismatchedObservation(control, m).Result).ToList();
+            IgnoredObservations = mismatchedObservations.Where(m => experiment.IgnoreMismatchedObservation(control, m).Result).ToList();
+
+            MismatchedObservations = mismatchedObservations.Except(IgnoredObservations).ToList();
         }
 
         /// <summary>

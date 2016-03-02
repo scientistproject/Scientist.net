@@ -363,7 +363,7 @@ public class TheScientistClass
 
             Assert.Equal(42, result);
             var experimentResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
-            Assert.True(experimentResult.MismatchedObservations.Any());
+            Assert.False(experimentResult.MismatchedObservations.Any());
             Assert.True(experimentResult.IgnoredObservations.Any());
             Assert.True(experimentResult.Matched);
         }
@@ -387,7 +387,7 @@ public class TheScientistClass
 
             Assert.Equal(42, result);
             var experimentResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
-            Assert.True(experimentResult.MismatchedObservations.Any());
+            Assert.False(experimentResult.MismatchedObservations.Any());
             Assert.True(experimentResult.IgnoredObservations.Any());
             Assert.True(experimentResult.Matched);
         }
@@ -409,7 +409,7 @@ public class TheScientistClass
 
             Assert.Equal(42, result);
             var experimentResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
-            Assert.True(experimentResult.MismatchedObservations.Any());
+            Assert.False(experimentResult.MismatchedObservations.Any());
             Assert.True(experimentResult.IgnoredObservations.Any());
             Assert.True(experimentResult.Matched);
         }
