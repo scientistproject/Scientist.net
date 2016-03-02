@@ -44,8 +44,8 @@ namespace GitHub.Internals
             _beforeRun = beforeRun;
             _runIf = runIf;
         }
-
-        public async Task<T> Run()
+        
+        public async Task<T> RunAsync()
         {
             // Determine if experiments should be run.
             if (!await _runIf())
