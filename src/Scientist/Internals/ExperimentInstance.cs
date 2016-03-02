@@ -77,7 +77,7 @@ namespace GitHub.Internals
 
             var controlObservation = observations.FirstOrDefault(o => o.Name == ControlExperimentName);
             
-            var result = new Result<T>(this, observations, controlObservation, Comparator);
+            var result = new Result<T>(this, observations, controlObservation);
 
             // TODO: Make this Fire and forget so we don't have to wait for this
             // to complete before we return a result

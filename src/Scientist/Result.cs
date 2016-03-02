@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using GitHub.Internals;
 
@@ -7,14 +6,14 @@ namespace GitHub
 {
     public class Result<T>
     {
-        internal Result(ExperimentInstance<T> experiment, IEnumerable<Observation<T>> observations, Observation<T> control, Func<T, T, bool> comparator)
+        internal Result(ExperimentInstance<T> experiment, IEnumerable<Observation<T>> observations, Observation<T> control)
         {
             Candidates = observations.Where(o => o != control).ToList();
             Control = control;
             ExperimentName = experiment.Name;
             Observations = observations.ToList();
 
-            MismatchedObservations = Candidates.Where(o => !o.EquivalentTo(Control, comparator)).ToList();
+            MismatchedObservations = Candidates.Where(o => !o.EquivalentTo(Control, experiment.Comparator)).ToList();
 
             IgnoredObservations = MismatchedObservations.Where(m => experiment.IgnoreMismatchedObservation(control, m).Result).ToList();
         }
