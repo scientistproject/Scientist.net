@@ -1,15 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace GitHub.Internals
 {
     internal class Experiment<T> : IExperiment<T>, IExperimentAsync<T>
     {
+        internal const string CandidateExperimentName = "candidate";
+
         readonly static Func<Task<bool>> _alwaysRun = () => Task.FromResult(true);
 
         string _name;
         Func<Task<T>> _control;
-        Func<Task<T>> _candidate;
+        
+        readonly Dictionary<string, Func<Task<T>>> _candidates;
         Func<T, T, bool> _comparison = DefaultComparison;
         Func<Task> _beforeRun;
         Func<Task<bool>> _runIf = _alwaysRun;
@@ -17,6 +21,7 @@ namespace GitHub.Internals
         public Experiment(string name)
         {
             _name = name;
+            _candidates = new Dictionary<string, Func<Task<T>>>();
         }
 
         public void RunIf(Func<Task<bool>> block) =>
@@ -30,16 +35,44 @@ namespace GitHub.Internals
         public void Use(Func<T> control) =>
             _control = () => Task.FromResult(control());
 
-        // TODO add optional name parameter, and store all delegates into a dictionary.
+        public void Try(Func<Task<T>> candidate)
+        {
+            if (_candidates.ContainsKey(CandidateExperimentName))
+            {
+                throw new InvalidOperationException("You have already added a default try. Give this candidate a new name with the Try(string, Func<Task<T>>) overload");
+            }
+            _candidates.Add(CandidateExperimentName, candidate);
+        }
 
-        public void Try(Func<Task<T>> candidate) =>
-            _candidate = candidate;
+        public void Try(Func<T> candidate)
+        {
+            if (_candidates.ContainsKey(CandidateExperimentName))
+            {
+                throw new InvalidOperationException("You have already added a default try. Give this candidate a new name with the Try(string, Func<Task<T>>) overload");
+            }
+            _candidates.Add(CandidateExperimentName, () => Task.FromResult(candidate()));
+        }
 
-        public void Try(Func<T> candidate) =>
-            _candidate = () => Task.FromResult(candidate());
+        public void Try(string name, Func<Task<T>> candidate)
+        {
+            if (_candidates.ContainsKey(name))
+            {
+                throw new InvalidOperationException($"You already have a candidate named {name}. Provide a different name for this test.");
+            }
+            _candidates.Add(name, candidate);
+        }
+
+        public void Try(string name, Func<T> candidate)
+        {
+            if (_candidates.ContainsKey(name))
+            {
+                throw new InvalidOperationException($"You already have a candidate named {name}. Provide a different name for this test.");
+            }
+            _candidates.Add(name, () => Task.FromResult(candidate()));
+        }
 
         internal ExperimentInstance<T> Build() =>
-            new ExperimentInstance<T>(_name, _control, _candidate, _comparison, _beforeRun, _runIf);
+            new ExperimentInstance<T>(_name, _control, _candidates, _comparison, _beforeRun, _runIf);
 
         public void Compare(Func<T, T, bool> comparison)
         {
