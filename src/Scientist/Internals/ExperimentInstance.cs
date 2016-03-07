@@ -11,7 +11,6 @@ namespace GitHub.Internals
     /// <typeparam name="T">The return type of the experiment</typeparam>
     internal class ExperimentInstance<T>
     {
-        internal const string CandidateExperimentName = "candidate";
         internal const string ControlExperimentName = "control";
 
         internal readonly string Name;
@@ -22,26 +21,28 @@ namespace GitHub.Internals
         internal readonly IEnumerable<Func<T, T, Task<bool>>> Ignores;
         
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
-
-        public ExperimentInstance(string name, Func<Task<T>> control, Func<Task<T>> candidate, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores)
+        
+        public ExperimentInstance(string name, Func<Task<T>> control, Dictionary<string, Func<Task<T>>> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores)
             : this(name,
                   new NamedBehavior(ControlExperimentName, control),
-                  new NamedBehavior(CandidateExperimentName, candidate),
+                  candidates.Select(c => new NamedBehavior(c.Key, c.Value)),
                   comparator,
                   beforeRun,
                   runIf,
                   ignores)
         {
         }
-
-        internal ExperimentInstance(string name, NamedBehavior control, NamedBehavior candidate, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores)
+        
+        internal ExperimentInstance(string name, NamedBehavior control, IEnumerable<NamedBehavior> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores)
         {
             Name = name;
+
             Behaviors = new List<NamedBehavior>
             {
                 control,
-                candidate
             };
+            Behaviors.AddRange(candidates);
+
             Comparator = comparator;
             BeforeRun = beforeRun;
             RunIf = runIf;

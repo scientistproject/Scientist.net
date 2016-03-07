@@ -27,7 +27,7 @@ public class TheScientistClass
             {
                 experiment.RunIf(mock.RunIf);
                 experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
+                experiment.Try("candidate", mock.Candidate);
             });
 
             Assert.Equal(expectedResult, result);
@@ -50,7 +50,7 @@ public class TheScientistClass
                 Scientist.Science<int>(experimentName, experiment =>
                 {
                     experiment.Use(mock.Control);
-                    experiment.Try(mock.Candidate);
+                    experiment.Try("candidate", mock.Candidate);
                 });
             });
 
@@ -64,7 +64,7 @@ public class TheScientistClass
         [Fact]
         public void RunsBothBranchesOfTheExperimentAndReportsSuccess()
         {
-            var mock = Substitute.For< IControlCandidate<int>>();
+            var mock = Substitute.For<IControlCandidate<int>>();
             mock.Control().Returns(42);
             mock.Candidate().Returns(42);
             const string experimentName = nameof(RunsBothBranchesOfTheExperimentAndReportsSuccess);
@@ -72,7 +72,7 @@ public class TheScientistClass
             var result = Scientist.Science<int>(experimentName, experiment =>
             {
                 experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
+                experiment.Try("candidate", mock.Candidate);
             });
 
             Assert.Equal(42, result);
@@ -92,7 +92,7 @@ public class TheScientistClass
             var result = await Scientist.ScienceAsync<int>(experimentName, experiment =>
             {
                 experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
+                experiment.Try("candidate", mock.Candidate);
             });
 
             Assert.Equal(42, result);
@@ -108,7 +108,7 @@ public class TheScientistClass
             var result = Scientist.Science<object>(experimentName, experiment =>
             {
                 experiment.Use(() => null);
-                experiment.Try(() => null);
+                experiment.Try("candidate", () => null);
             });
 
             Assert.Null(result);
@@ -136,7 +136,7 @@ public class TheScientistClass
             var result = Scientist.Science<int>(experimentName, experiment =>
             {
                 experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
+                experiment.Try("candidate", mock.Candidate);
             });
 
             Assert.Equal(42, result);
@@ -160,7 +160,7 @@ public class TheScientistClass
             var result = Scientist.Science<int>(experimentName, experiment =>
             {
                 experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
+                experiment.Try("candidate", mock.Candidate);
             });
 
             Assert.Equal(42, result);
@@ -184,7 +184,7 @@ public class TheScientistClass
             {
                 experiment.Compare((a, b) => a.Count == b.Count && a.Name == b.Name);
                 experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
+                experiment.Try("candidate", mock.Candidate);
             });
 
             Assert.Equal(10, result.Count);
@@ -206,7 +206,7 @@ public class TheScientistClass
             {
                 experiment.Compare((a, b) => a.Count == b.Count && a.Name == b.Name);
                 experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
+                experiment.Try("candidate", mock.Candidate);
             });
 
             Assert.Equal(10, result.Count);
@@ -227,7 +227,7 @@ public class TheScientistClass
             var result = Scientist.Science<ComplexResult>(experimentName, experiment =>
             {
                 experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
+                experiment.Try("candidate", mock.Candidate);
             });
 
             Assert.Equal(10, result.Count);
@@ -248,7 +248,7 @@ public class TheScientistClass
             var result = Scientist.Science<ComplexResult>(experimentName, experiment =>
             {
                 experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
+                experiment.Try("candidate", mock.Candidate);
             });
 
             Assert.Equal(10, result.Count);
@@ -270,11 +270,123 @@ public class TheScientistClass
             {
                 experiment.BeforeRun(mock.BeforeRun);
                 experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
+                experiment.Try("candidate", mock.Candidate);
             });
 
             Assert.Equal(42, result);
             mock.Received().BeforeRun();
+        }
+
+        [Fact]
+        public void AllTrysAreRun()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+            var mockTwo = Substitute.For<IControlCandidate<int>>();
+            mockTwo.Candidate().Returns(42);
+            var mockThree = Substitute.For<IControlCandidate<int>>();
+            mockThree.Candidate().Returns(42);
+
+            const string experimentName = nameof(AllTrysAreRun);
+
+            var result = Scientist.Science<int>(experimentName, experiment =>
+            {
+                experiment.Use(mock.Control);
+                experiment.Try("candidate one", mock.Candidate);
+                experiment.Try("candidate two", mockTwo.Candidate);
+                experiment.Try("candidate three", mockThree.Candidate);
+            });
+
+            Assert.Equal(42, result);
+            mock.Received().Candidate();
+            mockTwo.Received().Candidate();
+            mockThree.Received().Candidate();
+        }
+
+        [Fact]
+        public void SingleCandidateDifferenceCausesMismatch()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+            var mockTwo = Substitute.For<IControlCandidate<int>>();
+            mockTwo.Candidate().Returns(42);
+            var mockThree = Substitute.For<IControlCandidate<int>>();
+            mockThree.Candidate().Returns(0);
+
+            const string experimentName = nameof(SingleCandidateDifferenceCausesMismatch);
+
+            var result = Scientist.Science<int>(experimentName, experiment =>
+            {
+                experiment.Use(mock.Control);
+                experiment.Try("candidate one", mock.Candidate);
+                experiment.Try("candidate two", mockTwo.Candidate);
+                experiment.Try("candidate three", mockThree.Candidate);
+            });
+
+            Assert.Equal(42, result);
+            Assert.False(TestHelper.Results<int>().First(m => m.ExperimentName == experimentName).Matched);
+        }
+
+        [Fact]
+        public void CallingDefaultTryTwiceThrows()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+
+            const string experimentName = nameof(CallingDefaultTryTwiceThrows);
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                var result = Scientist.Science<int>(experimentName, experiment =>
+                {
+                    experiment.Use(mock.Control);
+                    experiment.Try(mock.Candidate);
+                    experiment.Try(mock.Candidate);
+                });
+            });
+        }
+
+        [Fact]
+        public void CallingTryWithSameCandidateNameThrows()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+
+            const string experimentName = nameof(CallingTryWithSameCandidateNameThrows);
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                var result = Scientist.Science<int>(experimentName, experiment =>
+                {
+                    experiment.Use(mock.Control);
+                    experiment.Try("candidate", mock.Candidate);
+                    experiment.Try("candidate", mock.Candidate);
+                });
+            });
+        }
+
+        [Fact]
+        public void CallingTryWithDifferentCandidateNamesIsAllowed()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+
+            const string experimentName = nameof(CallingTryWithDifferentCandidateNamesIsAllowed);
+
+            var result = Scientist.Science<int>(experimentName, experiment =>
+            {
+                experiment.Use(mock.Control);
+                experiment.Try("candidate", mock.Candidate);
+                experiment.Try("candidate2", mock.Candidate);
+            });
+
+            Assert.Equal(42, result);
+            Assert.True(TestHelper.Results<int>().First(m => m.ExperimentName == experimentName).Matched);
         }
 
         [Fact]
