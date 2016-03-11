@@ -17,6 +17,7 @@ namespace GitHub.Internals
         Func<T, T, bool> _comparison = DefaultComparison;
         Func<Task> _beforeRun;
         Func<Task<bool>> _runIf = _alwaysRun;
+        readonly List<Func<T, T, Task<bool>>> _ignores = new List<Func<T, T, Task<bool>>>();
 
         public Experiment(string name)
         {
@@ -26,6 +27,7 @@ namespace GitHub.Internals
 
         public void RunIf(Func<Task<bool>> block) =>
             _runIf = block;
+
         public void RunIf(Func<bool> block) =>
             _runIf = () => Task.FromResult(block());
 
@@ -71,8 +73,14 @@ namespace GitHub.Internals
             _candidates.Add(name, () => Task.FromResult(candidate()));
         }
 
+        public void Ignore(Func<T, T, bool> block) => 
+            _ignores.Add((con, can) => Task.FromResult(block(con, can)));
+
+        public void Ignore(Func<T, T, Task<bool>> block) => 
+            _ignores.Add(block);
+
         internal ExperimentInstance<T> Build() =>
-            new ExperimentInstance<T>(_name, _control, _candidates, _comparison, _beforeRun, _runIf);
+            new ExperimentInstance<T>(_name, _control, _candidates, _comparison, _beforeRun, _runIf, _ignores);
 
         public void Compare(Func<T, T, bool> comparison)
         {

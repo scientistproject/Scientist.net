@@ -13,68 +13,72 @@ namespace GitHub.Internals
     {
         internal const string ControlExperimentName = "control";
 
-        readonly string _name;
-        readonly List<NamedBehavior> _behaviors;
-        readonly Func<T, T, bool> _comparator;
-        readonly Func<Task> _beforeRun;
-        readonly Func<Task<bool>> _runIf;
+        internal readonly string Name;
+        internal readonly List<NamedBehavior> Behaviors;
+        internal readonly Func<T, T, bool> Comparator;
+        internal readonly Func<Task> BeforeRun;
+        internal readonly Func<Task<bool>> RunIf;
+        internal readonly IEnumerable<Func<T, T, Task<bool>>> Ignores;
         
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
-
-        public ExperimentInstance(string name, Func<Task<T>> control, Dictionary<string, Func<Task<T>>> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf)
+        
+        public ExperimentInstance(string name, Func<Task<T>> control, Dictionary<string, Func<Task<T>>> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores)
             : this(name,
                   new NamedBehavior(ControlExperimentName, control),
                   candidates.Select(c => new NamedBehavior(c.Key, c.Value)),
                   comparator,
                   beforeRun,
-                  runIf)
+                  runIf,
+                  ignores)
         {
         }
-
-        internal ExperimentInstance(string name, NamedBehavior control, IEnumerable<NamedBehavior> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf)
+        
+        internal ExperimentInstance(string name, NamedBehavior control, IEnumerable<NamedBehavior> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores)
         {
-            _name = name;
+            Name = name;
 
-            _behaviors = new List<NamedBehavior>
+            Behaviors = new List<NamedBehavior>
             {
                 control,
             };
-            _behaviors.AddRange(candidates);
+            Behaviors.AddRange(candidates);
 
-            _comparator = comparator;
-            _beforeRun = beforeRun;
-            _runIf = runIf;
+            Comparator = comparator;
+            BeforeRun = beforeRun;
+            RunIf = runIf;
+            Ignores = ignores;
         }
 
         public async Task<T> Run()
         {
             // Determine if experiments should be run.
-            if (!await _runIf())
+            if (!await RunIf())
             {
                 // Run the control behavior.
-                return await _behaviors[0].Behavior();
+                return await Behaviors[0].Behavior();
             }
 
-            if (_beforeRun != null)
+            if (BeforeRun != null)
             {
-                await _beforeRun();
+                await BeforeRun();
             }
 
             // Randomize ordering...
             NamedBehavior[] orderedBehaviors;
             lock (_random)
             {
-                orderedBehaviors = _behaviors.OrderBy(b => _random.Next()).ToArray();
+                orderedBehaviors = Behaviors.OrderBy(b => _random.Next()).ToArray();
             }
 
             var observations = new List<Observation<T>>();
             foreach (var behavior in orderedBehaviors)
             {
-                observations.Add(await Observation<T>.New(behavior.Name, behavior.Behavior, _comparator));
+                observations.Add(await Observation<T>.New(behavior.Name, behavior.Behavior, Comparator));
             }
 
             var controlObservation = observations.FirstOrDefault(o => o.Name == ControlExperimentName);
-            var result = new Result<T>(_name, observations, controlObservation, _comparator);
+            
+            var result = new Result<T>(this, observations, controlObservation);
 
             // TODO: Make this Fire and forget so we don't have to wait for this
             // to complete before we return a result
@@ -82,6 +86,19 @@ namespace GitHub.Internals
 
             if (controlObservation.Thrown) throw controlObservation.Exception;
             return controlObservation.Value;
+        }
+
+        public async Task<bool> IgnoreMismatchedObservation(Observation<T> control, Observation<T> candidate)
+        {
+            if (!Ignores.Any())
+            {
+                return false;
+            }
+
+            //TODO: Does this really need to be async? We could run sync and return on first true
+            var results = await Task.WhenAll(Ignores.Select(i => i(control.Value, candidate.Value)));
+
+            return results.Any(i => i);
         }
         
         internal class NamedBehavior

@@ -43,6 +43,12 @@ namespace GitHub.Internals
         /// Defines a custom func used to compare results.
         /// </summary>
         void Compare(Func<T, T, bool> comparison);
+
+        /// <summary>
+        /// Defines the check to run to determine if mismatches should be ignored.
+        /// </summary>
+        /// <param name="block">The delegate to execute</param>
+        void Ignore(Func<T, T, bool> block);
     }
 
     /// <summary>
@@ -85,5 +91,11 @@ namespace GitHub.Internals
         /// Defines a func used to compare results.
         /// </summary>
         void Compare(Func<T, T, bool> comparison);
+
+        /// <summary>
+        /// Defines the check to run to determine if mismatches should be ignored.
+        /// </summary>
+        /// <param name="block">The delegate to execute</param>
+        void Ignore(Func<T, T, Task<bool>> block);
     }
 }
