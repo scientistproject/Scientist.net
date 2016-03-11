@@ -27,6 +27,7 @@ namespace GitHub.Internals
 
         public void RunIf(Func<Task<bool>> block) =>
             _runIf = block;
+
         public void RunIf(Func<bool> block) =>
             _runIf = () => Task.FromResult(block());
 
