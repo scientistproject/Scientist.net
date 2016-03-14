@@ -18,6 +18,7 @@ namespace GitHub.Internals
         Func<Task> _beforeRun;
         Func<Task<bool>> _runIf = _alwaysRun;
         readonly List<Func<T, T, Task<bool>>> _ignores = new List<Func<T, T, Task<bool>>>();
+        readonly Dictionary<string, object> _contexts = new Dictionary<string, object>();
 
         public Experiment(string name)
         {
@@ -79,8 +80,11 @@ namespace GitHub.Internals
         public void Ignore(Func<T, T, Task<bool>> block) => 
             _ignores.Add(block);
 
+        public void Context(string key, object data) =>
+            _contexts.Add(key, data);
+
         internal ExperimentInstance<T> Build() =>
-            new ExperimentInstance<T>(_name, _control, _candidates, _comparison, _beforeRun, _runIf, _ignores);
+            new ExperimentInstance<T>(_name, _control, _candidates, _comparison, _beforeRun, _runIf, _ignores, _contexts);
 
         public void Compare(Func<T, T, bool> comparison)
         {

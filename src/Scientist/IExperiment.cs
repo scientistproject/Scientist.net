@@ -49,6 +49,13 @@ namespace GitHub.Internals
         /// </summary>
         /// <param name="block">The delegate to execute</param>
         void Ignore(Func<T, T, bool> block);
+
+        /// <summary>
+        /// Defines data to publish with results.
+        /// </summary>
+        /// <param name="key">The name of the context</param>
+        /// <param name="data">The context data</param>
+        void Context(string key, object data);
     }
 
     /// <summary>
@@ -97,5 +104,12 @@ namespace GitHub.Internals
         /// </summary>
         /// <param name="block">The delegate to execute</param>
         void Ignore(Func<T, T, Task<bool>> block);
+
+        /// <summary>
+        /// Defines data to publish with results.
+        /// </summary>
+        /// <param name="key">The name of the context</param>
+        /// <param name="data">The context data</param>
+        void Context(string key, object data);
     }
 }
