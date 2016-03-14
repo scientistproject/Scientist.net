@@ -527,13 +527,13 @@ public class TheScientistClass
         }
 
         [Fact]
-        public void ContextsAreIncludedWithPublish()
+        public void SingleContextIncludedWithPublish()
         {
             var mock = Substitute.For<IControlCandidate<int>>();
             mock.Control().Returns(42);
             mock.Candidate().Returns(42);
 
-            const string experimentName = nameof(ContextsAreIncludedWithPublish);
+            const string experimentName = nameof(SingleContextIncludedWithPublish);
 
             var result = Scientist.Science<int>(experimentName, e =>
             {
@@ -549,13 +549,37 @@ public class TheScientistClass
         }
 
         [Fact]
+        public void MultipleContextsIncludedWithPublish()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+
+            const string experimentName = nameof(MultipleContextsIncludedWithPublish);
+
+            var result = Scientist.Science<int>(experimentName, e =>
+            {
+                e.Use(mock.Control);
+                e.Try(mock.Candidate);
+                e.Context("test", "data");
+                e.Context("test2", "data2");
+                e.Context("test3", "data3");
+            });
+
+            var publishResults = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+
+            Assert.Equal(42, result);
+            Assert.Equal(3, publishResults.Contexts.Count);
+        }
+
+        [Fact]
         public void ContextEmptyIfNoContextSupplied()
         {
             var mock = Substitute.For<IControlCandidate<int>>();
             mock.Control().Returns(42);
             mock.Candidate().Returns(42);
 
-            const string experimentName = nameof(ContextsAreIncludedWithPublish);
+            const string experimentName = nameof(ContextEmptyIfNoContextSupplied);
 
             var result = Scientist.Science<int>(experimentName, e =>
             {
