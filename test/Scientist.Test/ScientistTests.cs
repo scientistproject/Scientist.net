@@ -546,6 +546,10 @@ public class TheScientistClass
 
             Assert.Equal(42, result);
             Assert.True(publishResults.Contexts.Any());
+
+            var context = publishResults.Contexts.First();
+            Assert.Equal("test", context.Key);
+            Assert.Equal("data", context.Value);
         }
 
         [Fact]
@@ -570,6 +574,18 @@ public class TheScientistClass
 
             Assert.Equal(42, result);
             Assert.Equal(3, publishResults.Contexts.Count);
+
+            var context = publishResults.Contexts.First();
+            Assert.Equal("test", context.Key);
+            Assert.Equal("data", context.Value);
+
+            context = publishResults.Contexts.Skip(1).First();
+            Assert.Equal("test2", context.Key);
+            Assert.Equal("data2", context.Value);
+
+            context = publishResults.Contexts.Skip(2).First();
+            Assert.Equal("test3", context.Key);
+            Assert.Equal("data3", context.Value);
         }
 
         [Fact]
