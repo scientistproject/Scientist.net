@@ -525,5 +525,48 @@ public class TheScientistClass
             Assert.True(experimentResult.IgnoredObservations.Any());
             Assert.True(experimentResult.Matched);
         }
+
+        [Fact]
+        public void ContextsAreIncludedWithPublish()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+
+            const string experimentName = nameof(ContextsAreIncludedWithPublish);
+
+            var result = Scientist.Science<int>(experimentName, e =>
+            {
+                e.Use(mock.Control);
+                e.Try(mock.Candidate);
+                e.Context("test", "data");
+            });
+
+            var publishResults = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+
+            Assert.Equal(42, result);
+            Assert.True(publishResults.Contexts.Any());
+        }
+
+        [Fact]
+        public void ContextEmptyIfNoContextSupplied()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+
+            const string experimentName = nameof(ContextsAreIncludedWithPublish);
+
+            var result = Scientist.Science<int>(experimentName, e =>
+            {
+                e.Use(mock.Control);
+                e.Try(mock.Candidate);
+            });
+
+            var publishResults = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+
+            Assert.Equal(42, result);
+            Assert.False(publishResults.Contexts.Any());
+        }
     }
 }
