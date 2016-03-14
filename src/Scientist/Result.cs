@@ -6,7 +6,7 @@ namespace GitHub
 {
     public class Result<T>
     {
-        internal Result(ExperimentInstance<T> experiment, IEnumerable<Observation<T>> observations, Observation<T> control, Dictionary<string, object> contexts)
+        internal Result(ExperimentInstance<T> experiment, IEnumerable<Observation<T>> observations, Observation<T> control, Dictionary<string, dynamic> contexts)
         {
             Candidates = observations.Where(o => o != control).ToList();
             Control = control;
@@ -64,6 +64,6 @@ namespace GitHub
         /// <summary>
         /// Gets the context data supplied to the experiment.
         /// </summary>
-        public IReadOnlyDictionary<string, object> Contexts { get; }
+        public IReadOnlyDictionary<string, dynamic> Contexts { get; }
     }
 }

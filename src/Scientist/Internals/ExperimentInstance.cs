@@ -19,11 +19,11 @@ namespace GitHub.Internals
         internal readonly Func<Task> BeforeRun;
         internal readonly Func<Task<bool>> RunIf;
         internal readonly IEnumerable<Func<T, T, Task<bool>>> Ignores;
-        internal readonly Dictionary<string, object> Contexts;
+        internal readonly Dictionary<string, dynamic> Contexts;
         
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
         
-        public ExperimentInstance(string name, Func<Task<T>> control, Dictionary<string, Func<Task<T>>> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores, Dictionary<string, object> contexts)
+        public ExperimentInstance(string name, Func<Task<T>> control, Dictionary<string, Func<Task<T>>> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores, Dictionary<string, dynamic> contexts)
             : this(name,
                   new NamedBehavior(ControlExperimentName, control),
                   candidates.Select(c => new NamedBehavior(c.Key, c.Value)),
@@ -35,7 +35,7 @@ namespace GitHub.Internals
         {
         }
         
-        internal ExperimentInstance(string name, NamedBehavior control, IEnumerable<NamedBehavior> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores, Dictionary<string, object> contexts)
+        internal ExperimentInstance(string name, NamedBehavior control, IEnumerable<NamedBehavior> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores, Dictionary<string, dynamic> contexts)
         {
             Name = name;
 
