@@ -89,17 +89,6 @@ namespace GitHub.Internals
             _contexts.Add(key, data);
         }
 
-        public bool TryAddContext(string key, dynamic data)
-        {
-            if (_contexts.ContainsKey(key))
-            {
-                return false;
-            }
-
-            _contexts.Add(key, data);
-            return true;
-        }
-
         internal ExperimentInstance<T> Build() =>
             new ExperimentInstance<T>(_name, _control, _candidates, _comparison, _beforeRun, _runIf, _ignores, _contexts);
 

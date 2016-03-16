@@ -660,28 +660,5 @@ public class TheScientistClass
                 });
             });
         }
-        
-        [Fact]
-        public void TryAddContextReturnsFalseIfDuplicateKeyAdded()
-        {
-            var mock = Substitute.For<IControlCandidate<int>>();
-            mock.Control().Returns(42);
-            mock.Candidate().Returns(42);
-
-            const string experimentName = nameof(TryAddContextReturnsFalseIfDuplicateKeyAdded);
-
-            bool tryAddResult = false;
-
-            var result = Scientist.Science<int>(experimentName, e =>
-            {
-                e.Use(mock.Control);
-                e.Try(mock.Candidate);
-                e.TryAddContext("test", "data");
-                tryAddResult = e.TryAddContext("test", "data");
-            });
-
-            Assert.Equal(42, result);
-            Assert.False(tryAddResult);
-        }
     }
 }

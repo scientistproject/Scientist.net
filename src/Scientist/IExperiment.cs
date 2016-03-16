@@ -56,14 +56,6 @@ namespace GitHub.Internals
         /// <param name="key">The name of the context</param>
         /// <param name="data">The context data</param>
         void AddContext(string key, object data);
-
-        /// <summary>
-        /// Defines data to publish with results. 
-        /// </summary>
-        /// <param name="key">The name of the context</param>
-        /// <param name="data">The context data</param>
-        /// <returns ></returns>
-        bool TryAddContext(string key, dynamic data);
     }
 
     /// <summary>
@@ -119,12 +111,5 @@ namespace GitHub.Internals
         /// <param name="key">The name of the context</param>
         /// <param name="data">The context data</param>
         void AddContext(string key, object data);
-
-        /// <summary>
-        /// Defines data to publish with results. 
-        /// </summary>
-        /// <param name="key">The name of the context</param>
-        /// <param name="data">The context data</param>
-        bool TryAddContext(string key, dynamic data);
     }
 }
