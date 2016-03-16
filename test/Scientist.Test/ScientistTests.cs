@@ -539,7 +539,7 @@ public class TheScientistClass
             {
                 e.Use(mock.Control);
                 e.Try(mock.Candidate);
-                e.Context("test", "data");
+                e.AddContext("test", "data");
             });
 
             var publishResults = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
@@ -565,9 +565,9 @@ public class TheScientistClass
             {
                 e.Use(mock.Control);
                 e.Try(mock.Candidate);
-                e.Context("test", "data");
-                e.Context("test2", "data2");
-                e.Context("test3", "data3");
+                e.AddContext("test", "data");
+                e.AddContext("test2", "data2");
+                e.AddContext("test3", "data3");
             });
 
             var publishResults = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
@@ -603,7 +603,7 @@ public class TheScientistClass
             {
                 e.Use(mock.Control);
                 e.Try(mock.Candidate);
-                e.Context("test", new {Id = 1, Name = "name", Date = testTime});
+                e.AddContext("test", new {Id = 1, Name = "name", Date = testTime});
             });
 
             var publishResults = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
