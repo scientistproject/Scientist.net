@@ -10,6 +10,7 @@ using Xunit;
 
 public class TheScientistClass
 {
+    //TODO: Clean up this class
     public class TheScienceMethod
     {
         [Fact]
@@ -637,6 +638,50 @@ public class TheScientistClass
 
             Assert.Equal(42, result);
             Assert.False(publishResults.Contexts.Any());
+        }
+        
+        [Fact]
+        public void AddContextThrowsIfDuplicateKeyAdded()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+
+            const string experimentName = nameof(AddContextThrowsIfDuplicateKeyAdded);
+
+            Assert.Throws<ArgumentException>(() =>
+            {
+                Scientist.Science<int>(experimentName, e =>
+                {
+                    e.Use(mock.Control);
+                    e.Try(mock.Candidate);
+                    e.AddContext("test", "data");
+                    e.AddContext("test", "data");
+                });
+            });
+        }
+        
+        [Fact]
+        public void TryAddContextReturnsFalseIfDuplicateKeyAdded()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+
+            const string experimentName = nameof(TryAddContextReturnsFalseIfDuplicateKeyAdded);
+
+            bool tryAddResult = false;
+
+            var result = Scientist.Science<int>(experimentName, e =>
+            {
+                e.Use(mock.Control);
+                e.Try(mock.Candidate);
+                e.TryAddContext("test", "data");
+                tryAddResult = e.TryAddContext("test", "data");
+            });
+
+            Assert.Equal(42, result);
+            Assert.False(tryAddResult);
         }
     }
 }
