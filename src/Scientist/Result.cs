@@ -6,12 +6,13 @@ namespace GitHub
 {
     public class Result<T>
     {
-        internal Result(ExperimentInstance<T> experiment, IEnumerable<Observation<T>> observations, Observation<T> control)
+        internal Result(ExperimentInstance<T> experiment, IEnumerable<Observation<T>> observations, Observation<T> control, Dictionary<string, dynamic> contexts)
         {
             Candidates = observations.Where(o => o != control).ToList();
             Control = control;
             ExperimentName = experiment.Name;
             Observations = observations.ToList();
+            Contexts = contexts;
 
             var mismatchedObservations = Candidates.Where(o => !o.EquivalentTo(Control, experiment.Comparator)).ToList();
 
@@ -59,5 +60,10 @@ namespace GitHub
         /// Gets all of the mismatched observations whos values where ignored.
         /// </summary>
         public IReadOnlyList<Observation<T>> IgnoredObservations { get; }
+
+        /// <summary>
+        /// Gets the context data supplied to the experiment.
+        /// </summary>
+        public IReadOnlyDictionary<string, dynamic> Contexts { get; }
     }
 }
