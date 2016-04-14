@@ -8,16 +8,17 @@ namespace GitHub.Internals
     {
         internal const string CandidateExperimentName = "candidate";
 
-        readonly static Func<Task<bool>> _alwaysRun = () => Task.FromResult(true);
+        private static readonly Func<Task<bool>> _alwaysRun = () => Task.FromResult(true);
 
-        string _name;
-        Func<Task<T>> _control;
-        
-        readonly Dictionary<string, Func<Task<T>>> _candidates;
-        Func<T, T, bool> _comparison = DefaultComparison;
-        Func<Task> _beforeRun;
-        Func<Task<bool>> _runIf = _alwaysRun;
-        readonly List<Func<T, T, Task<bool>>> _ignores = new List<Func<T, T, Task<bool>>>();
+        private string _name;
+        private Func<Task<T>> _control;
+
+        private readonly Dictionary<string, Func<Task<T>>> _candidates;
+        private Func<T, T, bool> _comparison = DefaultComparison;
+        private Func<Task> _beforeRun;
+        private Func<Task<bool>> _runIf = _alwaysRun;
+        private readonly List<Func<T, T, Task<bool>>> _ignores = new List<Func<T, T, Task<bool>>>();
+        private readonly Dictionary<string, dynamic> _contexts = new Dictionary<string, dynamic>();
 
         public Experiment(string name)
         {
@@ -41,7 +42,8 @@ namespace GitHub.Internals
         {
             if (_candidates.ContainsKey(CandidateExperimentName))
             {
-                throw new InvalidOperationException("You have already added a default try. Give this candidate a new name with the Try(string, Func<Task<T>>) overload");
+                throw new InvalidOperationException(
+                    "You have already added a default try. Give this candidate a new name with the Try(string, Func<Task<T>>) overload");
             }
             _candidates.Add(CandidateExperimentName, candidate);
         }
@@ -50,7 +52,8 @@ namespace GitHub.Internals
         {
             if (_candidates.ContainsKey(CandidateExperimentName))
             {
-                throw new InvalidOperationException("You have already added a default try. Give this candidate a new name with the Try(string, Func<Task<T>>) overload");
+                throw new InvalidOperationException(
+                    "You have already added a default try. Give this candidate a new name with the Try(string, Func<Task<T>>) overload");
             }
             _candidates.Add(CandidateExperimentName, () => Task.FromResult(candidate()));
         }
@@ -59,7 +62,8 @@ namespace GitHub.Internals
         {
             if (_candidates.ContainsKey(name))
             {
-                throw new InvalidOperationException($"You already have a candidate named {name}. Provide a different name for this test.");
+                throw new InvalidOperationException(
+                    $"You already have a candidate named {name}. Provide a different name for this test.");
             }
             _candidates.Add(name, candidate);
         }
@@ -68,19 +72,25 @@ namespace GitHub.Internals
         {
             if (_candidates.ContainsKey(name))
             {
-                throw new InvalidOperationException($"You already have a candidate named {name}. Provide a different name for this test.");
+                throw new InvalidOperationException(
+                    $"You already have a candidate named {name}. Provide a different name for this test.");
             }
             _candidates.Add(name, () => Task.FromResult(candidate()));
         }
 
-        public void Ignore(Func<T, T, bool> block) => 
+        public void Ignore(Func<T, T, bool> block) =>
             _ignores.Add((con, can) => Task.FromResult(block(con, can)));
 
-        public void Ignore(Func<T, T, Task<bool>> block) => 
+        public void Ignore(Func<T, T, Task<bool>> block) =>
             _ignores.Add(block);
 
+        public void AddContext(string key, dynamic data)
+        {
+            _contexts.Add(key, data);
+        }
+
         internal ExperimentInstance<T> Build() =>
-            new ExperimentInstance<T>(_name, _control, _candidates, _comparison, _beforeRun, _runIf, _ignores);
+            new ExperimentInstance<T>(_name, _control, _candidates, _comparison, _beforeRun, _runIf, _ignores, _contexts);
 
         public void Compare(Func<T, T, bool> comparison)
         {

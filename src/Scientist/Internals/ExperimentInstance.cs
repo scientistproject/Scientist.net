@@ -19,21 +19,23 @@ namespace GitHub.Internals
         internal readonly Func<Task> BeforeRun;
         internal readonly Func<Task<bool>> RunIf;
         internal readonly IEnumerable<Func<T, T, Task<bool>>> Ignores;
+        internal readonly Dictionary<string, dynamic> Contexts;
         
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
         
-        public ExperimentInstance(string name, Func<Task<T>> control, Dictionary<string, Func<Task<T>>> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores)
+        public ExperimentInstance(string name, Func<Task<T>> control, Dictionary<string, Func<Task<T>>> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores, Dictionary<string, dynamic> contexts)
             : this(name,
                   new NamedBehavior(ControlExperimentName, control),
                   candidates.Select(c => new NamedBehavior(c.Key, c.Value)),
                   comparator,
                   beforeRun,
                   runIf,
-                  ignores)
+                  ignores,
+                  contexts)
         {
         }
         
-        internal ExperimentInstance(string name, NamedBehavior control, IEnumerable<NamedBehavior> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores)
+        internal ExperimentInstance(string name, NamedBehavior control, IEnumerable<NamedBehavior> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores, Dictionary<string, dynamic> contexts)
         {
             Name = name;
 
@@ -47,6 +49,7 @@ namespace GitHub.Internals
             BeforeRun = beforeRun;
             RunIf = runIf;
             Ignores = ignores;
+            Contexts = contexts;
         }
 
         public async Task<T> Run()
@@ -78,7 +81,7 @@ namespace GitHub.Internals
 
             var controlObservation = observations.FirstOrDefault(o => o.Name == ControlExperimentName);
             
-            var result = new Result<T>(this, observations, controlObservation);
+            var result = new Result<T>(this, observations, controlObservation, Contexts);
 
             // TODO: Make this Fire and forget so we don't have to wait for this
             // to complete before we return a result

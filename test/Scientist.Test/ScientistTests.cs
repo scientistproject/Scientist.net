@@ -10,6 +10,7 @@ using Xunit;
 
 public class TheScientistClass
 {
+    //TODO: Clean up this class
     public class TheScienceMethod
     {
         [Fact]
@@ -524,6 +525,140 @@ public class TheScientistClass
             Assert.False(experimentResult.MismatchedObservations.Any());
             Assert.True(experimentResult.IgnoredObservations.Any());
             Assert.True(experimentResult.Matched);
+        }
+
+        [Fact]
+        public void SingleContextIncludedWithPublish()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+
+            const string experimentName = nameof(SingleContextIncludedWithPublish);
+
+            var result = Scientist.Science<int>(experimentName, e =>
+            {
+                e.Use(mock.Control);
+                e.Try(mock.Candidate);
+                e.AddContext("test", "data");
+            });
+
+            var publishResults = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+
+            Assert.Equal(42, result);
+            Assert.Equal(1, publishResults.Contexts.Count);
+
+            var context = publishResults.Contexts.First();
+            Assert.Equal("test", context.Key);
+            Assert.Equal("data", context.Value);
+        }
+
+        [Fact]
+        public void MultipleContextsIncludedWithPublish()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+
+            const string experimentName = nameof(MultipleContextsIncludedWithPublish);
+
+            var result = Scientist.Science<int>(experimentName, e =>
+            {
+                e.Use(mock.Control);
+                e.Try(mock.Candidate);
+                e.AddContext("test", "data");
+                e.AddContext("test2", "data2");
+                e.AddContext("test3", "data3");
+            });
+
+            var publishResults = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+
+            Assert.Equal(42, result);
+            Assert.Equal(3, publishResults.Contexts.Count);
+
+            var context = publishResults.Contexts.First();
+            Assert.Equal("test", context.Key);
+            Assert.Equal("data", context.Value);
+
+            context = publishResults.Contexts.Skip(1).First();
+            Assert.Equal("test2", context.Key);
+            Assert.Equal("data2", context.Value);
+
+            context = publishResults.Contexts.Skip(2).First();
+            Assert.Equal("test3", context.Key);
+            Assert.Equal("data3", context.Value);
+        }
+
+        [Fact]
+        public void ContextReturnsComplexObjectInPublish()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+
+            const string experimentName = nameof(ContextReturnsComplexObjectInPublish);
+
+            var testTime = DateTime.UtcNow;
+
+            var result = Scientist.Science<int>(experimentName, e =>
+            {
+                e.Use(mock.Control);
+                e.Try(mock.Candidate);
+                e.AddContext("test", new {Id = 1, Name = "name", Date = testTime});
+            });
+
+            var publishResults = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+
+            Assert.Equal(42, result);
+            Assert.Equal(1, publishResults.Contexts.Count);
+
+            var context = publishResults.Contexts.First();
+            Assert.Equal("test", context.Key);
+            Assert.Equal(1, context.Value.Id);
+            Assert.Equal("name", context.Value.Name);
+            Assert.Equal(testTime, context.Value.Date);
+        }
+
+        [Fact]
+        public void ContextEmptyIfNoContextSupplied()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+
+            const string experimentName = nameof(ContextEmptyIfNoContextSupplied);
+
+            var result = Scientist.Science<int>(experimentName, e =>
+            {
+                e.Use(mock.Control);
+                e.Try(mock.Candidate);
+            });
+
+            var publishResults = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+
+            Assert.Equal(42, result);
+            Assert.False(publishResults.Contexts.Any());
+        }
+        
+        [Fact]
+        public void AddContextThrowsIfDuplicateKeyAdded()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+
+            const string experimentName = nameof(AddContextThrowsIfDuplicateKeyAdded);
+
+            Assert.Throws<ArgumentException>(() =>
+            {
+                Scientist.Science<int>(experimentName, e =>
+                {
+                    e.Use(mock.Control);
+                    e.Try(mock.Candidate);
+                    e.AddContext("test", "data");
+                    e.AddContext("test", "data");
+                });
+            });
         }
     }
 }
