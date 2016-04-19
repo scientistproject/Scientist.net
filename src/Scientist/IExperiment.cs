@@ -10,6 +10,18 @@ namespace GitHub.Internals
     public interface IExperiment<T>
     {
         /// <summary>
+        /// Set this flag to throw on experiment mismatches.
+        /// 
+        /// This causes all science mismatches to throw a <see cref="MismatchException{T}"/>.
+        /// This is intended for test environments and should not be enabled in a production
+        /// environment.
+        /// </summary>
+        /// <value>
+        /// Whether to throw when the control and candidate mismatch.
+        /// </value>
+        bool ThrowOnMismatches { get; set; }
+
+        /// <summary>
         /// Define any expensive setup here before the experiment is run.
         /// </summary>
         void BeforeRun(Action action);
@@ -64,6 +76,18 @@ namespace GitHub.Internals
     /// <typeparam name="T">The return result for the experiment.</typeparam>
     public interface IExperimentAsync<T>
     {
+        /// <summary>
+        /// Set this flag to throw on experiment mismatches.
+        /// 
+        /// This causes all science mismatches to throw a <see cref="MismatchException{T}"/>.
+        /// This is intended for test environments and should not be enabled in a production
+        /// environment.
+        /// </summary>
+        /// <value>
+        /// Whether to throw when the control and candidate mismatch.
+        /// </value>
+        bool ThrowOnMismatches { get; set; }
+
         /// <summary>
         /// Define any expensive setup here before the experiment is run.
         /// </summary>
