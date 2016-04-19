@@ -48,6 +48,16 @@ public decimal GetUserStatistic(IUser user)
 }
 ```
 
+To ensure that experimental results always match use `ThrownOnMismatches`.
+
+```csharp
+Scientist.Science<int>("ExperimentN", experiment => 
+{
+    experiment.ThrowOnMismatches = true;
+    // ...
+})
+```
+
 By default observations are stored in an in-memory publisher. For production use, you'll
 probably want to implement an `IResultPublisher`.
 
