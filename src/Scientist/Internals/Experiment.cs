@@ -26,6 +26,8 @@ namespace GitHub.Internals
             _candidates = new Dictionary<string, Func<Task<T>>>();
         }
 
+        public bool ThrowOnMismatches { get; set; }
+
         public void RunIf(Func<Task<bool>> block) =>
             _runIf = block;
 
@@ -90,7 +92,7 @@ namespace GitHub.Internals
         }
 
         internal ExperimentInstance<T> Build() =>
-            new ExperimentInstance<T>(_name, _control, _candidates, _comparison, _beforeRun, _runIf, _ignores, _contexts);
+            new ExperimentInstance<T>(_name, _control, _candidates, _comparison, _beforeRun, _runIf, _ignores, _contexts, ThrowOnMismatches);
 
         public void Compare(Func<T, T, bool> comparison)
         {

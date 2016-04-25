@@ -20,10 +20,11 @@ namespace GitHub.Internals
         internal readonly Func<Task<bool>> RunIf;
         internal readonly IEnumerable<Func<T, T, Task<bool>>> Ignores;
         internal readonly Dictionary<string, dynamic> Contexts;
+        internal readonly bool ThrowOnMismatches;
         
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
         
-        public ExperimentInstance(string name, Func<Task<T>> control, Dictionary<string, Func<Task<T>>> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores, Dictionary<string, dynamic> contexts)
+        public ExperimentInstance(string name, Func<Task<T>> control, Dictionary<string, Func<Task<T>>> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores, Dictionary<string, dynamic> contexts, bool throwOnMismatches)
             : this(name,
                   new NamedBehavior(ControlExperimentName, control),
                   candidates.Select(c => new NamedBehavior(c.Key, c.Value)),
@@ -31,11 +32,12 @@ namespace GitHub.Internals
                   beforeRun,
                   runIf,
                   ignores,
-                  contexts)
+                  contexts,
+                  throwOnMismatches)
         {
         }
         
-        internal ExperimentInstance(string name, NamedBehavior control, IEnumerable<NamedBehavior> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores, Dictionary<string, dynamic> contexts)
+        internal ExperimentInstance(string name, NamedBehavior control, IEnumerable<NamedBehavior> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores, Dictionary<string, dynamic> contexts, bool throwOnMismatches)
         {
             Name = name;
 
@@ -50,6 +52,7 @@ namespace GitHub.Internals
             RunIf = runIf;
             Ignores = ignores;
             Contexts = contexts;
+            ThrowOnMismatches = throwOnMismatches;
         }
 
         public async Task<T> Run()
@@ -86,6 +89,11 @@ namespace GitHub.Internals
             // TODO: Make this Fire and forget so we don't have to wait for this
             // to complete before we return a result
             await Scientist.ResultPublisher.Publish(result);
+
+            if (ThrowOnMismatches && result.Mismatched)
+            {
+                throw new MismatchException<T>(Name, result);
+            }
 
             if (controlObservation.Thrown) throw controlObservation.Exception;
             return controlObservation.Value;

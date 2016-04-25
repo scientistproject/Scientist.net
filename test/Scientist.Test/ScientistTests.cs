@@ -660,5 +660,34 @@ public class TheScientistClass
                 });
             });
         }
+
+        [Fact]
+        public void ThrowsMismatchException()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(x => 1);
+            mock.Candidate().Returns(x => 2);
+            const string experimentName = nameof(ThrowsMismatchException);
+
+            var ex = Assert.Throws<AggregateException>(() =>
+            {
+                Scientist.Science<int>(experimentName, experiment =>
+                {
+                    experiment.ThrowOnMismatches = true;
+                    experiment.Use(mock.Control);
+                    experiment.Try(mock.Candidate);
+                });
+            });
+
+            Exception baseException = ex.GetBaseException();
+            Assert.IsType<MismatchException<int>>(baseException);
+            mock.Received().Control();
+            mock.Received().Candidate();
+
+            var result = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            var mismatchException = (MismatchException<int>)baseException;
+            Assert.Equal(experimentName, mismatchException.Name);
+            Assert.Same(result, mismatchException.Result);
+        }
     }
 }
