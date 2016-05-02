@@ -151,6 +151,9 @@ namespace GitHub.Internals
             try
             {
                 // TODO Implement Enabled here.
+
+                // Only let the experiment run if at least one candidate (> 1 behaviors) is 
+                // included.  The control is always included behaviors count.
                 return Behaviors.Count > 1 && await RunIfAllows();
             }
             catch (Exception ex)

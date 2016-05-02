@@ -32,7 +32,7 @@ public class ThrownTests
         });
 
         Assert.Equal(expectedResult, result);
-        mock.Thrown(Operation.Compare, ex);
+        mock.Received().Thrown(Operation.Compare, ex);
     }
 
     [Fact]
@@ -58,7 +58,7 @@ public class ThrownTests
         });
 
         Assert.Equal(expectedResult, result);
-        mock.Thrown(Operation.Ignore, ex);
+        mock.Received().Thrown(Operation.Ignore, ex);
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public class ThrownTests
             });
 
             Assert.Equal(expectedResult, result);
-            mock.Thrown(Operation.Publish, ex);
+            mock.Received().Thrown(Operation.Publish, ex);
         }
     }
 
@@ -111,7 +111,7 @@ public class ThrownTests
         });
 
         Assert.Equal(expectedResult, result);
-        mock.Thrown(Operation.RunIf, ex);
+        mock.Received().Thrown(Operation.RunIf, ex);
     }
 
     /// <summary>
