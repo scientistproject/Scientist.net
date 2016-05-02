@@ -9,6 +9,8 @@ namespace GitHub.Internals
         internal const string CandidateExperimentName = "candidate";
 
         private static readonly Func<Task<bool>> _alwaysRun = () => Task.FromResult(true);
+        private static readonly Action<Operation, Exception> _alwaysThrow
+            = (operation, exception) => { throw exception; };
 
         private string _name;
         private Func<Task<T>> _control;
@@ -16,6 +18,7 @@ namespace GitHub.Internals
         private readonly Dictionary<string, Func<Task<T>>> _candidates;
         private Func<T, T, bool> _comparison = DefaultComparison;
         private Func<Task> _beforeRun;
+        private Action<Operation, Exception> _thrown = _alwaysThrow;
         private Func<Task<bool>> _runIf = _alwaysRun;
         private readonly List<Func<T, T, Task<bool>>> _ignores = new List<Func<T, T, Task<bool>>>();
         private readonly Dictionary<string, dynamic> _contexts = new Dictionary<string, dynamic>();
@@ -33,6 +36,9 @@ namespace GitHub.Internals
 
         public void RunIf(Func<bool> block) =>
             _runIf = () => Task.FromResult(block());
+
+        public void Thrown(Action<Operation, Exception> block) =>
+            _thrown = block;
 
         public void Use(Func<Task<T>> control) =>
             _control = control;
@@ -92,7 +98,7 @@ namespace GitHub.Internals
         }
 
         internal ExperimentInstance<T> Build() =>
-            new ExperimentInstance<T>(_name, _control, _candidates, _comparison, _beforeRun, _runIf, _ignores, _contexts, ThrowOnMismatches);
+            new ExperimentInstance<T>(_name, _control, _candidates, _comparison, _beforeRun, _runIf, _ignores, _contexts, ThrowOnMismatches, _thrown);
 
         public void Compare(Func<T, T, bool> comparison)
         {
