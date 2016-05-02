@@ -9,8 +9,9 @@ namespace GitHub
     /// </summary>
     public class Observation<T>
     {
-        internal Observation(string name)
+        internal Observation(string name, Action<Operation, Exception> thrown)
         {
+            ExperimentThrown = thrown;
             Name = name;
         }
 
@@ -27,6 +28,8 @@ namespace GitHub
             get;
             private set;
         }
+
+        internal readonly Action<Operation, Exception> ExperimentThrown;
 
         /// <summary>
         /// Gets the name of the experiment behavior.
@@ -55,23 +58,31 @@ namespace GitHub
         /// <returns>True when the observations values/exceptions match.</returns>
         public bool EquivalentTo(Observation<T> other, Func<T, T, bool> comparator)
         {
-            bool valuesAreEqual = false;
-            bool bothRaised = other.Thrown && Thrown;
-            bool neitherRaised = !other.Thrown && !Thrown;
-
-            if (neitherRaised)
+            try
             {
-                // TODO if block_given?
-                valuesAreEqual = comparator(other.Value, Value);
+                bool valuesAreEqual = false;
+                bool bothRaised = other.Thrown && Thrown;
+                bool neitherRaised = !other.Thrown && !Thrown;
+
+                if (neitherRaised)
+                {
+                    // TODO if block_given?
+                    valuesAreEqual = comparator(other.Value, Value);
+                }
+
+                bool exceptionsAreEquivalent =
+                    bothRaised &&
+                    other.Exception.GetType() == Exception.GetType() &&
+                    other.Exception.Message == Exception.Message;
+
+                return (neitherRaised && valuesAreEqual) ||
+                    (bothRaised && exceptionsAreEquivalent);
             }
-
-            bool exceptionsAreEquivalent =
-                bothRaised &&
-                other.Exception.GetType() == Exception.GetType() &&
-                other.Exception.Message == Exception.Message;
-
-            return (neitherRaised && valuesAreEqual) ||
-                (bothRaised && exceptionsAreEquivalent);
+            catch (Exception ex)
+            {
+                ExperimentThrown(Operation.Compare, ex);
+                return false;
+            }
         }
         
         /// <summary>
@@ -79,10 +90,12 @@ namespace GitHub
         /// </summary>
         /// <param name="name">The name of the observation.</param>
         /// <param name="block">The experiment to run.</param>
+        /// <param name="comparison">The comparison delegate used to determine if an observation is equivalent.</param>
+        /// <param name="thrown">The delegate used for handling thrown exceptions during equivalency comparisons.</param>
         /// <returns>The observed experiment.</returns>
-        public static async Task<Observation<T>> New(string name, Func<Task<T>> block, Func<T, T, bool> comparison)
+        public static async Task<Observation<T>> New(string name, Func<Task<T>> block, Func<T, T, bool> comparison, Action<Operation, Exception> thrown)
         {
-            Observation<T> observation = new Observation<T>(name);
+            Observation<T> observation = new Observation<T>(name, thrown);
 
             await observation.Run(block);
 

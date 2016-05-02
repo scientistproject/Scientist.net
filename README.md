@@ -55,7 +55,17 @@ Scientist.Science<int>("ExperimentN", experiment =>
 {
     experiment.ThrowOnMismatches = true;
     // ...
-})
+});
+```
+
+Use `Thrown` in order to track and manage any exceptions thrown during the life cycle of an experiment.  By default `Scientist` will throw all exceptions.
+
+```csharp
+Scientist.Scient<int>("ExperimentCatch", experiment =>
+{
+    experiment.Thrown((operation, exception) => InternalTracker.Track($"Science failure in ExperimentCatch: {operation}.", exception))
+    // ...
+});
 ```
 
 By default observations are stored in an in-memory publisher. For production use, you'll

@@ -68,6 +68,12 @@ namespace GitHub.Internals
         /// <param name="key">The name of the context</param>
         /// <param name="data">The context data</param>
         void AddContext(string key, object data);
+
+        /// <summary>
+        /// Defines the exception handler when an exception is thrown during an experiment.
+        /// </summary>
+        /// <param name="block">The delegate to handle exceptions thrown from an experiment.</param>
+        void Thrown(Action<Operation, Exception> block);
     }
 
     /// <summary>
@@ -135,5 +141,11 @@ namespace GitHub.Internals
         /// <param name="key">The name of the context</param>
         /// <param name="data">The context data</param>
         void AddContext(string key, object data);
+
+        /// <summary>
+        /// Defines the exception handler when an exception is thrown during an experiment.
+        /// </summary>
+        /// <param name="block">The delegate to handle exceptions thrown from an experiment.</param>
+        void Thrown(Action<Operation, Exception> block);
     }
 }

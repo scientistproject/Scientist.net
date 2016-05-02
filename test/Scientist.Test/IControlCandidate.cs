@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using GitHub;
+using System;
 using System.Threading.Tasks;
 
 namespace UnitTests
@@ -19,6 +17,7 @@ namespace UnitTests
         T Candidate();
         void BeforeRun();
         bool RunIf();
+        void Thrown(Operation operation, Exception exception);
     }
 
     public interface IControlCandidateTask<T>

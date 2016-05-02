@@ -20,11 +20,12 @@ namespace GitHub.Internals
         internal readonly Func<Task<bool>> RunIf;
         internal readonly IEnumerable<Func<T, T, Task<bool>>> Ignores;
         internal readonly Dictionary<string, dynamic> Contexts;
+        internal readonly Action<Operation, Exception> Thrown;
         internal readonly bool ThrowOnMismatches;
         
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
         
-        public ExperimentInstance(string name, Func<Task<T>> control, Dictionary<string, Func<Task<T>>> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores, Dictionary<string, dynamic> contexts, bool throwOnMismatches)
+        public ExperimentInstance(string name, Func<Task<T>> control, Dictionary<string, Func<Task<T>>> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores, Dictionary<string, dynamic> contexts, bool throwOnMismatches, Action<Operation, Exception> thrown)
             : this(name,
                   new NamedBehavior(ControlExperimentName, control),
                   candidates.Select(c => new NamedBehavior(c.Key, c.Value)),
@@ -33,11 +34,12 @@ namespace GitHub.Internals
                   runIf,
                   ignores,
                   contexts,
-                  throwOnMismatches)
+                  throwOnMismatches,
+                  thrown)
         {
         }
         
-        internal ExperimentInstance(string name, NamedBehavior control, IEnumerable<NamedBehavior> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores, Dictionary<string, dynamic> contexts, bool throwOnMismatches)
+        internal ExperimentInstance(string name, NamedBehavior control, IEnumerable<NamedBehavior> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores, Dictionary<string, dynamic> contexts, bool throwOnMismatches, Action<Operation, Exception> thrown)
         {
             Name = name;
 
@@ -52,13 +54,14 @@ namespace GitHub.Internals
             RunIf = runIf;
             Ignores = ignores;
             Contexts = contexts;
+            Thrown = thrown;
             ThrowOnMismatches = throwOnMismatches;
         }
 
         public async Task<T> Run()
         {
             // Determine if experiments should be run.
-            if (!await RunIf())
+            if (!await ShouldExperimentRun())
             {
                 // Run the control behavior.
                 return await Behaviors[0].Behavior();
@@ -79,16 +82,23 @@ namespace GitHub.Internals
             var observations = new List<Observation<T>>();
             foreach (var behavior in orderedBehaviors)
             {
-                observations.Add(await Observation<T>.New(behavior.Name, behavior.Behavior, Comparator));
+                observations.Add(await Observation<T>.New(behavior.Name, behavior.Behavior, Comparator, Thrown));
             }
 
             var controlObservation = observations.FirstOrDefault(o => o.Name == ControlExperimentName);
             
             var result = new Result<T>(this, observations, controlObservation, Contexts);
 
-            // TODO: Make this Fire and forget so we don't have to wait for this
-            // to complete before we return a result
-            await Scientist.ResultPublisher.Publish(result);
+            try
+            {
+                // TODO: Make this Fire and forget so we don't have to wait for this
+                // to complete before we return a result
+                await Scientist.ResultPublisher.Publish(result);
+            }
+            catch (Exception ex)
+            {
+                Thrown(Operation.Publish, ex);
+            }
 
             if (ThrowOnMismatches && result.Mismatched)
             {
@@ -98,6 +108,19 @@ namespace GitHub.Internals
             if (controlObservation.Thrown) throw controlObservation.Exception;
             return controlObservation.Value;
         }
+        
+        /// <summary>
+        /// Does <see cref="RunIf"/> allow the experiment to run?
+        /// </summary>
+        async Task<bool> RunIfAllows()
+        {
+            try { return await RunIf(); }
+            catch (Exception ex)
+            {
+                Thrown(Operation.RunIf, ex);
+                return false;
+            }
+        }
 
         public async Task<bool> IgnoreMismatchedObservation(Observation<T> control, Observation<T> candidate)
         {
@@ -106,12 +129,37 @@ namespace GitHub.Internals
                 return false;
             }
 
-            //TODO: Does this really need to be async? We could run sync and return on first true
-            var results = await Task.WhenAll(Ignores.Select(i => i(control.Value, candidate.Value)));
+            try
+            {
+                //TODO: Does this really need to be async? We could run sync and return on first true
+                var results = await Task.WhenAll(Ignores.Select(i => i(control.Value, candidate.Value)));
 
-            return results.Any(i => i);
+                return results.Any(i => i);
+            }
+            catch (Exception ex)
+            {
+                Thrown(Operation.Ignore, ex);
+                return false;
+            }
         }
         
+        /// <summary>
+        /// Determine whether or not the experiment should run.
+        /// </summary>
+        async Task<bool> ShouldExperimentRun()
+        {
+            try
+            {
+                // TODO Implement Enabled here.
+                return Behaviors.Count > 1 && await RunIfAllows();
+            }
+            catch (Exception ex)
+            {
+                Thrown(Operation.Enabled, ex);
+                return false;
+            }
+        }
+
         internal class NamedBehavior
         {
             public NamedBehavior(string name, Func<T> behavior)
