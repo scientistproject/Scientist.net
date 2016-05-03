@@ -25,37 +25,24 @@ namespace GitHub.Internals
         
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
         
-        public ExperimentInstance(string name, Func<Task<T>> control, Dictionary<string, Func<Task<T>>> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores, Dictionary<string, dynamic> contexts, bool throwOnMismatches, Action<Operation, Exception> thrown)
-            : this(name,
-                  new NamedBehavior(ControlExperimentName, control),
-                  candidates.Select(c => new NamedBehavior(c.Key, c.Value)),
-                  comparator,
-                  beforeRun,
-                  runIf,
-                  ignores,
-                  contexts,
-                  throwOnMismatches,
-                  thrown)
+        public ExperimentInstance(ExperimentSettings<T> settings)
         {
-        }
-        
-        internal ExperimentInstance(string name, NamedBehavior control, IEnumerable<NamedBehavior> candidates, Func<T, T, bool> comparator, Func<Task> beforeRun, Func<Task<bool>> runIf, IEnumerable<Func<T, T, Task<bool>>> ignores, Dictionary<string, dynamic> contexts, bool throwOnMismatches, Action<Operation, Exception> thrown)
-        {
-            Name = name;
+            Name = settings.Name;
 
             Behaviors = new List<NamedBehavior>
             {
-                control,
+                new NamedBehavior(ControlExperimentName, settings.Control),
             };
-            Behaviors.AddRange(candidates);
+            Behaviors.AddRange(
+                settings.Candidates.Select(c => new NamedBehavior(c.Key, c.Value)));
 
-            Comparator = comparator;
-            BeforeRun = beforeRun;
-            RunIf = runIf;
-            Ignores = ignores;
-            Contexts = contexts;
-            Thrown = thrown;
-            ThrowOnMismatches = throwOnMismatches;
+            BeforeRun = settings.BeforeRun;
+            Comparator = settings.Comparator;
+            Contexts = settings.Contexts;
+            RunIf = settings.RunIf;
+            Ignores = settings.Ignores;
+            Thrown = settings.Thrown;
+            ThrowOnMismatches = settings.ThrowOnMismatches;
         }
 
         public async Task<T> Run()

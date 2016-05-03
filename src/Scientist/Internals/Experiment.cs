@@ -98,7 +98,19 @@ namespace GitHub.Internals
         }
 
         internal ExperimentInstance<T> Build() =>
-            new ExperimentInstance<T>(_name, _control, _candidates, _comparison, _beforeRun, _runIf, _ignores, _contexts, ThrowOnMismatches, _thrown);
+            new ExperimentInstance<T>(new ExperimentSettings<T>
+            {
+                BeforeRun = _beforeRun,
+                Candidates = _candidates,
+                Comparator = _comparison,
+                Contexts = _contexts,
+                Control = _control,
+                Ignores = _ignores,
+                Name = _name,
+                RunIf = _runIf,
+                Thrown = _thrown,
+                ThrowOnMismatches = ThrowOnMismatches
+            });
 
         public void Compare(Func<T, T, bool> comparison)
         {
