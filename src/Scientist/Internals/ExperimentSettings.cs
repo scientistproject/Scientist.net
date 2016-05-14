@@ -17,6 +17,7 @@ namespace GitHub.Internals
         public Dictionary<string, dynamic> Contexts { get; set; }
         public Func<Task<T>> Control { get; set; }
         public IEnumerable<Func<T, T, Task<bool>>> Ignores { get; set; }
+        public ILaboratory Laboratory { get; set; }
         public string Name { get; set; }
         public Func<Task<bool>> RunIf { get; set; }
         public bool ThrowOnMismatches { get; set; }

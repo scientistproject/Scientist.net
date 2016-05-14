@@ -48,6 +48,17 @@ public decimal GetUserStatistic(IUser user)
 }
 ```
 
+Control whether experiments run on a global level by defining a new laboratory.
+
+```csharp
+class MyLaboratory : ILaboratory
+{
+    public Task<bool> Enabled() => ...
+}
+
+Scientist.Laboratory = new MyLaboratory();
+```
+
 To ensure that experimental results always match use `ThrownOnMismatches`.
 
 ```csharp

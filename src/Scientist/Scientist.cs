@@ -16,6 +16,8 @@ namespace GitHub
             get;
             set;
         } = new InMemoryResultPublisher();
+        
+        public static ILaboratory Laboratory { get; set; } = new DefaultLaboratory();
 
         /// <summary>
         /// Conduct a synchronous experiment
@@ -28,7 +30,7 @@ namespace GitHub
         {
             // TODO: Maybe we could automatically generate the name if none is provided using the calling method name. We'd have to 
             // make sure we don't inline this method though.
-            var experimentBuilder = new Experiment<T>(name);
+            var experimentBuilder = new Experiment<T>(name, Laboratory);
             
             experiment(experimentBuilder);
 
@@ -44,7 +46,7 @@ namespace GitHub
         /// <returns>The value of the experiment's control function.</returns>
         public static Task<T> ScienceAsync<T>(string name, Action<IExperimentAsync<T>> experiment)
         {
-            var experimentBuilder = new Experiment<T>(name);
+            var experimentBuilder = new Experiment<T>(name, Laboratory);
             
             experiment(experimentBuilder);
 
