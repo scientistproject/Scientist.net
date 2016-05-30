@@ -90,7 +90,7 @@ Target "CreatePackages" (fun _ ->
 
     UpdateProjectJson scientistJsonPath
 
-    Run currentDirectory dotnetExe ("pack .\\src\\Scientist\\ --configuration " + buildMode + " --out " + packagingDir) |> ignore
+    Run currentDirectory dotnetExe ("pack .\\src\\Scientist\\ --configuration " + buildMode + " --output " + packagingDir) |> ignore
 
     RestoreProjectJson scientistJsonPath
 )
