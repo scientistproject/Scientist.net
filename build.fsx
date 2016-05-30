@@ -5,8 +5,6 @@ open System
 open System.Collections.Generic
 open System.Text
 
-let mutable DnxHome = "[unknown]"
-
 let architecture = getBuildParamOrDefault "architecture" "x86"
 let runtime = getBuildParamOrDefault "runtime" "clr"
 let runtimeVersion = getBuildParamOrDefault "runtimeVersion" "1.0.0-rc1-update1"
@@ -47,21 +45,8 @@ let Run workingDirectory fileName args =
 
     ProcessResult.New code messages errors
 
-let GetHomeDirectory =
-    let result = Run currentDirectory "cmd" "/c \"echo %USERPROFILE%\""
-    result.Messages.[0]
-
-let GetDnvmHome =
-    let homeDirectory =
-        if buildServer = BuildServer.AppVeyor
-            then "C:\\Program Files\\Microsoft DNX\\Dnvm\\"
-            else (GetHomeDirectory + "\\.dnx\\bin\\")
-
-    homeDirectory
-
-let GetDnxHome =
-    let homeDirectory = GetHomeDirectory
-    homeDirectory + ("\\.dnx\\runtimes\\dnx-" + runtime + "-win-" + architecture + "." + runtimeVersion + "\\bin\\")
+let dotnetHome = "C:\\Program Files\\dotnet\\"
+let dotnetExe = dotnetHome + "dotnet.exe"
 
 let UpdateProjectJson projectJson =
     let fullJsonPath = (__SOURCE_DIRECTORY__ + projectJson)
@@ -81,8 +66,8 @@ let RestoreProjectJson projectJson =
     CopyFile fullJsonPath backupJsonPath
     DeleteFile backupJsonPath
 
-let SetDnxBuildVersion =
-    setProcessEnvironVar "DNX_BUILD_VERSION" (environVarOrDefault "APPVEYOR_BUILD_NUMBER" "local")
+let SetBuildVersion =
+    setProcessEnvironVar "DOTNET_BUILD_VERSION" (environVarOrDefault "APPVEYOR_BUILD_NUMBER" "local")
 
 //Targets
 Target "Clean" (fun _ ->
@@ -90,20 +75,14 @@ Target "Clean" (fun _ ->
 )
 
 Target "SetupBuild" (fun _ ->
-    DnxHome <- GetDnxHome
-
-    SetDnxBuildVersion
-
-    let dnvmHome = GetDnvmHome
-    Run currentDirectory (dnvmHome + "dnvm.cmd") ("install " + runtimeVersion + " -r " + runtime + " -a " + architecture + "") |> ignore
-    Run currentDirectory (dnvmHome + "dnvm.cmd") ("use " + runtimeVersion + " -r " + runtime + " -a " + architecture + "") |> ignore
+    SetBuildVersion
     
-    Run currentDirectory (DnxHome + "dnu.cmd") "restore" |> ignore
+    Run currentDirectory dotnetExe "restore" |> ignore
 )
 
 Target "BuildApp" (fun _ ->
-    Run currentDirectory (DnxHome + "dnu.cmd") ("build .\\src\\Scientist\\ --configuration " + buildMode) |> ignore
-    Run currentDirectory (DnxHome + "dnu.cmd") ("build .\\test\\Scientist.Test\\ --configuration " + buildMode + "") |> ignore
+    Run currentDirectory dotnetExe ("build .\\src\\Scientist\\ --configuration " + buildMode) |> ignore
+    Run currentDirectory dotnetExe ("build .\\test\\Scientist.Test\\ --configuration " + buildMode + "") |> ignore
 )
 
 Target "CreatePackages" (fun _ ->
@@ -111,13 +90,13 @@ Target "CreatePackages" (fun _ ->
 
     UpdateProjectJson scientistJsonPath
 
-    Run currentDirectory (DnxHome + "dnu.cmd") ("pack .\\src\\Scientist\\ --configuration " + buildMode + " --out " + packagingDir) |> ignore
+    Run currentDirectory dotnetExe ("pack .\\src\\Scientist\\ --configuration " + buildMode + " --out " + packagingDir) |> ignore
 
     RestoreProjectJson scientistJsonPath
 )
 
 Target "RunTests" (fun _ ->
-    Run currentDirectory (DnxHome + "dnx.exe") "-p .\\test\\Scientist.Test\\ test" |> ignore
+    Run currentDirectory dotnetExe "-p .\\test\\Scientist.Test\\ test" |> ignore
 )
 
 Target "Default" DoNothing
