@@ -1,3 +1,12 @@
+### New in 1.0.0-alpha6 (Released TBD)
+
+**Features**
+
+ - Move to .NET Core RC2 - #61 via @joncloud
+ - Add `ThrowOnMismatches` - #53 via @joncloud
+ - Add `Thrown` - #56 via @joncloud
+ - Cleaned up internals - #58 via @joncloud
+
 ### New in 1.0.0-alpha5 (Released 2016/04/14)
 
 **Features**
