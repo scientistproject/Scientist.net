@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GitHub.Internals.Extensions;
 
 namespace GitHub.Internals
 {
@@ -68,10 +69,15 @@ namespace GitHub.Internals
                 orderedBehaviors = Behaviors.OrderBy(b => _random.Next()).ToArray();
             }
 
+            // Break tasks into batches of "ConcurrentTasks" size
             var observations = new List<Observation<T>>();
-            foreach (var behavior in orderedBehaviors)
+            foreach (var behaviors in orderedBehaviors.Chunk(ConcurrentTasks))
             {
-                observations.Add(await Observation<T>.New(behavior.Name, behavior.Behavior, Comparator, Thrown));
+                // Run batch of behaviors simultaneously
+                var tasks = behaviors.Select(b => Observation<T>.New(b.Name, b.Behavior, Comparator, Thrown));
+
+                // Collect the observations
+                observations.AddRange(await Task.WhenAll(tasks));
             }
 
             var controlObservation = observations.FirstOrDefault(o => o.Name == ControlExperimentName);
