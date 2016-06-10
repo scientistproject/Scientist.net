@@ -28,7 +28,7 @@ namespace GitHub
         {
             // TODO: Maybe we could automatically generate the name if none is provided using the calling method name. We'd have to 
             // make sure we don't inline this method though.
-            var experimentBuilder = new Experiment<T>(name);
+            var experimentBuilder = new Experiment<T>(name, 1);
             
             experiment(experimentBuilder);
 
@@ -44,7 +44,20 @@ namespace GitHub
         /// <returns>The value of the experiment's control function.</returns>
         public static Task<T> ScienceAsync<T>(string name, Action<IExperimentAsync<T>> experiment)
         {
-            var experimentBuilder = new Experiment<T>(name);
+            return ScienceAsync<T>(name, 1, experiment);
+        }
+
+        /// <summary>
+        /// Conduct an asynchronous experiment
+        /// </summary>
+        /// <typeparam name="T">The return type of the experiment</typeparam>
+        /// <param name="name">Name of the experiment</param>
+        /// <param name="concurrentTasks">Number of tasks to run concurrently</param>
+        /// <param name="experiment">Experiment callback used to configure the experiment</param>
+        /// <returns>The value of the experiment's control function.</returns>
+        public static Task<T> ScienceAsync<T>(string name, int concurrentTasks, Action<IExperimentAsync<T>> experiment)
+        {
+            var experimentBuilder = new Experiment<T>(name, concurrentTasks);
             
             experiment(experimentBuilder);
 

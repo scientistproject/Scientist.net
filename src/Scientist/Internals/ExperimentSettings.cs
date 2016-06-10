@@ -18,6 +18,7 @@ namespace GitHub.Internals
         public Func<Task<T>> Control { get; set; }
         public IEnumerable<Func<T, T, Task<bool>>> Ignores { get; set; }
         public string Name { get; set; }
+        public int ConcurrentTasks { get; set; }
         public Func<Task<bool>> RunIf { get; set; }
         public bool ThrowOnMismatches { get; set; }
         public Action<Operation, Exception> Thrown { get; set; }

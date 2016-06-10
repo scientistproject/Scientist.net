@@ -13,6 +13,8 @@ namespace GitHub.Internals
             = (operation, exception) => { throw exception; };
 
         private string _name;
+        private int _concurrentTasks;
+
         private Func<Task<T>> _control;
 
         private readonly Dictionary<string, Func<Task<T>>> _candidates;
@@ -23,9 +25,13 @@ namespace GitHub.Internals
         private readonly List<Func<T, T, Task<bool>>> _ignores = new List<Func<T, T, Task<bool>>>();
         private readonly Dictionary<string, dynamic> _contexts = new Dictionary<string, dynamic>();
 
-        public Experiment(string name)
+        public Experiment(string name, int concurrentTasks)
         {
+            if (concurrentTasks <= 0)
+                throw new ArgumentException("Argument must be greater than 0", "concurrentTasks");
+
             _name = name;
+            _concurrentTasks = concurrentTasks;
             _candidates = new Dictionary<string, Func<Task<T>>>();
         }
 
@@ -103,6 +109,7 @@ namespace GitHub.Internals
                 BeforeRun = _beforeRun,
                 Candidates = _candidates,
                 Comparator = _comparison,
+                ConcurrentTasks = _concurrentTasks,
                 Contexts = _contexts,
                 Control = _control,
                 Ignores = _ignores,

@@ -14,6 +14,7 @@ namespace GitHub.Internals
         internal const string ControlExperimentName = "control";
 
         internal readonly string Name;
+        internal readonly int ConcurrentTasks;
         internal readonly List<NamedBehavior> Behaviors;
         internal readonly Func<T, T, bool> Comparator;
         internal readonly Func<Task> BeforeRun;
@@ -38,6 +39,7 @@ namespace GitHub.Internals
 
             BeforeRun = settings.BeforeRun;
             Comparator = settings.Comparator;
+            ConcurrentTasks = settings.ConcurrentTasks;
             Contexts = settings.Contexts;
             RunIf = settings.RunIf;
             Ignores = settings.Ignores;
