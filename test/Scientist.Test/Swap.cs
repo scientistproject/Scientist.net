@@ -1,5 +1,6 @@
 ﻿using GitHub;
 using System;
+using System.Threading.Tasks;
 
 /// <summary>
 /// Class that swaps the value with a temporary item,
@@ -24,13 +25,13 @@ public class Swap<T> : IDisposable
 public static class Swap
 {
     /// <summary>
-    /// Swaps <see cref="Scientist.Laboratory"/> with the input
-    /// parameter, and upon disposal exchanges the laboratory back.
+    /// Swaps <see cref="Scientist"/> enabled value with the input
+    /// parameter, and upon disposal exchanges the enabled back.
     /// </summary>
-    /// <param name="laboratory">The laboratory to swap temporarily.</param>
-    /// <returns>A new <see cref="Swap{ILaboratory}"/> instance.</returns>
-    public static IDisposable Laboratory(ILaboratory laboratory) =>
-        new Swap<ILaboratory>(laboratory, () => Scientist.Laboratory, (lab) => Scientist.Laboratory = lab);
+    /// <param name="enabled">The delegate to swap temporarily.</param>
+    /// <returns>A new <see cref="Swap{Func{Task{bool}}}"/> instance.</returns>
+    public static IDisposable Enabled(Func<Task<bool>> enabled) =>
+        new Swap<Func<Task<bool>>>(enabled, () => () => Task.FromResult(true), (del) => Scientist.Enabled(del));
 
     /// <summary>
     /// Swaps <see cref="Scientist.ResultPublisher"/> with the input

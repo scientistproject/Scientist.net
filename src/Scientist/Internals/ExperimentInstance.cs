@@ -17,9 +17,9 @@ namespace GitHub.Internals
         internal readonly List<NamedBehavior> Behaviors;
         internal readonly Func<T, T, bool> Comparator;
         internal readonly Func<Task> BeforeRun;
+        internal readonly Func<Task<bool>> Enabled;
         internal readonly Func<Task<bool>> RunIf;
         internal readonly IEnumerable<Func<T, T, Task<bool>>> Ignores;
-        internal readonly ILaboratory Laboratory;
         internal readonly Dictionary<string, dynamic> Contexts;
         internal readonly Action<Operation, Exception> Thrown;
         internal readonly bool ThrowOnMismatches;
@@ -40,9 +40,9 @@ namespace GitHub.Internals
             BeforeRun = settings.BeforeRun;
             Comparator = settings.Comparator;
             Contexts = settings.Contexts;
+            Enabled = settings.Enabled;
             RunIf = settings.RunIf;
             Ignores = settings.Ignores;
-            Laboratory = settings.Laboratory;
             Thrown = settings.Thrown;
             ThrowOnMismatches = settings.ThrowOnMismatches;
         }
@@ -141,7 +141,7 @@ namespace GitHub.Internals
             {
                 // Only let the experiment run if at least one candidate (> 1 behaviors) is 
                 // included.  The control is always included behaviors count.
-                return Behaviors.Count > 1 && await Laboratory.Enabled() && await RunIfAllows();
+                return Behaviors.Count > 1 && await Enabled() && await RunIfAllows();
             }
             catch (Exception ex)
             {

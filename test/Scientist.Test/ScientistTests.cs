@@ -689,5 +689,31 @@ public class TheScientistClass
             Assert.Equal(experimentName, mismatchException.Name);
             Assert.Same(result, mismatchException.Result);
         }
+
+        [Fact]
+        public void ScientistDisablesExperiment()
+        {
+            const int expectedResult = 42;
+
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(expectedResult);
+            mock.Candidate().Returns(0);
+
+            var settings = Substitute.For<IScientistSettings>();
+            settings.Enabled().Returns(Task.FromResult(false));
+            using (Swap.Enabled(settings.Enabled))
+            {
+                var result = Scientist.Science<int>(nameof(ScientistDisablesExperiment), experiment =>
+                {
+                    experiment.Use(mock.Control);
+                    experiment.Try(mock.Candidate);
+                });
+
+                Assert.Equal(expectedResult, result);
+                mock.DidNotReceive().Candidate();
+                mock.Received().Control();
+                settings.Received().Enabled();
+            }
+        }
     }
 }

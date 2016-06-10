@@ -38,11 +38,11 @@ public class ThrownTests
     [Fact]
     public void EnabledOperation()
     {
-        var laboratory = Substitute.For<ILaboratory>();
+        var settings = Substitute.For<IScientistSettings>();
         var ex = new Exception();
-        laboratory.Enabled().Throws(ex);
+        settings.Enabled().Throws(ex);
 
-        using (Swap.Laboratory(laboratory))
+        using (Swap.Enabled(settings.Enabled))
         {
             const int expectedResult = 42;
 
@@ -50,7 +50,7 @@ public class ThrownTests
             mock.Control().Returns(expectedResult);
             mock.Candidate().Returns(0);
 
-            var result = Scientist.Science<int>(nameof(PublishOperation), experiment =>
+            var result = Scientist.Science<int>(nameof(EnabledOperation), experiment =>
             {
                 experiment.Thrown(mock.Thrown);
                 experiment.Use(mock.Control);
