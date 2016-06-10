@@ -1,24 +1,18 @@
 ﻿{
-  "version": "1.0.0-*",
-  "description": "scientist.test",
-  "authors": [ "Github" ],
-  "tags": [ "" ],
-  "projectUrl": "",
-  "licenseUrl": "",
+  "buildOptions": {
+    "copyToOutput": {
+      "include": [ "xunit.runner.json" ]
+    }
+  },
   "dependencies": {
-    "Microsoft.CSharp": "4.0.1-beta-23516",
-    "System.Collections": "4.0.11-beta-23516",
-    "System.Collections.Concurrent": "4.0.11-beta-23516",
-    "System.Linq": "4.0.1-beta-23516",
-    "xunit": "2.1.0",
-    "xunit.runner.dnx": "2.1.0-rc1-build204",
+    "dotnet-test-xunit": "1.0.0-rc3-build10026",
     "NSubstitute": "1.9.2",
-    "Scientist": ""
+    "Scientist": "*",
+    "xunit": "2.1.0"
   },
   "frameworks": {
-    "dnx451": { }
+    "net451": { }
   },
-  "commands": {
-    "test": "xunit.runner.dnx"
-  }
+  "testRunner": "xunit",
+  "version": "1.0.0-*"
 }
