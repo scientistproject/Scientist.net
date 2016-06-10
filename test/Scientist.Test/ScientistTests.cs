@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using GitHub;
-using GitHub.Internals;
 using NSubstitute;
 using UnitTests;
 using Xunit;
@@ -687,6 +688,80 @@ public class TheScientistClass
             var mismatchException = (MismatchException<int>)baseException;
             Assert.Equal(experimentName, mismatchException.Name);
             Assert.Same(result, mismatchException.Result);
+        }
+
+        [Fact]
+        public void ThrowsArgumentExceptionWhenConcurrentTasksInvalid()
+        {
+            var mock = Substitute.For<IControlCandidateTask<int>>();
+            mock.Control().Returns(x => 1);
+            mock.Candidate().Returns(x => 2);
+            const string experimentName = nameof(ThrowsArgumentExceptionWhenConcurrentTasksInvalid);
+
+            var ex = Assert.Throws<ArgumentException>(() =>
+            {
+                Scientist.ScienceAsync<int>(experimentName, 0, experiment =>
+                {
+                    experiment.Use(mock.Control);
+                    experiment.Try(mock.Candidate);
+                });
+            });
+
+            Exception baseException = ex.GetBaseException();
+            Assert.IsType<ArgumentException>(baseException);
+            mock.DidNotReceive().Control();
+            mock.DidNotReceive().Candidate();
+        }
+
+        [Theory,
+            InlineData(1),
+            InlineData(2),
+            InlineData(4)]
+        public async Task RunsTasksConcurrently(int concurrentTasks)
+        {
+            // Control + 3 experiments
+            var totalTasks = 1D + 3;
+
+            // Each task will take 3 seconds
+            var taskSleepMs = 1000;
+            
+            // Calculate expected duration based on concurrentTasks setting
+            var expectedDuration = TimeSpan.FromMilliseconds((taskSleepMs * Math.Ceiling(totalTasks / concurrentTasks)));
+
+            // Amount of headroom allowed
+            var headRoom = TimeSpan.FromMilliseconds(50);
+            
+            // Our long running task
+            var longTask = new Func<Task<int>>(() => 
+            {
+                return Task.Run(() =>
+                {
+                    Console.WriteLine($"Task is running");
+                    Thread.Sleep(taskSleepMs);
+                    Console.WriteLine($"Task is finished");
+                    return 1;
+                });
+            });
+
+            // Run the experiment
+            var watch = new Stopwatch();
+            watch.Start();
+            const string experimentName = nameof(ThrowsArgumentExceptionWhenConcurrentTasksInvalid);
+            var result = await Scientist.ScienceAsync<int>(experimentName, concurrentTasks, experiment =>
+            {
+                // Add our control and experiments
+                experiment.Use(longTask);
+                for (int idx = 2; idx <= totalTasks; idx++)
+                {
+                    experiment.Try($"experiment{idx}", longTask);
+                }
+            });
+            watch.Stop();
+
+            Assert.Equal(result, 1);
+
+            // Ensure duration is as expected
+            Assert.True(watch.Elapsed >= expectedDuration && watch.Elapsed <= expectedDuration.Add(headRoom));
         }
     }
 }
