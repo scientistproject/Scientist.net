@@ -34,7 +34,7 @@ public class TheScientistClass
 
             mock.DidNotReceive().Candidate();
             mock.Received().Control();
-            Assert.False(TestHelper.Results<int>().Any(m => m.ExperimentName == experimentName));
+            Assert.False(TestHelper.Results<int>(experimentName).Any());
         }
 
         [Fact]
@@ -58,7 +58,7 @@ public class TheScientistClass
             Assert.IsType<InvalidOperationException>(baseException);
             mock.Received().Control();
             mock.Received().Candidate();
-            Assert.True(TestHelper.Results<int>().First(m => m.ExperimentName == experimentName).Matched);
+            Assert.True(TestHelper.Results<int>(experimentName).First().Matched);
         }
 
         [Fact]
@@ -78,7 +78,7 @@ public class TheScientistClass
             Assert.Equal(42, result);
             mock.Received().Control();
             mock.Received().Candidate();
-            Assert.True(TestHelper.Results<int>().First(m => m.ExperimentName == experimentName).Matched);
+            Assert.True(TestHelper.Results<int>(experimentName).First().Matched);
         }
 
         [Fact]
@@ -98,7 +98,7 @@ public class TheScientistClass
             Assert.Equal(42, result);
             await mock.Received().Control();
             await mock.Received().Candidate();
-            Assert.False(TestHelper.Results<int>().First(m => m.ExperimentName == experimentName).Matched);
+            Assert.False(TestHelper.Results<int>(experimentName).First().Matched);
         }
 
         [Fact]
@@ -112,7 +112,7 @@ public class TheScientistClass
             });
 
             Assert.Null(result);
-            Assert.True(TestHelper.Results<object>().First(m => m.ExperimentName == experimentName).Matched);
+            Assert.True(TestHelper.Results<object>(experimentName).First().Matched);
         }
 
         [Fact]
@@ -143,7 +143,7 @@ public class TheScientistClass
             mock.Received().Control();
             mock.Received().Candidate();
 
-            Result<int> observedResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            Result<int> observedResult = TestHelper.Results<int>(experimentName).First();
             Assert.True(observedResult.Matched);
             Assert.True(observedResult.Control.Duration.Ticks > 0);
             Assert.True(observedResult.Observations.All(o => o.Duration.Ticks > 0));
@@ -166,7 +166,7 @@ public class TheScientistClass
             Assert.Equal(42, result);
             mock.Received().Control();
             mock.Received().Candidate();
-            Result<int> observedResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            Result<int> observedResult = TestHelper.Results<int>(experimentName).First();
             Assert.False(observedResult.Matched);
             Assert.True(observedResult.Control.Duration.Ticks > 0);
             Assert.True(observedResult.Observations.All(o => o.Duration.Ticks > 0));
@@ -191,7 +191,7 @@ public class TheScientistClass
             Assert.Equal("Tester", result.Name);
             mock.Received().Control();
             mock.Received().Candidate();
-            Assert.True(TestHelper.Results<ComplexResult>().First().Matched);
+            Assert.True(TestHelper.Results<ComplexResult>(experimentName).First().Matched);
         }
 
         [Fact]
@@ -213,7 +213,7 @@ public class TheScientistClass
             Assert.Equal("Tester", result.Name);
             mock.Received().Control();
             mock.Received().Candidate();
-            Assert.False(TestHelper.Results<ComplexResult>().First().Matched);
+            Assert.False(TestHelper.Results<ComplexResult>(experimentName).First().Matched);
         }
 
         [Fact]
@@ -234,7 +234,7 @@ public class TheScientistClass
             Assert.Equal("Tester", result.Name);
             mock.Received().Control();
             mock.Received().Candidate();
-            Assert.True(TestHelper.Results<ComplexResult>().First().Matched);
+            Assert.True(TestHelper.Results<ComplexResult>(experimentName).First().Matched);
         }
 
         [Fact]
@@ -255,7 +255,7 @@ public class TheScientistClass
             Assert.Equal("Tester", result.Name);
             mock.Received().Control();
             mock.Received().Candidate();
-            Assert.False(TestHelper.Results<ComplexResult>().First().Matched);
+            Assert.False(TestHelper.Results<ComplexResult>(experimentName).First().Matched);
         }
 
         [Fact]
@@ -326,7 +326,7 @@ public class TheScientistClass
             });
 
             Assert.Equal(42, result);
-            Assert.False(TestHelper.Results<int>().First(m => m.ExperimentName == experimentName).Matched);
+            Assert.False(TestHelper.Results<int>(experimentName).First().Matched);
         }
 
         [Fact]
@@ -386,7 +386,7 @@ public class TheScientistClass
             });
 
             Assert.Equal(42, result);
-            Assert.True(TestHelper.Results<int>().First(m => m.ExperimentName == experimentName).Matched);
+            Assert.True(TestHelper.Results<int>(experimentName).First().Matched);
         }
 
         [Fact]
@@ -405,7 +405,7 @@ public class TheScientistClass
             });
 
             Assert.Equal(42, result);
-            var experimentResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            var experimentResult = TestHelper.Results<int>(experimentName).First();
             Assert.True(experimentResult.IgnoredObservations.Any());
             Assert.True(experimentResult.Matched);
         }
@@ -426,7 +426,7 @@ public class TheScientistClass
             });
 
             Assert.Equal(42, result);
-            var experimentResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            var experimentResult = TestHelper.Results<int>(experimentName).First();
             Assert.True(experimentResult.MismatchedObservations.Any());
             Assert.False(experimentResult.IgnoredObservations.Any());
             Assert.False(experimentResult.Matched);
@@ -450,7 +450,7 @@ public class TheScientistClass
             });
 
             Assert.Equal(42, result);
-            var experimentResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            var experimentResult = TestHelper.Results<int>(experimentName).First();
             Assert.True(experimentResult.MismatchedObservations.Any());
             Assert.False(experimentResult.IgnoredObservations.Any());
             Assert.False(experimentResult.Matched);
@@ -474,7 +474,7 @@ public class TheScientistClass
             });
 
             Assert.Equal(42, result);
-            var experimentResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            var experimentResult = TestHelper.Results<int>(experimentName).First();
             Assert.False(experimentResult.MismatchedObservations.Any());
             Assert.True(experimentResult.IgnoredObservations.Any());
             Assert.True(experimentResult.Matched);
@@ -498,7 +498,7 @@ public class TheScientistClass
             });
 
             Assert.Equal(42, result);
-            var experimentResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            var experimentResult = TestHelper.Results<int>(experimentName).First();
             Assert.False(experimentResult.MismatchedObservations.Any());
             Assert.True(experimentResult.IgnoredObservations.Any());
             Assert.True(experimentResult.Matched);
@@ -520,7 +520,7 @@ public class TheScientistClass
             });
 
             Assert.Equal(42, result);
-            var experimentResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            var experimentResult = TestHelper.Results<int>(experimentName).First();
             Assert.False(experimentResult.MismatchedObservations.Any());
             Assert.True(experimentResult.IgnoredObservations.Any());
             Assert.True(experimentResult.Matched);
@@ -542,7 +542,7 @@ public class TheScientistClass
                 e.AddContext("test", "data");
             });
 
-            var publishResults = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            var publishResults = TestHelper.Results<int>(experimentName).First();
 
             Assert.Equal(42, result);
             Assert.Equal(1, publishResults.Contexts.Count);
@@ -570,7 +570,7 @@ public class TheScientistClass
                 e.AddContext("test3", "data3");
             });
 
-            var publishResults = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            var publishResults = TestHelper.Results<int>(experimentName).First();
 
             Assert.Equal(42, result);
             Assert.Equal(3, publishResults.Contexts.Count);
@@ -606,7 +606,7 @@ public class TheScientistClass
                 e.AddContext("test", new {Id = 1, Name = "name", Date = testTime});
             });
 
-            var publishResults = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            var publishResults = TestHelper.Results<int>(experimentName).First();
 
             Assert.Equal(42, result);
             Assert.Equal(1, publishResults.Contexts.Count);
@@ -633,7 +633,7 @@ public class TheScientistClass
                 e.Try(mock.Candidate);
             });
 
-            var publishResults = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            var publishResults = TestHelper.Results<int>(experimentName).First();
 
             Assert.Equal(42, result);
             Assert.False(publishResults.Contexts.Any());
@@ -683,7 +683,7 @@ public class TheScientistClass
             mock.Received().Control();
             mock.Received().Candidate();
 
-            var result = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            var result = TestHelper.Results<int>(experimentName).First();
             var mismatchException = (MismatchException<int>)baseException;
             Assert.Equal(experimentName, mismatchException.Name);
             Assert.Same(result, mismatchException.Result);
