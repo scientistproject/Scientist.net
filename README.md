@@ -48,10 +48,13 @@ public decimal GetUserStatistic(IUser user)
 }
 ```
 
-Control whether experiments run on a global level.
+Provide a global condition that determines whether experiments run or not.
 
 ```csharp
-Scientist.Enabled(() => ...);
+int peakStart = 12; // 12:00
+int peakEnd = 15;   // 15:00
+
+Scientist.Enabled(() => DateTime.UtcNow.Hour < peakStart || DateTime.UtcNow.Hour > peakEnd);
 ```
 
 To ensure that experimental results always match use `ThrownOnMismatches`.
