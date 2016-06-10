@@ -96,7 +96,7 @@ Target "CreatePackages" (fun _ ->
 )
 
 Target "RunTests" (fun _ ->
-    Run currentDirectory dotnetExe "-p .\\test\\Scientist.Test\\ test" |> ignore
+    Run currentDirectory dotnetExe "test .\\test\\Scientist.Test\\" |> ignore
 )
 
 Target "Default" DoNothing
