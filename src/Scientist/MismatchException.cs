@@ -8,9 +8,10 @@ namespace GitHub
     /// or <see cref="IExperimentAsync{T}.ThrowOnMismatches"/> is enabled.
     /// </summary>
     /// <typeparam name="T">The return result for the experiment.</typeparam>
-    public class MismatchException<T> : Exception
+    /// <typeparam name="TClean">The clean value for the experiment.</typeparam>
+    public class MismatchException<T, TClean> : Exception
     {
-        public MismatchException(string name, Result<T> result)
+        public MismatchException(string name, Result<T, TClean> result)
             : base($"Experiment '{name}' observations mismatched")
         {
             Name = name;
@@ -25,6 +26,6 @@ namespace GitHub
         /// <summary>
         /// Gets the result containing a mismatch.
         /// </summary>
-        public Result<T> Result { get; }
+        public Result<T, TClean> Result { get; }
     }
 }

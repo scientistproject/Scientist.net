@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace GitHub.Internals
 {
-    internal class Experiment<T> : IExperiment<T>, IExperimentAsync<T>
+    internal class Experiment<T, TClean> : IExperiment<T, TClean>, IExperimentAsync<T, TClean>
     {
         internal const string CandidateExperimentName = "candidate";
 
@@ -16,6 +16,7 @@ namespace GitHub.Internals
         private Func<Task<T>> _control;
 
         private readonly Dictionary<string, Func<Task<T>>> _candidates;
+        private Func<T, TClean> _cleaner;
         private Func<T, T, bool> _comparison = DefaultComparison;
         private Func<Task> _beforeRun;
         private readonly Func<Task<bool>> _enabled;
@@ -32,6 +33,9 @@ namespace GitHub.Internals
         }
 
         public bool ThrowOnMismatches { get; set; }
+
+        public void Clean(Func<T, TClean> cleaner) =>
+            _cleaner = cleaner;
 
         public void RunIf(Func<Task<bool>> block) =>
             _runIf = block;
@@ -99,11 +103,12 @@ namespace GitHub.Internals
             _contexts.Add(key, data);
         }
 
-        internal ExperimentInstance<T> Build() =>
-            new ExperimentInstance<T>(new ExperimentSettings<T>
+        internal ExperimentInstance<T, TClean> Build() =>
+            new ExperimentInstance<T, TClean>(new ExperimentSettings<T, TClean>
             {
                 BeforeRun = _beforeRun,
                 Candidates = _candidates,
+                Cleaner = _cleaner,
                 Comparator = _comparison,
                 Contexts = _contexts,
                 Control = _control,

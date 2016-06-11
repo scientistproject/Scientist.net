@@ -93,7 +93,7 @@ public class ThrownTests
     {
         var publisher = Substitute.For<IResultPublisher>();
         var ex = new Exception();
-        publisher.Publish(Arg.Any<Result<int>>()).Throws(ex);
+        publisher.Publish(Arg.Any<Result<int, int>>()).Throws(ex);
 
         using (Swap.Publisher(publisher))
         {

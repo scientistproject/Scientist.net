@@ -18,6 +18,26 @@ namespace GitHub
             get;
             set;
         } = new InMemoryResultPublisher();
+        
+        static Experiment<T, TClean> Build<T, TClean>(string name, Action<IExperiment<T, TClean>> experiment)
+        {
+            // TODO: Maybe we could automatically generate the name if none is provided using the calling method name. We'd have to 
+            // make sure we don't inline this method though.
+            var experimentBuilder = new Experiment<T, TClean>(name, _enabled);
+
+            experiment(experimentBuilder);
+
+            return experimentBuilder;
+        }
+
+        static Experiment<T, TClean> Build<T, TClean>(string name, Action<IExperimentAsync<T, TClean>> experiment)
+        {
+            var builder = new Experiment<T, TClean>(name, _enabled);
+
+            experiment(builder);
+
+            return builder;
+        }
 
         /// <summary>
         /// Determines if an experiment should be enabled.
@@ -40,14 +60,21 @@ namespace GitHub
         /// <returns>The value of the experiment's control function.</returns>
         public static T Science<T>(string name, Action<IExperiment<T>> experiment)
         {
-            // TODO: Maybe we could automatically generate the name if none is provided using the calling method name. We'd have to 
-            // make sure we don't inline this method though.
-            var experimentBuilder = new Experiment<T>(name, _enabled);
-            
-            experiment(experimentBuilder);
-
-            return experimentBuilder.Build().Run().Result;
+            var builder = Build<T, T>(name, experiment);
+            builder.Clean(value => value);
+            return builder.Build().Run().Result;
         }
+
+        /// <summary>
+        /// Conduct a synchronous experiment
+        /// </summary>
+        /// <typeparam name="T">The return type of the experiment</typeparam>
+        /// <typeparam name="TClean">The clean type for publishing.</typeparam>
+        /// <param name="name">Name of the experiment</param>
+        /// <param name="experiment">Experiment callback used to configure the experiment</param>
+        /// <returns>The value of the experiment's control function.</returns>
+        public static T Science<T, TClean>(string name, Action<IExperiment<T, TClean>> experiment) =>
+            Build(name, experiment).Build().Run().Result;
 
         /// <summary>
         /// Conduct an asynchronous experiment
@@ -58,11 +85,20 @@ namespace GitHub
         /// <returns>The value of the experiment's control function.</returns>
         public static Task<T> ScienceAsync<T>(string name, Action<IExperimentAsync<T>> experiment)
         {
-            var experimentBuilder = new Experiment<T>(name, _enabled);
-            
-            experiment(experimentBuilder);
-
-            return experimentBuilder.Build().Run();
+            var builder = Build<T, T>(name, experiment);
+            builder.Clean(value => value);
+            return builder.Build().Run();
         }
+
+        /// <summary>
+        /// Conduct an asynchronous experiment
+        /// </summary>
+        /// <typeparam name="T">The return type of the experiment</typeparam>
+        /// <typeparam name="TClean">The clean type for publishing.</typeparam>
+        /// <param name="name">Name of the experiment</param>
+        /// <param name="experiment">Experiment callback used to configure the experiment</param>
+        /// <returns>The value of the experiment's control function.</returns>
+        public static Task<T> ScienceAsync<T, TClean>(string name, Action<IExperimentAsync<T, TClean>> experiment) =>
+            Build(name, experiment).Build().Run();
     }
 }

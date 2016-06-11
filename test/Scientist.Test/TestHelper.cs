@@ -7,7 +7,8 @@ using NSubstitute.Core;
 
 public static class TestHelper
 {
-    public static IEnumerable<Result<T>> Results<T>() => ((InMemoryResultPublisher)Scientist.ResultPublisher).Results<T>();
+    public static IEnumerable<Result<T, T>> Results<T>() => Results<T, T>();
+    public static IEnumerable<Result<T, TClean>> Results<T, TClean>() => ((InMemoryResultPublisher)Scientist.ResultPublisher).Results<T, TClean>();
 
     public static ConfiguredCall Throws<T>(this T value, Exception e) => value.Returns(_ => { throw e; });
 }
