@@ -17,6 +17,7 @@ namespace GitHub.Internals
         internal readonly List<NamedBehavior> Behaviors;
         internal readonly Func<T, T, bool> Comparator;
         internal readonly Func<Task> BeforeRun;
+        internal readonly Func<Task<bool>> Enabled;
         internal readonly Func<Task<bool>> RunIf;
         internal readonly IEnumerable<Func<T, T, Task<bool>>> Ignores;
         internal readonly Dictionary<string, dynamic> Contexts;
@@ -39,6 +40,7 @@ namespace GitHub.Internals
             BeforeRun = settings.BeforeRun;
             Comparator = settings.Comparator;
             Contexts = settings.Contexts;
+            Enabled = settings.Enabled;
             RunIf = settings.RunIf;
             Ignores = settings.Ignores;
             Thrown = settings.Thrown;
@@ -137,11 +139,9 @@ namespace GitHub.Internals
         {
             try
             {
-                // TODO Implement Enabled here.
-
                 // Only let the experiment run if at least one candidate (> 1 behaviors) is 
                 // included.  The control is always included behaviors count.
-                return Behaviors.Count > 1 && await RunIfAllows();
+                return Behaviors.Count > 1 && await Enabled() && await RunIfAllows();
             }
             catch (Exception ex)
             {

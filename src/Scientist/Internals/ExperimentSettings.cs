@@ -16,6 +16,7 @@ namespace GitHub.Internals
         public Func<T, T, bool> Comparator { get; set; }
         public Dictionary<string, dynamic> Contexts { get; set; }
         public Func<Task<T>> Control { get; set; }
+        public Func<Task<bool>> Enabled { get; set; }
         public IEnumerable<Func<T, T, Task<bool>>> Ignores { get; set; }
         public string Name { get; set; }
         public Func<Task<bool>> RunIf { get; set; }

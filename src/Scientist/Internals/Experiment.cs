@@ -18,15 +18,17 @@ namespace GitHub.Internals
         private readonly Dictionary<string, Func<Task<T>>> _candidates;
         private Func<T, T, bool> _comparison = DefaultComparison;
         private Func<Task> _beforeRun;
+        private readonly Func<Task<bool>> _enabled;
         private Action<Operation, Exception> _thrown = _alwaysThrow;
         private Func<Task<bool>> _runIf = _alwaysRun;
         private readonly List<Func<T, T, Task<bool>>> _ignores = new List<Func<T, T, Task<bool>>>();
         private readonly Dictionary<string, dynamic> _contexts = new Dictionary<string, dynamic>();
 
-        public Experiment(string name)
+        public Experiment(string name, Func<Task<bool>> enabled)
         {
             _name = name;
             _candidates = new Dictionary<string, Func<Task<T>>>();
+            _enabled = enabled;
         }
 
         public bool ThrowOnMismatches { get; set; }
@@ -105,6 +107,7 @@ namespace GitHub.Internals
                 Comparator = _comparison,
                 Contexts = _contexts,
                 Control = _control,
+                Enabled = _enabled,
                 Ignores = _ignores,
                 Name = _name,
                 RunIf = _runIf,
