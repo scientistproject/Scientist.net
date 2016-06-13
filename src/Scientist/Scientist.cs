@@ -1,5 +1,7 @@
 ﻿using GitHub.Internals;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace GitHub
@@ -10,6 +12,7 @@ namespace GitHub
     public static class Scientist
     {
         static Func<Task<bool>> _enabled = () => Task.FromResult(true);
+        static readonly ConcurrentSet<Task> _publishingTasks = new ConcurrentSet<Task>();
 
         // Should be configured once before starting observations.
         // TODO: How can we guide the developer to the pit of success
@@ -23,7 +26,7 @@ namespace GitHub
         {
             // TODO: Maybe we could automatically generate the name if none is provided using the calling method name. We'd have to 
             // make sure we don't inline this method though.
-            var experimentBuilder = new Experiment<T, TClean>(name, _enabled);
+            var experimentBuilder = new Experiment<T, TClean>(name, _publishingTasks, _enabled);
 
             experiment(experimentBuilder);
 
@@ -32,7 +35,7 @@ namespace GitHub
 
         static Experiment<T, TClean> Build<T, TClean>(string name, Action<IExperimentAsync<T, TClean>> experiment)
         {
-            var builder = new Experiment<T, TClean>(name, _enabled);
+            var builder = new Experiment<T, TClean>(name, _publishingTasks, _enabled);
 
             experiment(builder);
 
@@ -100,5 +103,10 @@ namespace GitHub
         /// <returns>The value of the experiment's control function.</returns>
         public static Task<T> ScienceAsync<T, TClean>(string name, Action<IExperimentAsync<T, TClean>> experiment) =>
             Build(name, experiment).Build().Run();
+
+        /// <summary>
+        /// Creates a new task that is completed when all remaining publishing tasks have completed.
+        /// </summary>
+        public static Task WhenPublished() => Task.WhenAll(_publishingTasks.Items);
     }
 }

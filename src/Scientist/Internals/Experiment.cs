@@ -24,12 +24,14 @@ namespace GitHub.Internals
         private Func<Task<bool>> _runIf = _alwaysRun;
         private readonly List<Func<T, T, Task<bool>>> _ignores = new List<Func<T, T, Task<bool>>>();
         private readonly Dictionary<string, dynamic> _contexts = new Dictionary<string, dynamic>();
+        private readonly ConcurrentSet<Task> _publishingTasks;
 
-        public Experiment(string name, Func<Task<bool>> enabled)
+        public Experiment(string name, ConcurrentSet<Task> publishingTasks, Func<Task<bool>> enabled)
         {
             _name = name;
             _candidates = new Dictionary<string, Func<Task<T>>>();
             _enabled = enabled;
+            _publishingTasks = publishingTasks;
         }
 
         public bool ThrowOnMismatches { get; set; }
@@ -115,6 +117,7 @@ namespace GitHub.Internals
                 Enabled = _enabled,
                 Ignores = _ignores,
                 Name = _name,
+                PublishingTasks = _publishingTasks,
                 RunIf = _runIf,
                 Thrown = _thrown,
                 ThrowOnMismatches = ThrowOnMismatches

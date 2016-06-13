@@ -23,6 +23,7 @@ namespace GitHub.Internals
         internal readonly Func<Task<bool>> RunIf;
         internal readonly IEnumerable<Func<T, T, Task<bool>>> Ignores;
         internal readonly Dictionary<string, dynamic> Contexts;
+        internal readonly ConcurrentSet<Task> PublishingTasks;
         internal readonly Action<Operation, Exception> Thrown;
         internal readonly bool ThrowOnMismatches;
         
@@ -46,6 +47,7 @@ namespace GitHub.Internals
             Enabled = settings.Enabled;
             RunIf = settings.RunIf;
             Ignores = settings.Ignores;
+            PublishingTasks = settings.PublishingTasks;
             Thrown = settings.Thrown;
             ThrowOnMismatches = settings.ThrowOnMismatches;
         }
@@ -88,9 +90,14 @@ namespace GitHub.Internals
 
             try
             {
-                // TODO: Make this Fire and forget so we don't have to wait for this
-                // to complete before we return a result
-                await Scientist.ResultPublisher.Publish(result);
+                Task task = Scientist.ResultPublisher.Publish(result);
+                PublishingTasks.TryAdd(task);
+
+                // Disable the warning, because the task is being tracked on the set, 
+                // and immediately removed upon completion.
+#pragma warning disable CS4014
+                task.ContinueWith(_ => PublishingTasks.TryRemove(task));
+#pragma warning restore CS4014
             }
             catch (Exception ex)
             {

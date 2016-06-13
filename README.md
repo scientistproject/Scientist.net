@@ -101,6 +101,17 @@ public Task Publish<T, TClean>(Result<T, TClean> result)
 }
 ```
 
+If you need to ensure that the scientist results are published prior to your program's exit use `Scientist.WhenPublished()`:+1:
+
+```csharp
+static async void MainAsync(string[] args)
+{
+    await RunProgram(args);
+
+    await Scientist.WhenPublished();
+}
+```
+
 By default observations are stored in an in-memory publisher. For production use, you'll
 probably want to implement an `IResultPublisher`.
 
