@@ -138,7 +138,7 @@ public class ThrownTests
 
         using (Swap.Publisher(publisher))
         {
-            int result = Scientist.Science<int>(nameof(PublishOperation), experiment =>
+            int result = Scientist.Science<int>(nameof(PublishAsyncOperation), experiment =>
             {
                 experiment.Thrown(mock.Thrown);
                 experiment.Use(mock.Control);
