@@ -1,6 +1,7 @@
 ﻿using GitHub;
 using NSubstitute;
 using System;
+using System.Threading.Tasks;
 using UnitTests;
 using Xunit;
 
@@ -88,6 +89,13 @@ public class ThrownTests
         mock.Received().Thrown(Operation.Ignore, ex);
     }
 
+    async Task Publish(Exception ex)
+    {
+        await Task.Delay(150);
+
+        throw ex;
+    }
+
     [Fact]
     public void PublishOperation()
     {
@@ -113,6 +121,36 @@ public class ThrownTests
             Assert.Equal(expectedResult, result);
             mock.Received().Thrown(Operation.Publish, ex);
         }
+    }
+
+    [Fact]
+    public async Task PublishAsyncOperation()
+    {
+        var publisher = Substitute.For<IResultPublisher>();
+        var ex = new Exception();
+        publisher.Publish(Arg.Any<Result<int, int>>()).Returns(_ => Publish(ex));
+
+        const int expectedResult = 42;
+
+        var mock = Substitute.For<IControlCandidate<int>>();
+        mock.Control().Returns(expectedResult);
+        mock.Candidate().Returns(0);
+
+        using (Swap.Publisher(publisher))
+        {
+            int result = Scientist.Science<int>(nameof(PublishOperation), experiment =>
+            {
+                experiment.Thrown(mock.Thrown);
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
+            });
+
+            Assert.Equal(expectedResult, result);
+        }
+
+        var actual = await Assert.ThrowsAsync<Exception>(() => Scientist.WhenPublished());
+        Assert.Same(ex, actual);
+        mock.Received().Thrown(Operation.Publish, ex);
     }
 
     [Fact]

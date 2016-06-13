@@ -96,7 +96,15 @@ namespace GitHub.Internals
                 // Disable the warning, because the task is being tracked on the set, 
                 // and immediately removed upon completion.
 #pragma warning disable CS4014
-                task.ContinueWith(_ => PublishingTasks.TryRemove(task));
+                task.ContinueWith(_ =>
+                {
+                    if (task.IsFaulted)
+                    {
+                        Thrown(Operation.Publish, task.Exception.GetBaseException());
+                    }
+
+                    PublishingTasks.TryRemove(task);
+                });
 #pragma warning restore CS4014
             }
             catch (Exception ex)
