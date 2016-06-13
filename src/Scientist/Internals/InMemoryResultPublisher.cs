@@ -9,13 +9,26 @@ namespace GitHub.Internals
     public class InMemoryResultPublisher : IResultPublisher
     {
         readonly static Task _completed = Task.FromResult(0);
-        readonly static ConcurrentDictionary<Type, ConcurrentBag<object>> _results 
-            = new ConcurrentDictionary<Type, ConcurrentBag<object>>();
+        readonly static ConcurrentDictionary<int, ConcurrentBag<object>> _results 
+            = new ConcurrentDictionary<int, ConcurrentBag<object>>();
 
-        public Task Publish<T>(Result<T> result)
+        static int GetKey<T, TClean>()
+        {
+            if (typeof(T) == typeof(TClean))
+            {
+                return typeof(T).TypeHandle.GetHashCode();
+            }
+            else
+            {
+                return typeof(T).TypeHandle.GetHashCode()
+                ^ typeof(TClean).TypeHandle.GetHashCode();
+            }
+        }
+
+        public Task Publish<T, TClean>(Result<T, TClean> result)
         {
             _results.AddOrUpdate(
-                typeof(T),
+                GetKey<T, TClean>(),
                 key => new ConcurrentBag<object>
                 {
                     result
@@ -32,19 +45,20 @@ namespace GitHub.Internals
         /// Gets the results of a specific type from the publisher.
         /// </summary>
         /// <typeparam name="T">The type of result to get.</typeparam>
+        /// <typeparam name="TClean">the type of cleaned result to get.</typeparam>
         /// <returns>All results that have the type provided, and have been published.</returns>
-        public IEnumerable<Result<T>> Results<T>()
+        public IEnumerable<Result<T, TClean>> Results<T, TClean>()
         {
             ConcurrentBag<object> bag;
 
             // Try to get the list of results.
-            if (_results.TryGetValue(typeof(T), out bag))
+            if (_results.TryGetValue(GetKey<T, TClean>(), out bag))
             {
-                return bag.Cast<Result<T>>();
+                return bag.Cast<Result<T, TClean>>();
             }
 
             // Otherwise return nothing.
-            else { return new Result<T>[0]; }
+            else { return new Result<T, TClean>[0]; }
         }
     }
 }

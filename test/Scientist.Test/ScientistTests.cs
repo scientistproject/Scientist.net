@@ -143,7 +143,7 @@ public class TheScientistClass
             mock.Received().Control();
             mock.Received().Candidate();
 
-            Result<int> observedResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            var observedResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
             Assert.True(observedResult.Matched);
             Assert.True(observedResult.Control.Duration.Ticks > 0);
             Assert.True(observedResult.Observations.All(o => o.Duration.Ticks > 0));
@@ -166,7 +166,7 @@ public class TheScientistClass
             Assert.Equal(42, result);
             mock.Received().Control();
             mock.Received().Candidate();
-            Result<int> observedResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
+            var observedResult = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
             Assert.False(observedResult.Matched);
             Assert.True(observedResult.Control.Duration.Ticks > 0);
             Assert.True(observedResult.Observations.All(o => o.Duration.Ticks > 0));
@@ -679,12 +679,12 @@ public class TheScientistClass
             });
 
             Exception baseException = ex.GetBaseException();
-            Assert.IsType<MismatchException<int>>(baseException);
+            Assert.IsType<MismatchException<int, int>>(baseException);
             mock.Received().Control();
             mock.Received().Candidate();
 
             var result = TestHelper.Results<int>().First(m => m.ExperimentName == experimentName);
-            var mismatchException = (MismatchException<int>)baseException;
+            var mismatchException = (MismatchException<int, int>)baseException;
             Assert.Equal(experimentName, mismatchException.Name);
             Assert.Same(result, mismatchException.Result);
         }
@@ -713,6 +713,36 @@ public class TheScientistClass
                 mock.Received().Control();
                 settings.Received().Enabled();
             }
+        }
+
+        [Fact]
+        public void KeepingItClean()
+        {
+            const int expectedResult = 42;
+            const string expectedCleanResult = "Forty Two";
+
+            var mock = Substitute.For<IControlCandidate<int, string>>();
+            mock.Control().Returns(expectedResult);
+            mock.Candidate().Returns(0);
+            mock.Clean(expectedResult).Returns(expectedCleanResult);
+
+            var result = Scientist.Science<int, string>(nameof(KeepingItClean), experiment =>
+            {
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
+                experiment.Clean(mock.Clean);
+            });
+
+            Assert.Equal(expectedResult, result);
+
+            // Make sure that the observations aren't cleaned unless called explicitly.
+            mock.DidNotReceive().Clean(expectedResult);
+
+            Assert.Equal(
+                expectedCleanResult,
+                TestHelper.Results<int, string>().First(r => r.ExperimentName == nameof(KeepingItClean)).Control.CleanedValue);
+
+            mock.Received().Clean(expectedResult);
         }
     }
 }

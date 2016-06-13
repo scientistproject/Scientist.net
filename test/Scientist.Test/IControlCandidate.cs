@@ -20,6 +20,11 @@ namespace UnitTests
         void Thrown(Operation operation, Exception exception);
     }
 
+    public interface IControlCandidate<T, TClean> : IControlCandidate<T>
+    {
+        TClean Clean(T value);
+    }
+
     public interface IControlCandidateTask<T>
     {
         Task<T> Control();

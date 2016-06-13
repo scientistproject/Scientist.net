@@ -7,10 +7,13 @@ namespace GitHub
     /// <summary>
     /// Defines an observation of an experiment's execution.
     /// </summary>
-    public class Observation<T>
+    public class Observation<T, TClean>
     {
-        internal Observation(string name, Action<Operation, Exception> thrown)
+        readonly Func<T, TClean> _cleaner;
+
+        internal Observation(string name, Action<Operation, Exception> thrown, Func<T, TClean> cleaner)
         {
+            _cleaner = cleaner;
             ExperimentThrown = thrown;
             Name = name;
         }
@@ -30,6 +33,11 @@ namespace GitHub
         }
 
         internal readonly Action<Operation, Exception> ExperimentThrown;
+
+        /// <summary>
+        /// Gets the cleaned value of the experiment behavior if successful.
+        /// </summary>
+        public TClean CleanedValue => _cleaner(Value);
 
         /// <summary>
         /// Gets the name of the experiment behavior.
@@ -56,7 +64,7 @@ namespace GitHub
         /// <param name="other">The other observation.</param>
         /// <param name="comparator">Used to compare two observations</param>
         /// <returns>True when the observations values/exceptions match.</returns>
-        public bool EquivalentTo(Observation<T> other, Func<T, T, bool> comparator)
+        public bool EquivalentTo(Observation<T, TClean> other, Func<T, T, bool> comparator)
         {
             try
             {
@@ -93,9 +101,9 @@ namespace GitHub
         /// <param name="comparison">The comparison delegate used to determine if an observation is equivalent.</param>
         /// <param name="thrown">The delegate used for handling thrown exceptions during equivalency comparisons.</param>
         /// <returns>The observed experiment.</returns>
-        public static async Task<Observation<T>> New(string name, Func<Task<T>> block, Func<T, T, bool> comparison, Action<Operation, Exception> thrown)
+        public static async Task<Observation<T, TClean>> New(string name, Func<Task<T>> block, Func<T, T, bool> comparison, Action<Operation, Exception> thrown, Func<T, TClean> cleaner)
         {
-            Observation<T> observation = new Observation<T>(name, thrown);
+            Observation<T, TClean> observation = new Observation<T, TClean>(name, thrown, cleaner);
 
             await observation.Run(block);
 
