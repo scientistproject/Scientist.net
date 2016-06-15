@@ -1,8 +1,10 @@
 #r @"tools/FAKE.Core/tools/FakeLib.dll"
 
 open Fake
+open Fake.FileHelper
 open System
 open System.Collections.Generic
+open System.Net;
 open System.Text
 
 let architecture = getBuildParamOrDefault "architecture" "x86"
@@ -45,8 +47,11 @@ let Run workingDirectory fileName args =
 
     ProcessResult.New code messages errors
 
-let dotnetHome = "C:\\Program Files\\dotnet\\"
+let dotnetHome = ".\\tools\dotnet\\"
 let dotnetExe = dotnetHome + "dotnet.exe"
+let dotnetInstall = dotnetHome + "dotnet-install.ps1"
+let dotnetInstallPath = "https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.ps1"
+let powershell = "powershell.exe"
 
 let UpdateProjectJson projectJson =
     let fullJsonPath = (__SOURCE_DIRECTORY__ + projectJson)
@@ -77,6 +82,14 @@ Target "Clean" (fun _ ->
 Target "SetupBuild" (fun _ ->
     SetBuildVersion
     
+    if not (fileExists dotnetExe) then 
+        CreateDir dotnetHome
+        
+        let wc = new WebClient()
+        wc.DownloadFile(dotnetInstallPath, dotnetInstall)
+        
+        Run currentDirectory powershell ("-file " + dotnetInstall + " -InstallDir .\\tools\\dotnet\\") |> ignore
+
     Run currentDirectory dotnetExe "restore" |> ignore
 )
 

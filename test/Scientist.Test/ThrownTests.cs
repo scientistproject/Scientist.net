@@ -36,6 +36,33 @@ public class ThrownTests
     }
 
     [Fact]
+    public void EnabledOperation()
+    {
+        var settings = Substitute.For<IScientistSettings>();
+        var ex = new Exception();
+        settings.Enabled().Throws(ex);
+
+        using (Swap.Enabled(settings.Enabled))
+        {
+            const int expectedResult = 42;
+
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(expectedResult);
+            mock.Candidate().Returns(0);
+
+            var result = Scientist.Science<int>(nameof(EnabledOperation), experiment =>
+            {
+                experiment.Thrown(mock.Thrown);
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
+            });
+
+            Assert.Equal(expectedResult, result);
+            mock.Received().Thrown(Operation.Enabled, ex);
+        }
+    }
+
+    [Fact]
     public void IgnoreOperation()
     {
         const int expectedResult = 42;
@@ -66,9 +93,9 @@ public class ThrownTests
     {
         var publisher = Substitute.For<IResultPublisher>();
         var ex = new Exception();
-        publisher.Publish(Arg.Any<Result<int>>()).Throws(ex);
+        publisher.Publish(Arg.Any<Result<int, int>>()).Throws(ex);
 
-        using (new SwapPublisher(publisher))
+        using (Swap.Publisher(publisher))
         {
             const int expectedResult = 42;
 
@@ -112,25 +139,5 @@ public class ThrownTests
 
         Assert.Equal(expectedResult, result);
         mock.Received().Thrown(Operation.RunIf, ex);
-    }
-
-    /// <summary>
-    /// Swaps <see cref="Scientist.ResultPublisher"/> with the input
-    /// parameter, and upon disposal exchanges the publisher back.
-    /// </summary>
-    public class SwapPublisher : IDisposable
-    {
-        readonly IResultPublisher _original;
-
-        public SwapPublisher(IResultPublisher publisher)
-        {
-            _original = Scientist.ResultPublisher;
-            Scientist.ResultPublisher = publisher;
-        }
-
-        public void Dispose()
-        {
-            Scientist.ResultPublisher = _original;
-        }
     }
 }
