@@ -83,12 +83,8 @@ namespace GitHub
         /// <param name="name">Name of the experiment</param>
         /// <param name="experiment">Experiment callback used to configure the experiment</param>
         /// <returns>The value of the experiment's control function.</returns>
-        public static Task<T> ScienceAsync<T>(string name, Action<IExperimentAsync<T>> experiment)
-        {
-            var builder = Build<T, T>(name, 1, experiment);
-            builder.Clean(value => value);
-            return builder.Build().Run();
-        }
+        public static Task<T> ScienceAsync<T>(string name, Action<IExperimentAsync<T>> experiment) =>
+            ScienceAsync(name, 1, experiment);
 
         /// <summary>
         /// Conduct an asynchronous experiment
@@ -114,7 +110,7 @@ namespace GitHub
         /// <param name="experiment">Experiment callback used to configure the experiment</param>
         /// <returns>The value of the experiment's control function.</returns>
         public static Task<T> ScienceAsync<T, TClean>(string name, Action<IExperimentAsync<T, TClean>> experiment) =>
-            Build(name, 1, experiment).Build().Run();
+            ScienceAsync(name, 1, experiment);
 
         /// <summary>
         /// Conduct an asynchronous experiment
