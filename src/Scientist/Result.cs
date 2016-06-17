@@ -4,9 +4,9 @@ using GitHub.Internals;
 
 namespace GitHub
 {
-    public class Result<T>
+    public class Result<T, TClean>
     {
-        internal Result(ExperimentInstance<T> experiment, IEnumerable<Observation<T>> observations, Observation<T> control, Dictionary<string, dynamic> contexts)
+        internal Result(ExperimentInstance<T, TClean> experiment, IEnumerable<Observation<T, TClean>> observations, Observation<T, TClean> control, Dictionary<string, dynamic> contexts)
         {
             Candidates = observations.Where(o => o != control).ToList();
             Control = control;
@@ -24,12 +24,12 @@ namespace GitHub
         /// <summary>
         /// Gets all of the candidate observations.
         /// </summary>
-        public IReadOnlyList<Observation<T>> Candidates { get; }
+        public IReadOnlyList<Observation<T, TClean>> Candidates { get; }
 
         /// <summary>
         /// Gets the controlled observation.
         /// </summary>
-        public Observation<T> Control { get; }
+        public Observation<T, TClean> Control { get; }
 
         /// <summary>
         /// Gets the name of the experiment.
@@ -49,17 +49,17 @@ namespace GitHub
         /// <summary>
         /// Gets all of the observations that did not match the controlled observation.
         /// </summary>
-        public IReadOnlyList<Observation<T>> MismatchedObservations { get; }
+        public IReadOnlyList<Observation<T, TClean>> MismatchedObservations { get; }
 
         /// <summary>
         /// Gets all of the observations.
         /// </summary>
-        public IReadOnlyList<Observation<T>> Observations { get; }
+        public IReadOnlyList<Observation<T, TClean>> Observations { get; }
 
         /// <summary>
         /// Gets all of the mismatched observations whos values where ignored.
         /// </summary>
-        public IReadOnlyList<Observation<T>> IgnoredObservations { get; }
+        public IReadOnlyList<Observation<T, TClean>> IgnoredObservations { get; }
 
         /// <summary>
         /// Gets the context data supplied to the experiment.

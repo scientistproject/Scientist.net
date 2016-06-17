@@ -48,6 +48,15 @@ public decimal GetUserStatistic(IUser user)
 }
 ```
 
+Provide a global condition that determines whether experiments run or not.
+
+```csharp
+int peakStart = 12; // 12:00
+int peakEnd = 15;   // 15:00
+
+Scientist.Enabled(() => DateTime.UtcNow.Hour < peakStart || DateTime.UtcNow.Hour > peakEnd);
+```
+
 To ensure that experimental results always match use `ThrownOnMismatches`.
 
 ```csharp
@@ -61,11 +70,35 @@ Scientist.Science<int>("ExperimentN", experiment =>
 Use `Thrown` in order to track and manage any exceptions thrown during the life cycle of an experiment.  By default `Scientist` will throw all exceptions.
 
 ```csharp
-Scientist.Scient<int>("ExperimentCatch", experiment =>
+Scientist.Science<int>("ExperimentCatch", experiment =>
 {
     experiment.Thrown((operation, exception) => InternalTracker.Track($"Science failure in ExperimentCatch: {operation}.", exception))
     // ...
 });
+```
+
+When publishing result observations the complete value may not be necessary.  In this example `Clean` is used to return simply `IUser.Name` instead of the full value.  This allows the caller to keep the return of `IUser`, and the publisher to use `string`.
+
+```csharp
+public IUser GetCurrentUser(string hash)
+{
+    return Scientist.Science<IUser, string>("experiment-name", experiment =>
+    {
+        experiment.Use(() => LookupUser(hash));
+        experiment.Try(() => RetrieveUser(hash));
+        experiment.Clean(user => user.Name);
+    });
+}
+```
+
+Here is how to access the two different values during the publish routine.
+
+```csharp
+public Task Publish<T, TClean>(Result<T, TClean> result)
+{
+    result.Control.Value        // {IUser}
+    result.Control.CleanedValue // "Jonathan"
+}
 ```
 
 By default observations are stored in an in-memory publisher. For production use, you'll

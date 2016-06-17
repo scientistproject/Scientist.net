@@ -10,15 +10,18 @@ namespace GitHub.Internals
     /// An instance of an experiment. This actually runs the control and the candidate and measures the result.
     /// </summary>
     /// <typeparam name="T">The return type of the experiment</typeparam>
-    internal class ExperimentInstance<T>
+    /// <typeparam name="TClean">The cleaned type of the experiment</typeparam>
+    internal class ExperimentInstance<T, TClean>
     {
         internal const string ControlExperimentName = "control";
 
         internal readonly string Name;
         internal readonly int ConcurrentTasks;
         internal readonly List<NamedBehavior> Behaviors;
+        internal readonly Func<T, TClean> Cleaner;
         internal readonly Func<T, T, bool> Comparator;
         internal readonly Func<Task> BeforeRun;
+        internal readonly Func<Task<bool>> Enabled;
         internal readonly Func<Task<bool>> RunIf;
         internal readonly IEnumerable<Func<T, T, Task<bool>>> Ignores;
         internal readonly Dictionary<string, dynamic> Contexts;
@@ -27,7 +30,7 @@ namespace GitHub.Internals
         
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
         
-        public ExperimentInstance(ExperimentSettings<T> settings)
+        public ExperimentInstance(ExperimentSettings<T, TClean> settings)
         {
             Name = settings.Name;
 
@@ -39,9 +42,11 @@ namespace GitHub.Internals
                 settings.Candidates.Select(c => new NamedBehavior(c.Key, c.Value)));
 
             BeforeRun = settings.BeforeRun;
+            Cleaner = settings.Cleaner;
             Comparator = settings.Comparator;
             ConcurrentTasks = settings.ConcurrentTasks;
             Contexts = settings.Contexts;
+            Enabled = settings.Enabled;
             RunIf = settings.RunIf;
             Ignores = settings.Ignores;
             Thrown = settings.Thrown;
@@ -70,11 +75,19 @@ namespace GitHub.Internals
             }
 
             // Break tasks into batches of "ConcurrentTasks" size
-            var observations = new List<Observation<T>>();
+            var observations = new List<Observation<T, TClean>>();
             foreach (var behaviors in orderedBehaviors.Chunk(ConcurrentTasks))
             {
                 // Run batch of behaviors simultaneously
-                var tasks = behaviors.Select(b => Observation<T>.New(b.Name, b.Behavior, Comparator, Thrown));
+                var tasks = behaviors.Select(b =>
+                {
+                    return Observation<T, TClean>.New(
+	                    b.Name,
+                        b.Behavior,
+                        Comparator,
+                        Thrown,
+                        Cleaner);
+                });
 
                 // Collect the observations
                 observations.AddRange(await Task.WhenAll(tasks));
@@ -82,7 +95,7 @@ namespace GitHub.Internals
 
             var controlObservation = observations.FirstOrDefault(o => o.Name == ControlExperimentName);
             
-            var result = new Result<T>(this, observations, controlObservation, Contexts);
+            var result = new Result<T, TClean>(this, observations, controlObservation, Contexts);
 
             try
             {
@@ -97,7 +110,7 @@ namespace GitHub.Internals
 
             if (ThrowOnMismatches && result.Mismatched)
             {
-                throw new MismatchException<T>(Name, result);
+                throw new MismatchException<T, TClean>(Name, result);
             }
 
             if (controlObservation.Thrown) throw controlObservation.Exception;
@@ -117,7 +130,7 @@ namespace GitHub.Internals
             }
         }
 
-        public async Task<bool> IgnoreMismatchedObservation(Observation<T> control, Observation<T> candidate)
+        public async Task<bool> IgnoreMismatchedObservation(Observation<T, TClean> control, Observation<T, TClean> candidate)
         {
             if (!Ignores.Any())
             {
@@ -145,11 +158,9 @@ namespace GitHub.Internals
         {
             try
             {
-                // TODO Implement Enabled here.
-
                 // Only let the experiment run if at least one candidate (> 1 behaviors) is 
                 // included.  The control is always included behaviors count.
-                return Behaviors.Count > 1 && await RunIfAllows();
+                return Behaviors.Count > 1 && await Enabled() && await RunIfAllows();
             }
             catch (Exception ex)
             {

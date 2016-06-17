@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace GitHub.Internals
 {
-    internal class Experiment<T> : IExperiment<T>, IExperimentAsync<T>
+    internal class Experiment<T, TClean> : IExperiment<T, TClean>, IExperimentAsync<T, TClean>
     {
         internal const string CandidateExperimentName = "candidate";
 
@@ -18,24 +18,30 @@ namespace GitHub.Internals
         private Func<Task<T>> _control;
 
         private readonly Dictionary<string, Func<Task<T>>> _candidates;
+        private Func<T, TClean> _cleaner;
         private Func<T, T, bool> _comparison = DefaultComparison;
         private Func<Task> _beforeRun;
+        private readonly Func<Task<bool>> _enabled;
         private Action<Operation, Exception> _thrown = _alwaysThrow;
         private Func<Task<bool>> _runIf = _alwaysRun;
         private readonly List<Func<T, T, Task<bool>>> _ignores = new List<Func<T, T, Task<bool>>>();
         private readonly Dictionary<string, dynamic> _contexts = new Dictionary<string, dynamic>();
 
-        public Experiment(string name, int concurrentTasks)
+        public Experiment(string name, Func<Task<bool>> enabled, int concurrentTasks)
         {
             if (concurrentTasks <= 0)
                 throw new ArgumentException("Argument must be greater than 0", "concurrentTasks");
 
             _name = name;
-            _concurrentTasks = concurrentTasks;
             _candidates = new Dictionary<string, Func<Task<T>>>();
+            _enabled = enabled;
+            _concurrentTasks = concurrentTasks;
         }
 
         public bool ThrowOnMismatches { get; set; }
+
+        public void Clean(Func<T, TClean> cleaner) =>
+            _cleaner = cleaner;
 
         public void RunIf(Func<Task<bool>> block) =>
             _runIf = block;
@@ -103,15 +109,17 @@ namespace GitHub.Internals
             _contexts.Add(key, data);
         }
 
-        internal ExperimentInstance<T> Build() =>
-            new ExperimentInstance<T>(new ExperimentSettings<T>
+        internal ExperimentInstance<T, TClean> Build() =>
+            new ExperimentInstance<T, TClean>(new ExperimentSettings<T, TClean>
             {
                 BeforeRun = _beforeRun,
                 Candidates = _candidates,
+                Cleaner = _cleaner,
                 Comparator = _comparison,
                 ConcurrentTasks = _concurrentTasks,
                 Contexts = _contexts,
                 Control = _control,
+                Enabled = _enabled,
                 Ignores = _ignores,
                 Name = _name,
                 RunIf = _runIf,
