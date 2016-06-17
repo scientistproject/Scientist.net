@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using GitHub;
 using NSubstitute;
@@ -720,34 +719,25 @@ public class TheScientistClass
         public async Task RunsTasksConcurrently(int concurrentTasks)
         {
             // Control + 3 experiments
-            var totalTasks = 1D + 3;
+            var totalTasks = 1 + 3;
 
-            // Each task will take 3 seconds
+            // Each task will take 1 second
             var taskSleepMs = 1000;
-            
-            // Calculate expected duration based on concurrentTasks setting
-            var expectedDuration = TimeSpan.FromMilliseconds((taskSleepMs * Math.Ceiling(totalTasks / concurrentTasks)));
 
-            // Amount of headroom allowed
-            var headRoom = TimeSpan.FromMilliseconds(50);
-            
             // Our long running task
-            var longTask = new Func<Task<int>>(() => 
+            var longTask = new Func<Task<DateTime>>(() => 
             {
-                return Task.Run(() =>
+                return Task.Run(async () =>
                 {
-                    Console.WriteLine($"Task is running");
-                    Thread.Sleep(taskSleepMs);
-                    Console.WriteLine($"Task is finished");
-                    return 1;
+                    var startTime = DateTime.Now;
+                    await Task.Delay(taskSleepMs);
+                    return startTime;
                 });
             });
 
             // Run the experiment
-            var watch = new Stopwatch();
-            watch.Start();
             const string experimentName = nameof(ThrowsArgumentExceptionWhenConcurrentTasksInvalid);
-            var result = await Scientist.ScienceAsync<int>(experimentName, concurrentTasks, experiment =>
+            await Scientist.ScienceAsync<DateTime>(experimentName, concurrentTasks, experiment =>
             {
                 // Add our control and experiments
                 experiment.Use(longTask);
@@ -756,12 +746,41 @@ public class TheScientistClass
                     experiment.Try($"experiment{idx}", longTask);
                 }
             });
-            watch.Stop();
 
-            Assert.Equal(result, 1);
+            var result = TestHelper.Results<DateTime>(experimentName).First();
 
-            // Ensure duration is as expected
-            Assert.True(watch.Elapsed >= expectedDuration && watch.Elapsed <= expectedDuration.Add(headRoom));
+            // Organise observations into their concurrent batches
+            var batchTimes = new Dictionary<int, List<DateTime>>();
+            for (int taskNo = 1; taskNo <= totalTasks; taskNo++)
+            {
+                // Get control or experiment
+                var task = taskNo == 1
+                    ? result.Control
+                    : result.Candidates.First(x => x.Name == $"experiment{taskNo}");
+
+                // Calculate which batch it was in
+                var batch = (int)Math.Ceiling(1D * taskNo / concurrentTasks);
+
+                // Add start time to batch results
+                if (batchTimes.ContainsKey(batch))
+                    batchTimes[batch].Add(task.Value);
+                else
+                    batchTimes.Add(batch, new List<DateTime>() { task.Value });
+            }
+
+
+            // Now assert btach execution times
+            for (int batch = 1; batch <= batchTimes.Count; batch++)
+            {
+                // Ensure start time within batch are within tolerance
+                Assert.All(batchTimes[batch], startTime => batchTimes[batch].All(prev => startTime.Subtract(prev) <= TimeSpan.FromMilliseconds(100)));
+
+                if (batch > 1)
+                {
+                    // Ensure start time after previous batch is at least task sleepTime
+                    Assert.All(batchTimes[batch], startTime => batchTimes[batch - 1].All(prev => startTime.Subtract(prev) >= TimeSpan.FromMilliseconds(taskSleepMs)));
+                }
+            }
         }
     }
 }
