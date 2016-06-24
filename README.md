@@ -173,7 +173,7 @@ public class MyResultPublisher : IResultPublisher
 {
     public Task Publish<T, TClean>(Result<T, TClean> result)
     {
-        // result.Control.Value = <User object>
+        // result.Control.Value = <IUser object>
         IUser user = (IUser)result.Control.Value;
         Console.WriteLine($"Login from raw object: {user.Login}");
         
