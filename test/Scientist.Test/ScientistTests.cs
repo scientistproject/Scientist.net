@@ -813,7 +813,7 @@ public class TheScientistClass
             });
 
             // Run the experiment
-            const string experimentName = nameof(ThrowsArgumentExceptionWhenConcurrentTasksInvalid);
+            string experimentName = nameof(RunsTasksConcurrently) + concurrentTasks;
             await Scientist.ScienceAsync<int>(experimentName, concurrentTasks, experiment =>
             {
                 // Add our control and experiments
