@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using GitHub;
 using NSubstitute;
@@ -777,65 +778,77 @@ public class TheScientistClass
             // Control + 3 experiments
             var totalTasks = 1 + 3;
 
-            // Each task will take 1 second
-            var taskSleepMs = 1000;
+            // Use CountdownEvents to ensure tasks don't finish before all tasks in that batch have started
+            var startedSignal = new CountdownEvent(concurrentTasks);
+            var finishedSignal = new CountdownEvent(concurrentTasks);
 
-            // Our long running task
-            var longTask = new Func<Task<DateTime>>(() => 
+            // Our test task
+            var task = new Func<Task<int>>(() => 
             {
-                return Task.Run(async () =>
+                return Task.Run(() =>
                 {
-                    var startTime = DateTime.Now;
-                    await Task.Delay(taskSleepMs);
-                    return startTime;
+                    // Signal that we have started
+                    var last = startedSignal.Signal();
+
+                    // Wait till all tasks for this batch have started
+                    startedSignal.Wait();
+
+                    // Signal we have finished
+                    finishedSignal.Signal();
+
+                    // Last task to start needs to reset the events
+                    if (last)
+                    {
+                        // Wait for all tasks in the batch to have finished
+                        finishedSignal.Wait();
+
+                        // Reset the countdown events
+                        startedSignal.Reset();
+                        finishedSignal.Reset();
+                    }
+                    
+                    // Return threadId
+                    return Thread.CurrentThread.ManagedThreadId;
                 });
             });
 
             // Run the experiment
             const string experimentName = nameof(ThrowsArgumentExceptionWhenConcurrentTasksInvalid);
-            await Scientist.ScienceAsync<DateTime>(experimentName, concurrentTasks, experiment =>
+            await Scientist.ScienceAsync<int>(experimentName, concurrentTasks, experiment =>
             {
                 // Add our control and experiments
-                experiment.Use(longTask);
+                experiment.Use(task);
                 for (int idx = 2; idx <= totalTasks; idx++)
                 {
-                    experiment.Try($"experiment{idx}", longTask);
+                    experiment.Try($"experiment{idx}", task);
                 }
             });
 
-            var result = TestHelper.Results<DateTime>(experimentName).First();
+            var result = TestHelper.Results<int>(experimentName).First();
 
-            // Organise observations into their concurrent batches
-            var batchTimes = new Dictionary<int, List<DateTime>>();
+            // Organise observation results into their concurrent batches
+            var batchThreadIds = new Dictionary<int, List<int>>();
             for (int taskNo = 1; taskNo <= totalTasks; taskNo++)
             {
                 // Get control or experiment
-                var task = taskNo == 1
+                var t = taskNo == 1
                     ? result.Control
                     : result.Candidates.First(x => x.Name == $"experiment{taskNo}");
 
                 // Calculate which batch it was in
                 var batch = (int)Math.Ceiling(1D * taskNo / concurrentTasks);
 
-                // Add start time to batch results
-                if (batchTimes.ContainsKey(batch))
-                    batchTimes[batch].Add(task.Value);
+                // Add threadId to batch results
+                if (batchThreadIds.ContainsKey(batch))
+                    batchThreadIds[batch].Add(t.Value);
                 else
-                    batchTimes.Add(batch, new List<DateTime>() { task.Value });
+                    batchThreadIds.Add(batch, new List<int>() { t.Value });
             }
-
-
-            // Now assert batch execution times
-            for (int batch = 1; batch <= batchTimes.Count; batch++)
+            
+            // Now assert each batch has unique thread IDs (proving the tasks ran concurrently within that batch)
+            for (int batch = 1; batch <= batchThreadIds.Count; batch++)
             {
-                // Ensure start time within batch are within tolerance
-                Assert.All(batchTimes[batch], startTime => batchTimes[batch].All(prev => startTime.Subtract(prev) <= TimeSpan.FromMilliseconds(100)));
-
-                if (batch > 1)
-                {
-                    // Ensure start time after previous batch is at least task sleepTime
-                    Assert.All(batchTimes[batch], startTime => batchTimes[batch - 1].All(prev => startTime.Subtract(prev) >= TimeSpan.FromMilliseconds(taskSleepMs)));
-                }
+                Assert.Equal(batchThreadIds[batch].Count, batchThreadIds[batch].Distinct().Count());
             }
         }
     }
