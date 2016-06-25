@@ -82,7 +82,7 @@ namespace GitHub.Internals
                 var tasks = behaviors.Select(b =>
                 {
                     return Observation<T, TClean>.New(
-	                    b.Name,
+                        b.Name,
                         b.Behavior,
                         Comparator,
                         Thrown,

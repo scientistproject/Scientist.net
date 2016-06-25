@@ -825,7 +825,7 @@ public class TheScientistClass
             }
 
 
-            // Now assert btach execution times
+            // Now assert batch execution times
             for (int batch = 1; batch <= batchTimes.Count; batch++)
             {
                 // Ensure start time within batch are within tolerance
