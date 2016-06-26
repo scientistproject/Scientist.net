@@ -744,5 +744,84 @@ public class TheScientistClass
 
             mock.Received().Clean(expectedResult);
         }
+
+        [Fact]
+        public void NoCandidate()
+        {
+            const int expectedResult = 42;
+
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(expectedResult);
+
+            const string experimentName = "noCandidate";
+
+            var result = Scientist.Science<int>(experimentName, experiment =>
+            {
+                experiment.Use(mock.Control);
+            });
+
+            Assert.Equal(expectedResult, result);
+            mock.Received().Control();
+        }
+
+        [Fact]
+        public void NoCandidateMeansCleanIsNeverRun()
+        {
+            var mock = Substitute.For<IControlCandidate<int, int>>();
+            mock.Clean(Arg.Any<int>()).Returns(0);
+
+            Scientist.Science<int, int>("noCandidateNoClean", experiment =>
+            {
+                experiment.Use(() => 42);
+                experiment.Clean(mock.Clean);
+            });
+
+            mock.DidNotReceive().Clean(Arg.Any<int>());
+        }
+
+        [Fact]
+        public void NoCandidateMeansRunIfIsNeverRun()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.RunIf().Returns(false);
+
+            Scientist.Science<int, int>("noCandidateNoRunIf", experiment =>
+            {
+                experiment.Use(() => 42);
+                experiment.RunIf(mock.RunIf);
+            });
+
+            mock.DidNotReceive().RunIf();
+        }
+
+        [Fact]
+        public void NoCandidateMeansNoDisable()
+        {
+            var settings = Substitute.For<IScientistSettings>();
+            settings.Enabled().Returns(Task.FromResult(false));
+
+            using (Swap.Enabled(settings.Enabled))
+            {
+                Scientist.Science<int>("noCandidateNoDisable", experiment =>
+                {
+                    experiment.Use(() => 42);
+                });
+
+                settings.DidNotReceive().Enabled();
+            }
+        }
+
+        [Fact]
+        public void NoCandidateMeansNoPublish()
+        {
+            const string experimentName = "noCandidateNoPublish";
+
+            var result = Scientist.Science<int>(experimentName, experiment =>
+            {
+                experiment.Use(() => 42);
+            });
+
+            Assert.False(TestHelper.Results<int>().Any(m => m.ExperimentName == experimentName));
+        }
     }
 }
