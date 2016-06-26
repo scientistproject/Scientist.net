@@ -778,17 +778,25 @@ public class TheScientistClass
             // Control + 3 experiments
             var totalTasks = 1 + 3;
 
+            // Expected number of batches
+            var expectedBatches = Math.Ceiling(1D * totalTasks / concurrentTasks);
+
             // Use CountdownEvents to ensure tasks don't finish before all tasks in that batch have started
             var startedSignal = new CountdownEvent(concurrentTasks);
             var finishedSignal = new CountdownEvent(concurrentTasks);
 
+            // Batch counter
+            int batch = 1;
+
             // Our test task
-            var task = new Func<Task<int>>(() => 
+            var task = new Func<Task<KeyValuePair<int, int>>>(() => 
             {
                 return Task.Run(() =>
                 {
                     // Signal that we have started
                     var last = startedSignal.Signal();
+
+                    var myBatch = batch;
 
                     // Wait till all tasks for this batch have started
                     startedSignal.Wait();
@@ -805,16 +813,17 @@ public class TheScientistClass
                         // Reset the countdown events
                         startedSignal.Reset();
                         finishedSignal.Reset();
+                        batch++;
                     }
-                    
+
                     // Return threadId
-                    return Thread.CurrentThread.ManagedThreadId;
+                    return new KeyValuePair<int, int>(myBatch, Thread.CurrentThread.ManagedThreadId);
                 });
             });
 
             // Run the experiment
             string experimentName = nameof(RunsTasksConcurrently) + concurrentTasks;
-            await Scientist.ScienceAsync<int>(experimentName, concurrentTasks, experiment =>
+            await Scientist.ScienceAsync<KeyValuePair<int, int>>(experimentName, concurrentTasks, experiment =>
             {
                 // Add our control and experiments
                 experiment.Use(task);
@@ -824,31 +833,26 @@ public class TheScientistClass
                 }
             });
 
-            var result = TestHelper.Results<int>(experimentName).First();
+            // Get the test result
+            var result = TestHelper.Results<KeyValuePair<int, int>>(experimentName).First();
 
-            // Organise observation results into their concurrent batches
-            var batchThreadIds = new Dictionary<int, List<int>>();
-            for (int taskNo = 1; taskNo <= totalTasks; taskNo++)
-            {
-                // Get control or experiment
-                var t = taskNo == 1
-                    ? result.Control
-                    : result.Candidates.First(x => x.Name == $"experiment{taskNo}");
-
-                // Calculate which batch it was in
-                var batch = (int)Math.Ceiling(1D * taskNo / concurrentTasks);
-
-                // Add threadId to batch results
-                if (batchThreadIds.ContainsKey(batch))
-                    batchThreadIds[batch].Add(t.Value);
-                else
-                    batchThreadIds.Add(batch, new List<int>() { t.Value });
-            }
+            // Consolidate the returned values from the tasks
+            var results = result.Observations.Select(x => x.Value);
             
-            // Now assert each batch has unique thread IDs (proving the tasks ran concurrently within that batch)
-            for (int batch = 1; batch <= batchThreadIds.Count; batch++)
+            // Assert correct number of batches
+            Assert.Equal(expectedBatches, results.Select(x => x.Key).Distinct().Count());
+
+            // Now check each batch
+            for (int batchNo = 1; batchNo <= expectedBatches; batchNo++)
             {
-                Assert.Equal(batchThreadIds[batch].Count, batchThreadIds[batch].Distinct().Count());
+                // Get the threadIds used by each task in the batch
+                var batchThreadIds = results.Where(x => x.Key == batchNo).Select(x => x.Value);
+
+                // Assert expected number of concurrent tasks in batch
+                Assert.Equal(concurrentTasks, batchThreadIds.Count());
+
+                // Assert unique threadIds in batch
+                Assert.Equal(batchThreadIds.Count(), batchThreadIds.Distinct().Count());
             }
         }
     }
