@@ -821,7 +821,8 @@ public class TheScientistClass
                 experiment.Use(() => 42);
             });
 
-            Assert.False(TestHelper.Results<int>().Any(m => m.ExperimentName == experimentName));
+            Assert.False(TestHelper.Results<int>().Any(m => m.ExperimentName == experimentName),
+                "When an experiment without a candidate is run, no results should be published.");
         }
     }
 }
