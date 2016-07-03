@@ -855,5 +855,52 @@ public class TheScientistClass
                 Assert.Equal(batchThreadIds.Count(), batchThreadIds.Distinct().Count());
             }
         }
+
+        [Fact]
+        public async Task FireAndForget()
+        {
+            const int expectedResult = 42;
+
+            // Create a new publisher that will delay all
+            // publishing to account for this test.
+            var publisher = Substitute.For<IResultPublisher>();
+            publisher.Publish(Arg.Any<Result<int, int>>())
+                .Returns(call => Task.Delay(100));
+
+            var mock = Substitute.For<IControlCandidate<int, string>>();
+            mock.Control().Returns(expectedResult);
+            mock.Candidate().Returns(expectedResult);
+
+            const int count = 10;
+            using (Swap.Publisher(publisher))
+            {
+                Parallel.ForEach(
+                    Enumerable.Repeat(0, count),
+                    src =>
+                    {
+                        var result = Scientist.Science<int>(nameof(FireAndForget), experiment =>
+                        {
+                            experiment.Use(mock.Control);
+                            experiment.Try(mock.Candidate);
+                        });
+
+                        Assert.Equal(expectedResult, result);
+                    });
+            }
+
+            // Make sure that the above science calls are still publishing.
+            Task whenPublished = Scientist.WhenPublished();
+            Assert.NotNull(whenPublished);
+
+            // Ensure that the mock was called before the when published task has completed.
+            mock.Received(count).Control();
+            mock.Received(count).Candidate();
+
+            Assert.False(whenPublished.IsCompleted, "When Published Task completed early.");
+
+            await whenPublished;
+
+            Assert.True(Scientist.WhenPublished().IsCompleted, "When Published Task isn't complete.");
+        }
     }
 }

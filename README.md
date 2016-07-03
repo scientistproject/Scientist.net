@@ -81,6 +81,19 @@ Then set Scientist to use it before running the experiments:
 Scientist.ResultPublisher = new MyResultPublisher();
 ```
 
+### Ensure publishing completes
+
+If you need to ensure that the scientist results are published prior to your program's exit use `Scientist.WhenPublished()`:
+
+```csharp
+static async void MainAsync(string[] args)
+{
+    await RunProgram(args);
+
+    await Scientist.WhenPublished();
+}
+```
+
 ### Controlling comparison
 
 Scientist compares control and candidate values using `==`. To override this behavior, use `Compare` to define how to compare observed values instead:
