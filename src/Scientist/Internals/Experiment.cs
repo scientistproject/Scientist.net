@@ -13,6 +13,8 @@ namespace GitHub.Internals
             = (operation, exception) => { throw exception; };
 
         private string _name;
+        private int _concurrentTasks;
+
         private Func<Task<T>> _control;
 
         private readonly Dictionary<string, Func<Task<T>>> _candidates;
@@ -26,12 +28,16 @@ namespace GitHub.Internals
         private readonly Dictionary<string, dynamic> _contexts = new Dictionary<string, dynamic>();
         private readonly ConcurrentSet<Task> _publishingTasks;
 
-        public Experiment(string name, ConcurrentSet<Task> publishingTasks, Func<Task<bool>> enabled)
+        public Experiment(string name, ConcurrentSet<Task> publishingTasks, Func<Task<bool>> enabled, int concurrentTasks)
         {
+            if (concurrentTasks <= 0)
+                throw new ArgumentException("Argument must be greater than 0", "concurrentTasks");
+
             _name = name;
             _candidates = new Dictionary<string, Func<Task<T>>>();
             _enabled = enabled;
             _publishingTasks = publishingTasks;
+            _concurrentTasks = concurrentTasks;
         }
 
         public bool ThrowOnMismatches { get; set; }
@@ -112,6 +118,7 @@ namespace GitHub.Internals
                 Candidates = _candidates,
                 Cleaner = _cleaner,
                 Comparator = _comparison,
+                ConcurrentTasks = _concurrentTasks,
                 Contexts = _contexts,
                 Control = _control,
                 Enabled = _enabled,

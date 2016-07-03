@@ -22,20 +22,20 @@ namespace GitHub
             set;
         } = new InMemoryResultPublisher();
         
-        static Experiment<T, TClean> Build<T, TClean>(string name, Action<IExperiment<T, TClean>> experiment)
+        static Experiment<T, TClean> Build<T, TClean>(string name, int concurrentTasks, Action<IExperiment<T, TClean>> experiment)
         {
             // TODO: Maybe we could automatically generate the name if none is provided using the calling method name. We'd have to 
             // make sure we don't inline this method though.
-            var experimentBuilder = new Experiment<T, TClean>(name, _publishingTasks, _enabled);
+            var experimentBuilder = new Experiment<T, TClean>(name, _publishingTasks, _enabled, concurrentTasks);
 
             experiment(experimentBuilder);
 
             return experimentBuilder;
         }
 
-        static Experiment<T, TClean> Build<T, TClean>(string name, Action<IExperimentAsync<T, TClean>> experiment)
+        static Experiment<T, TClean> Build<T, TClean>(string name, int concurrentTasks, Action<IExperimentAsync<T, TClean>> experiment)
         {
-            var builder = new Experiment<T, TClean>(name, _publishingTasks, _enabled);
+            var builder = new Experiment<T, TClean>(name, _publishingTasks, _enabled, concurrentTasks);
 
             experiment(builder);
 
@@ -63,7 +63,7 @@ namespace GitHub
         /// <returns>The value of the experiment's control function.</returns>
         public static T Science<T>(string name, Action<IExperiment<T>> experiment)
         {
-            var builder = Build<T, T>(name, experiment);
+            var builder = Build<T, T>(name, 1, experiment);
             builder.Clean(value => value);
             return builder.Build().Run().Result;
         }
@@ -77,7 +77,7 @@ namespace GitHub
         /// <param name="experiment">Experiment callback used to configure the experiment</param>
         /// <returns>The value of the experiment's control function.</returns>
         public static T Science<T, TClean>(string name, Action<IExperiment<T, TClean>> experiment) =>
-            Build(name, experiment).Build().Run().Result;
+            Build(name, 1, experiment).Build().Run().Result;
 
         /// <summary>
         /// Conduct an asynchronous experiment
@@ -86,9 +86,20 @@ namespace GitHub
         /// <param name="name">Name of the experiment</param>
         /// <param name="experiment">Experiment callback used to configure the experiment</param>
         /// <returns>The value of the experiment's control function.</returns>
-        public static Task<T> ScienceAsync<T>(string name, Action<IExperimentAsync<T>> experiment)
+        public static Task<T> ScienceAsync<T>(string name, Action<IExperimentAsync<T>> experiment) =>
+            ScienceAsync(name, 1, experiment);
+
+        /// <summary>
+        /// Conduct an asynchronous experiment
+        /// </summary>
+        /// <typeparam name="T">The return type of the experiment</typeparam>
+        /// <param name="name">Name of the experiment</param>
+        /// <param name="concurrentTasks">Number of tasks to run concurrently</param>
+        /// <param name="experiment">Experiment callback used to configure the experiment</param>
+        /// <returns>The value of the experiment's control function.</returns>
+        public static Task<T> ScienceAsync<T>(string name, int concurrentTasks, Action<IExperimentAsync<T>> experiment)
         {
-            var builder = Build<T, T>(name, experiment);
+            var builder = Build<T, T>(name, concurrentTasks, experiment);
             builder.Clean(value => value);
             return builder.Build().Run();
         }
@@ -102,7 +113,19 @@ namespace GitHub
         /// <param name="experiment">Experiment callback used to configure the experiment</param>
         /// <returns>The value of the experiment's control function.</returns>
         public static Task<T> ScienceAsync<T, TClean>(string name, Action<IExperimentAsync<T, TClean>> experiment) =>
-            Build(name, experiment).Build().Run();
+            ScienceAsync(name, 1, experiment);
+
+        /// <summary>
+        /// Conduct an asynchronous experiment
+        /// </summary>
+        /// <typeparam name="T">The return type of the experiment</typeparam>
+        /// <typeparam name="TClean">The clean type for publishing.</typeparam>
+        /// <param name="name">Name of the experiment</param>
+        /// <param name="concurrentTasks">Number of tasks to run concurrently</param>
+        /// <param name="experiment">Experiment callback used to configure the experiment</param>
+        /// <returns>The value of the experiment's control function.</returns>
+        public static Task<T> ScienceAsync<T, TClean>(string name, int concurrentTasks, Action<IExperimentAsync<T, TClean>> experiment) =>
+            Build(name, concurrentTasks, experiment).Build().Run();
 
         /// <summary>
         /// Creates a new task that is completed when all remaining publishing tasks have completed.
