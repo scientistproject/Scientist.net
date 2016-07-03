@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GitHub.Internals.Extensions;
 
 namespace GitHub.Internals
 {
@@ -15,6 +16,7 @@ namespace GitHub.Internals
         internal const string ControlExperimentName = "control";
 
         internal readonly string Name;
+        internal readonly int ConcurrentTasks;
         internal readonly List<NamedBehavior> Behaviors;
         internal readonly Func<T, TClean> Cleaner;
         internal readonly Func<T, T, bool> Comparator;
@@ -42,6 +44,7 @@ namespace GitHub.Internals
             BeforeRun = settings.BeforeRun;
             Cleaner = settings.Cleaner;
             Comparator = settings.Comparator;
+            ConcurrentTasks = settings.ConcurrentTasks;
             Contexts = settings.Contexts;
             Enabled = settings.Enabled;
             RunIf = settings.RunIf;
@@ -71,15 +74,23 @@ namespace GitHub.Internals
                 orderedBehaviors = Behaviors.OrderBy(b => _random.Next()).ToArray();
             }
 
+            // Break tasks into batches of "ConcurrentTasks" size
             var observations = new List<Observation<T, TClean>>();
-            foreach (var behavior in orderedBehaviors)
+            foreach (var behaviors in orderedBehaviors.Chunk(ConcurrentTasks))
             {
-                observations.Add(await Observation<T, TClean>.New(
-                    behavior.Name, 
-                    behavior.Behavior, 
-                    Comparator, 
-                    Thrown,
-                    Cleaner));
+                // Run batch of behaviors simultaneously
+                var tasks = behaviors.Select(b =>
+                {
+                    return Observation<T, TClean>.New(
+                        b.Name,
+                        b.Behavior,
+                        Comparator,
+                        Thrown,
+                        Cleaner);
+                });
+
+                // Collect the observations
+                observations.AddRange(await Task.WhenAll(tasks));
             }
 
             var controlObservation = observations.FirstOrDefault(o => o.Name == ControlExperimentName);
