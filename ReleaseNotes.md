@@ -1,4 +1,8 @@
-### New in 1.0.0-alpha6 (Released TBD)
+### New in 1.0.1 (Released 2016/09/29)
+
+Initial stable release of Scientist.NET, a port of the Ruby Scientist library for carefully refactoring critical paths.
+
+### New in 1.0.0-alpha6 (Released 2016/06/10)
 
 **Features**
 
