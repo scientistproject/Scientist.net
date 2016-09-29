@@ -12,6 +12,7 @@
     <tags>routing asp.net</tags>
     <language>en-US</language>
     <licenseUrl>https://raw.githubusercontent.com/haacked/scientist/master/LICENSE</licenseUrl>
-    <projectUrl>http://github.com/haacked/scientist.net</projectUrl>
+    <projectUrl>http://github.com/github/scientist.net</projectUrl>
+    <iconUrl>https://cloud.githubusercontent.com/assets/11401067/18854835/06987a54-8403-11e6-881a-b64fe137ed42.png</iconUrl>
   </metadata>
 </package>
