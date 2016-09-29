@@ -1,12 +1,8 @@
 # Scientist.NET
 
-This is a .NET Port of the Ruby Scientist library. Read [about it here](http://githubengineering.com/scientist/). And check out a great [success story here](http://githubengineering.com/move-fast/).
+A .NET Port of the [Scientist](https://github.com/github/scientist) library for carefully refactoring critical paths. 
 
-Currently, it's a rough sketch of what the library will look like. I tried to stay true to the Ruby implementation with one small difference. Instead of registering a custom experimentation type, you can register a custom observation publisher. We don't have the ability to override the `new` operator like those Rubyists and I liked keeping publishing separate. But I'm not stuck to this idea.
-
-To give it a twirl, use NuGet to install it.
-
-`Install-Package Scientist -Pre`
+To give it a twirl, use NuGet to install: `Install-Package Scientist`
 
 ## How do I science?
 
