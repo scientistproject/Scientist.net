@@ -30,7 +30,7 @@ namespace GitHub.Internals
         public Experiment(string name, Func<Task<bool>> enabled, int concurrentTasks)
         {
             if (concurrentTasks <= 0)
-                throw new ArgumentException("Argument must be greater than 0", "concurrentTasks");
+                throw new ArgumentException("Argument must be greater than 0", nameof(concurrentTasks));
 
             _name = name;
             _candidates = new Dictionary<string, Func<Task<T>>>();
