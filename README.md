@@ -77,6 +77,12 @@ Then set Scientist to use it before running the experiments:
 Scientist.ResultPublisher = new MyResultPublisher();
 ```
 
+A `IResultPublisher` can also be wrapped in Fire-And-Forget `IResultPublisher` so that result publishing avoids any delays in running experiments and is delegated to another thread:
+
+```csharp
+Scientist.ResultPublisher = new FireAndForgetResultPublisher(new MyResultPublisher());
+```
+
 ### Controlling comparison
 
 Scientist compares control and candidate values using `==`. To override this behavior, use `Compare` to define how to compare observed values instead:
