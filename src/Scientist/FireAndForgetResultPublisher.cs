@@ -7,13 +7,13 @@ namespace GitHub
     public class FireAndForgetResultPublisher : IResultPublisher
     {
 		private readonly IResultPublisher _publisher;
-		private readonly Action<Exception> _onThrown;
+		private readonly Action<Exception> _onPublisherException;
 		private readonly ConcurrentSet<Task> _publishingTasks = new ConcurrentSet<Task>();
 
-		public FireAndForgetResultPublisher(IResultPublisher publisher, Action<Exception> onThrown = null)
+		public FireAndForgetResultPublisher(IResultPublisher publisher, Action<Exception> onPublisherException = null)
 		{
 			_publisher = publisher;
-			_onThrown = onThrown;
+			_onPublisherException = onPublisherException;
 		}
 
 		public Task Publish<T, TClean>(Result<T, TClean> result)
@@ -30,8 +30,8 @@ namespace GitHub
 				}
 				catch(Exception ex)
 				{
-					if (_onThrown != null)
-						_onThrown(ex);
+					if (_onPublisherException != null)
+						_onPublisherException(ex);
 					else
 						throw;
 				}
