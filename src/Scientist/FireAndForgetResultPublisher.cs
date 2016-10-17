@@ -17,7 +17,7 @@ namespace GitHub
         private readonly ConcurrentSet<Task> _publishingTasks = new ConcurrentSet<Task>();
         private readonly ResultPublisherExceptionBehavior _exceptionBehavior;
 
-        public FireAndForgetResultPublisher(IResultPublisher publisher, ResultPublisherExceptionBehavior exceptionBehavior, Action<Exception> onPublisherException = null)
+        public FireAndForgetResultPublisher(IResultPublisher publisher, ResultPublisherExceptionBehavior exceptionBehavior = ResultPublisherExceptionBehavior.Ignore, Action<Exception> onPublisherException = null)
         {
             _publisher = publisher;
             _onPublisherException = onPublisherException;
