@@ -80,7 +80,7 @@ Scientist.ResultPublisher = new MyResultPublisher();
 A `IResultPublisher` can also be wrapped in Fire-And-Forget `IResultPublisher` so that result publishing avoids any delays in running experiments and is delegated to another thread:
 
 ```csharp
-Scientist.ResultPublisher = new FireAndForgetResultPublisher(new MyResultPublisher(), ResultPublisherExceptionBehavior.Rethrow);
+Scientist.ResultPublisher = new FireAndForgetResultPublisher(new MyResultPublisher(onPublisherException));
 ```
 
 ### Controlling comparison

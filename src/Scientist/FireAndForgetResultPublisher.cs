@@ -4,24 +4,16 @@ using System.Threading.Tasks;
 
 namespace GitHub
 {
-    public enum ResultPublisherExceptionBehavior
-    {
-        Rethrow,
-        Ignore
-    }
-
     public class FireAndForgetResultPublisher : IResultPublisher
     {
         private readonly IResultPublisher _publisher;
         private readonly Action<Exception> _onPublisherException;
         private readonly ConcurrentSet<Task> _publishingTasks = new ConcurrentSet<Task>();
-        private readonly ResultPublisherExceptionBehavior _exceptionBehavior;
 
-        public FireAndForgetResultPublisher(IResultPublisher publisher, ResultPublisherExceptionBehavior exceptionBehavior = ResultPublisherExceptionBehavior.Ignore, Action<Exception> onPublisherException = null)
+        public FireAndForgetResultPublisher(IResultPublisher publisher, Action<Exception> onPublisherException)
         {
             _publisher = publisher;
             _onPublisherException = onPublisherException;
-            _exceptionBehavior = exceptionBehavior;
         }
 
         public Task Publish<T, TClean>(Result<T, TClean> result)
@@ -38,9 +30,7 @@ namespace GitHub
                 }
                 catch(Exception ex)
                 {
-                    _onPublisherException?.Invoke(ex);
-                    if(_exceptionBehavior == ResultPublisherExceptionBehavior.Rethrow)
-                        throw;
+                    _onPublisherException(ex);
                 }
             });
             _publishingTasks.TryAdd(subTask);
