@@ -22,7 +22,7 @@ public class FireAndForgetResultPublisherTests
         innerPublisher.Publish(Arg.Any<Result<int, int>>())
             .Returns(call => Task.Delay(100));
 
-        var fireAndForgetPublisher = new FireAndForgetResultPublisher(innerPublisher, ResultPublisherExceptionBehavior.Swollow, ex => { });
+        var fireAndForgetPublisher = new FireAndForgetResultPublisher(innerPublisher, ResultPublisherExceptionBehavior.Ignore, ex => { });
 
         var mock = Substitute.For<IControlCandidate<int, string>>();
         mock.Control().Returns(expectedResult);
@@ -73,7 +73,7 @@ public class FireAndForgetResultPublisherTests
         innerPublisher.Publish(Arg.Any<Result<int, int>>())
             .Throws(exceptionToThrow);
 
-        var fireAndForgetPublisher = new FireAndForgetResultPublisher(innerPublisher, ResultPublisherExceptionBehavior.Swollow, ex => { exceptionsThrown.Add(ex); });
+        var fireAndForgetPublisher = new FireAndForgetResultPublisher(innerPublisher, ResultPublisherExceptionBehavior.Ignore, ex => { exceptionsThrown.Add(ex); });
 
         var mock = Substitute.For<IControlCandidate<int, string>>();
         mock.Control().Returns(expectedResult);
@@ -104,7 +104,7 @@ public class FireAndForgetResultPublisherTests
         innerPublisher.Publish(Arg.Any<Result<int, int>>())
             .Returns(call => Task.Delay(100).ContinueWith(_ => { throw exceptionToThrow; }));
 
-        var fireAndForgetPublisher = new FireAndForgetResultPublisher(innerPublisher, ResultPublisherExceptionBehavior.Swollow, ex => { exceptionsThrown.Add(ex); });
+        var fireAndForgetPublisher = new FireAndForgetResultPublisher(innerPublisher, ResultPublisherExceptionBehavior.Ignore, ex => { exceptionsThrown.Add(ex); });
 
         var mock = Substitute.For<IControlCandidate<int, string>>();
         mock.Control().Returns(expectedResult);

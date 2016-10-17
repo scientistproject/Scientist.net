@@ -7,7 +7,7 @@ namespace GitHub
     public enum ResultPublisherExceptionBehavior
     {
         Rethrow,
-        Swollow
+        Ignore
     }
 
     public class FireAndForgetResultPublisher : IResultPublisher
