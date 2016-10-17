@@ -99,8 +99,6 @@ namespace GitHub.Internals
 
             try
             {
-                // TODO: Make this Fire and forget so we don't have to wait for this
-                // to complete before we return a result
                 await Scientist.ResultPublisher.Publish(result);
             }
             catch (Exception ex)
