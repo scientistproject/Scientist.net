@@ -15,12 +15,13 @@ public class FireAndForgetResultPublisherTests
     public async Task PublishesAsynchronously()
     {
         const int expectedResult = 42;
+        var pendingPublishTask = new TaskCompletionSource<object>();
 
         // Create a new publisher that will delay all
         // publishing to account for this test.
         var innerPublisher = Substitute.For<IResultPublisher>();
         innerPublisher.Publish(Arg.Any<Result<int, int>>())
-            .Returns(call => Task.Delay(100));
+            .Returns(call => pendingPublishTask.Task);
 
         var fireAndForgetPublisher = new FireAndForgetResultPublisher(innerPublisher, ex => { });
 
@@ -55,9 +56,11 @@ public class FireAndForgetResultPublisherTests
 
         Assert.False(whenPublished.IsCompleted, "When Published Task completed early.");
 
+        pendingPublishTask.SetResult(null);
+
         await whenPublished;
 
-        Assert.True(fireAndForgetPublisher.WhenPublished().IsCompleted, "When Published Task isn't complete.");
+        Assert.True(whenPublished.IsCompleted, "When Published Task isn't complete.");
     }
 
     public class PublishException : Exception { };
@@ -100,9 +103,10 @@ public class FireAndForgetResultPublisherTests
         var exceptionToThrow = new PublishException();
         var exceptionsThrown = new List<Exception>();
 
+        var pendingPublishTask = new TaskCompletionSource<object>();
         var innerPublisher = Substitute.For<IResultPublisher>();
         innerPublisher.Publish(Arg.Any<Result<int, int>>())
-            .Returns(call => Task.Delay(100).ContinueWith(_ => { throw exceptionToThrow; }));
+            .Returns(call => pendingPublishTask.Task.ContinueWith(_ => { throw exceptionToThrow; }));
 
         var fireAndForgetPublisher = new FireAndForgetResultPublisher(innerPublisher, ex => { exceptionsThrown.Add(ex); });
 
@@ -123,9 +127,11 @@ public class FireAndForgetResultPublisherTests
 
         Assert.False(whenPublished.IsCompleted, "When Published Task completed early.");
 
+        pendingPublishTask.SetResult(null);
+
         await whenPublished;
 
-        Assert.True(fireAndForgetPublisher.WhenPublished().IsCompleted, "When Published Task isn't complete.");
+        Assert.True(whenPublished.IsCompleted, "When Published Task isn't complete.");
 
         Assert.Equal(new List<Exception> { exceptionToThrow }, exceptionsThrown);
     }
