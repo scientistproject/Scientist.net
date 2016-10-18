@@ -11,6 +11,7 @@ using Xunit;
 public class TheScientistClass
 {
     //TODO: Clean up this class
+    [Collection("Tests Dependent Upon static ResultPublisher that can't run in parallel")]
     public class TheScienceMethod
     {
         [Fact]

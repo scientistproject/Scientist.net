@@ -5,10 +5,10 @@
     }
   },
   "dependencies": {
-    "dotnet-test-xunit": "1.0.0-rc3-build10026",
+    "dotnet-test-xunit": "2.2.0-preview3-build1047",
     "NSubstitute": "1.9.2",
     "Scientist": "*",
-    "xunit": "2.1.0"
+    "xunit": "2.2.0-beta4-build3419"
   },
   "frameworks": {
     "net451": { }
