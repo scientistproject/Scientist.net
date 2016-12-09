@@ -18,7 +18,7 @@ let versionRegex = "(\"version\": \")([^\"]+)(\")"
 let packagingRoot = "./packaging/"
 let packagingDir = packagingRoot @@ "scientist.net"
 let buildDir = "./src/Scientist/bin"
-let testBuildDir = "./test/Scientise.Test/bin"
+let testBuildDir = "./test/Scientist.Test/bin"
 
 let releaseNotes =
     ReadFile "ReleaseNotes.md"
@@ -88,7 +88,7 @@ Target "SetupBuild" (fun _ ->
         let wc = new WebClient()
         wc.DownloadFile(dotnetInstallPath, dotnetInstall)
         
-        Run currentDirectory powershell ("-file " + dotnetInstall + " -InstallDir .\\tools\\dotnet\\") |> ignore
+        Run currentDirectory powershell ("-file " + dotnetInstall + " -InstallDir .\\tools\\dotnet\\ -Version 1.0.0-preview2-003121") |> ignore
 
     Run currentDirectory dotnetExe "restore" |> ignore
 )
@@ -109,7 +109,13 @@ Target "CreatePackages" (fun _ ->
 )
 
 Target "RunTests" (fun _ ->
-    Run currentDirectory dotnetExe "test .\\test\\Scientist.Test\\" |> ignore
+ 
+    let result =
+        Run currentDirectory dotnetExe "test .\\test\\Scientist.Test\\"
+
+    if result.ExitCode <> 0 then
+        failwith "Unit tests failed"
+    ()
 )
 
 Target "Default" DoNothing
