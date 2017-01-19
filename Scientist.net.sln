@@ -7,7 +7,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Meta", "Meta", "{0FF544BE-E
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
-		global.json = global.json
 		LICENSE.txt = LICENSE.txt
 		README.md = README.md
 		ReleaseNotes.md = ReleaseNotes.md
