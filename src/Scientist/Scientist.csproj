@@ -1,0 +1,75 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+
+  <PropertyGroup>
+    <Description>scientist</Description>
+    <VersionPrefix>1.0.0-alpha6</VersionPrefix>
+    <Authors>Github</Authors>
+    <TargetFrameworks>netstandard1.1;net451</TargetFrameworks>
+    <RuntimeIdentifiers>win7-x64;win7-x86;osx.10.10-x64;osx.10.11-x64;ubuntu.14.04-x64;ubuntu.16.04-x64;centos.7-x64;rhel.7.2-x64;debian.8-x64;fedora.23-x64;opensuse.13.2-x64</RuntimeIdentifiers>
+    <AssemblyName>Scientist</AssemblyName>
+    <PackageTags>scientist;refactoring</PackageTags>
+    <PackageProjectUrl>http://github.com/haacked/scientist.net</PackageProjectUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/haacked/scientist/master/LICENSE</PackageLicenseUrl>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="**\*.cs" />
+    <EmbeddedResource Include="**\*.resx" />
+    <EmbeddedResource Include="compiler\resources\**\*" />
+    <Content Include="..\..\LICENSE.txt;..\..\README.md;..\..\ReleaseNotes.md" Exclude="bin\**;obj\**;**\*.xproj;packages\**">
+      <Pack>true</Pack>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NETStandard.Library">
+      <Version>1.6.0</Version>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.1' ">
+    <PackageReference Include="Microsoft.CSharp">
+      <Version>4.0.1-rc2-24027</Version>
+    </PackageReference>
+    <PackageReference Include="System.Collections">
+      <Version>4.0.11-rc2-24027</Version>
+    </PackageReference>
+    <PackageReference Include="System.Collections.Concurrent">
+      <Version>4.0.12-rc2-24027</Version>
+    </PackageReference>
+    <PackageReference Include="System.Linq">
+      <Version>4.1.0-rc2-24027</Version>
+    </PackageReference>
+    <PackageReference Include="System.Runtime">
+      <Version>4.1.0-rc2-24027</Version>
+    </PackageReference>
+    <PackageReference Include="System.Runtime.Extensions">
+      <Version>4.1.0-rc2-24027</Version>
+    </PackageReference>
+    <PackageReference Include="System.Runtime.InteropServices">
+      <Version>4.1.0-rc2-24027</Version>
+    </PackageReference>
+    <PackageReference Include="System.Threading">
+      <Version>4.0.11-rc2-24027</Version>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DefineConstants>$(DefineConstants);RELEASE</DefineConstants>
+  </PropertyGroup>
+
+</Project>
