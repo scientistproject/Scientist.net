@@ -23,8 +23,8 @@
       "../../README.md",
       "../../ReleaseNotes.md"
     ],
-    "licenseUrl": "https://raw.githubusercontent.com/haacked/scientist/master/LICENSE",
-    "projectUrl": "http://github.com/haacked/scientist.net",
+    "licenseUrl": "https://raw.githubusercontent.com/github/Scientist.net/master/LICENSE.txt",
+    "projectUrl": "http://github.com/github/Scientist.net",
     "releaseNotes": "",
     "summary": "A .NET library for carefully refactoring critical paths. It's a port of GitHub's Ruby Scientist library.",
     "tags": [ "scientist", "refactoring" ]
