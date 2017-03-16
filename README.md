@@ -77,7 +77,7 @@ Then set Scientist to use it before running the experiments:
 Scientist.ResultPublisher = new MyResultPublisher();
 ```
 
-A `IResultPublisher` can also be wrapped in Fire-And-Forget `IResultPublisher` so that result publishing avoids any delays in running experiments and is delegated to another thread:
+As of v1.0.2, A `IResultPublisher` can also be wrapped in `FireAndForgetResultPublisher` so that result publishing avoids any delays in running experiments and is delegated to another thread:
 
 ```csharp
 Scientist.ResultPublisher = new FireAndForgetResultPublisher(new MyResultPublisher(onPublisherException));
@@ -241,6 +241,24 @@ Scientist.Enabled(() =>
 
 This code will be invoked for every method with an experiment every time, so be sensitive about its performance. For example, you can store an experiment in the database but wrap it in various levels of caching.
 
+### Running candidates in parallel (asynchronous)
+
+Scientist runs tasks synchronously by default. This can end up doubling (more or less) the time it takes the original method call to complete, depending on how many candidates are added and how long they take to run.
+
+In cases where Scientist is used for production refactoring, for example, this ends up causing the calling method to return slower than before which may affect the performance of your original code. However, if the candidates can be run at the same time as the control method without affecting each other, then they can be run in parallel so the Scientist call will only take as long as the slowest task (plus a tiny bit of overhead):
+
+```csharp
+await Scientist.ScienceAsync<int>(
+	"ExperimentName",
+	3, // number of tasks to run concurrently 
+	experiment => {
+        experiment.Use(async () => await StartRunningSomething(myData));
+        experiment.Try(async () => await RunAtTheSameTimeAsTheControlMethod(myData));
+        experiment.Try(async () => await AlsoRunThisConcurrently(myData));
+	});
+```
+
+As always when using async/await, don't forget to call `.ConfigureAwait(false)` where appropriate.
 
 ### Testing
 
