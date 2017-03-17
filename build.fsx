@@ -12,7 +12,7 @@ let runtime = getBuildParamOrDefault "runtime" "clr"
 let runtimeVersion = getBuildParamOrDefault "runtimeVersion" "1.0.0-rc1-update1"
 let buildMode = getBuildParamOrDefault "buildMode" "Release"
 
-let versionRegex = "(\"version\": \")([^\"]+)(\")"
+let versionRegex = "(<VersionPrefix>)([^\"]+)(</VersionPrefix>)"
 
 //Directories
 let packagingRoot = "./packaging/"
@@ -53,23 +53,33 @@ let dotnetInstall = dotnetHome + "dotnet-install.ps1"
 let dotnetInstallPath = "https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.ps1"
 let powershell = "powershell.exe"
 
-let UpdateProjectJson projectJson =
-    let fullJsonPath = (__SOURCE_DIRECTORY__ + projectJson)
-    let backupJsonPath = (fullJsonPath + ".bak")
+let UpdateProject csprojPath nuspecPath =
+    let fullCsprojPath = (__SOURCE_DIRECTORY__ + csprojPath)
+    let fullNuspecPath = (__SOURCE_DIRECTORY__ + csprojPath)
+    let backupCsprojPath = (fullCsprojPath + ".bak")
+    let backupNuspecPath = (fullNuspecPath + ".bak")
 
-    CopyFile backupJsonPath fullJsonPath
+    CopyFile backupCsprojPath fullCsprojPath
+    CopyFile backupNuspecPath fullNuspecPath
     
     let tempReleaseNotes = toLines releaseNotes.Notes
-    RegexReplaceInFileWithEncoding "\"releaseNotes\": \"\"," ("\"releaseNotes\": \"" + tempReleaseNotes +  "\",") Encoding.UTF8 fullJsonPath
-    RegexReplaceInFileWithEncoding versionRegex ("${1}" + (releaseNotes.NugetVersion) + "${3}") Encoding.UTF8 fullJsonPath
+    RegexReplaceInFileWithEncoding "<releaseNotes></releaseNotes>" ("<releaseNotes>" + tempReleaseNotes +  "</releaseNotes>") Encoding.UTF8 fullCsprojPath
 
-let RestoreProjectJson projectJson =
-    let fullJsonPath = (__SOURCE_DIRECTORY__ + projectJson)
-    let backupJsonPath = (fullJsonPath + ".bak")
+    RegexReplaceInFileWithEncoding versionRegex ("${1}" + (releaseNotes.NugetVersion) + "${3}") Encoding.UTF8 fullNuspecPath
 
-    DeleteFile fullJsonPath
-    CopyFile fullJsonPath backupJsonPath
-    DeleteFile backupJsonPath
+let RestoreProject csprojPath nuspecPath =
+    let fullCsprojPath = (__SOURCE_DIRECTORY__ + csprojPath)
+    let fullNuspecPath = (__SOURCE_DIRECTORY__ + csprojPath)
+    let backupCsprojPath = (fullCsprojPath + ".bak")
+    let backupNuspecPath = (fullNuspecPath + ".bak")
+    
+    DeleteFile fullCsprojPath
+    CopyFile fullCsprojPath backupCsprojPath
+    DeleteFile backupCsprojPath
+    
+    DeleteFile fullNuspecPath
+    CopyFile fullNuspecPath backupNuspecPath
+    DeleteFile backupNuspecPath
 
 let SetBuildVersion =
     setProcessEnvironVar "DOTNET_BUILD_VERSION" (environVarOrDefault "APPVEYOR_BUILD_NUMBER" "local")
@@ -88,7 +98,7 @@ Target "SetupBuild" (fun _ ->
         let wc = new WebClient()
         wc.DownloadFile(dotnetInstallPath, dotnetInstall)
         
-        Run currentDirectory powershell ("-file " + dotnetInstall + " -InstallDir .\\tools\\dotnet\\ -Version 1.0.0-preview2-003121") |> ignore
+        Run currentDirectory powershell ("-file " + dotnetInstall + " -InstallDir .\\tools\\dotnet\\ -Version 1.0.0") |> ignore
 
     Run currentDirectory dotnetExe "restore" |> ignore
 )
@@ -99,19 +109,20 @@ Target "BuildApp" (fun _ ->
 )
 
 Target "CreatePackages" (fun _ ->
-    let scientistJsonPath = "/src/Scientist/project.json"
+    let csprojPath = "/src/Scientist/Scientist.csproj"
+    let nuspecPath = "/src/Scientist/scientist.nuspec"
 
-    UpdateProjectJson scientistJsonPath
+    UpdateProject csprojPath nuspecPath
 
     Run currentDirectory dotnetExe ("pack .\\src\\Scientist\\ --configuration " + buildMode + " --output " + packagingDir) |> ignore
 
-    RestoreProjectJson scientistJsonPath
+    RestoreProject csprojPath nuspecPath
 )
 
 Target "RunTests" (fun _ ->
  
     let result =
-        Run currentDirectory dotnetExe "test .\\test\\Scientist.Test\\"
+        Run currentDirectory dotnetExe "test .\\test\\Scientist.Test\\Scientist.Test.csproj"
 
     if result.ExitCode <> 0 then
         failwith "Unit tests failed"
