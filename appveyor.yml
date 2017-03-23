@@ -4,7 +4,6 @@ build_script:
 - cmd: build.cmd CreatePackages
 test: off
 nuget:
-    account_feed: true
     project_feed: true
 artifacts:
 - path: 'packaging\**\scientist*.nupkg'
