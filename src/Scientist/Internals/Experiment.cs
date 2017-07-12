@@ -10,25 +10,7 @@ namespace GitHub.Internals
 
         private static readonly Func<Task<bool>> _alwaysRun = () => Task.FromResult(true);
         private static readonly Action<Operation, Exception> _alwaysThrow
-            = (operation, exception) =>
-            {
-                string exceptionMessage;
-                switch (operation)
-                {
-                    case Operation.Clean:
-                    case Operation.Compare:
-                    case Operation.Enabled:
-                    case Operation.Ignore:
-                    case Operation.Publish:
-                    case Operation.RunIf:
-                        exceptionMessage = $"An exception occurred within the experiment during the '{operation.ToString()}' operation.";
-                        break;
-                    default:
-                        exceptionMessage = "An exception occurred within the experiment, the operation was unknown.";
-                        break;
-                }
-                throw new Exception(exceptionMessage, exception);
-            };
+            = (operation, exception) => throw new OperationException(operation, exception);
 
         private string _name;
         private int _concurrentTasks;
