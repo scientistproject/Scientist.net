@@ -10,7 +10,7 @@ namespace GitHub.Internals
 
         private static readonly Func<Task<bool>> _alwaysRun = () => Task.FromResult(true);
         private static readonly Action<Operation, Exception> _alwaysThrow
-            = (operation, exception) => throw new OperationException(operation, exception);
+            = (operation, exception) => { throw new OperationException(operation, exception); };
 
         private string _name;
         private int _concurrentTasks;
