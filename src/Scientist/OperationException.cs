@@ -12,12 +12,9 @@ namespace GitHub
         /// </summary>
         public Operation Operation { get; }
 
-        public override string Message { get; }
-
-        internal OperationException(Operation operation, Exception inner) : base(null, inner)
+        internal OperationException(Operation operation, Exception inner) : base(GetExceptionMessage(operation), inner)
         {
             Operation = operation;
-            Message = GetExceptionMessage(operation);
         }
 
         private static string GetExceptionMessage(Operation operation)
