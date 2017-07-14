@@ -20,7 +20,7 @@ namespace GitHub
         private static string GetExceptionMessage(Operation operation)
         {
             string exceptionMessage = Enum.IsDefined(typeof(Operation), operation)
-                ? $"An exception occurred within the experiment during the '{operation}' operation. Consider checking both the inner exception and the {nameof(Operation)} property for details on this exception."
+                ? $"An exception occurred within the experiment during the '{operation}' operation. Consider checking both the {nameof(InnerException)} and the {nameof(Operation)} properties for details on this exception."
                 : "An exception occurred within the experiment, the operation was unknown. The operation should never be unknown, please report this.";
             return exceptionMessage;
         }
