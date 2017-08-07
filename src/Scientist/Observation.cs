@@ -110,13 +110,14 @@ namespace GitHub
             return observation;
         }
 
+        private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
+
         /// <summary>
         /// Runs the experiment.
         /// </summary>
         internal async Task Run(Func<Task<T>> block)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
+            var start = Stopwatch.GetTimestamp();
             try
             {
                 Value = await block();
@@ -125,9 +126,9 @@ namespace GitHub
             {
                 Exception = ex.GetBaseException();
             }
-            stopwatch.Stop();
+            var stop = Stopwatch.GetTimestamp();
 
-            Duration = stopwatch.Elapsed;
+            Duration = new TimeSpan((long)(TimestampToTicks * (stop - start)));
         }
     }
 }
