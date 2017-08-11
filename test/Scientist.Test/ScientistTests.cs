@@ -71,7 +71,7 @@ public class TheScientistClass
             var candidateException = new InvalidOperationException(null, new Exception());
             mock.Control().Returns(x => { throw controlException; return Task.FromResult(0); });
             mock.Candidate().Returns(x => { throw controlException; return Task.FromResult(0); });
-            const string experimentName = nameof(RunsBothBranchesOfTheExperimentAndMatchesExceptions);
+            const string experimentName = nameof(RunsBothBranchesOfTheExperimentAndThrowsCorrectInnerException);
 
             await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
