@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net451</TargetFramework>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
     <AssemblyName>Scientist.Test</AssemblyName>
     <PackageId>Scientist.Test</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
@@ -30,11 +30,9 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.0-rc3-build3818" />
     <PackageReference Include="NSubstitute" Version="2.0.3" />
     <PackageReference Include="xunit" Version="2.3.0-rc3-build3818" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
-    <Reference Include="System" />
-    <Reference Include="Microsoft.CSharp" />
+    <!-- Resolves version conflict on System.ComponentModel.TypeConverter to 
+         ensure that Microsoft.NET.Test.Sdk and NSubstitute use a compatible version. -->
+    <PackageReference Include="Castle.Core" Version="4.1.1" />
   </ItemGroup>
 
 </Project>
