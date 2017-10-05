@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>scientist</Description>
+    <VersionPrefix>1.0.0-alpha6</VersionPrefix>
+    <Authors>Github</Authors>
+    <TargetFrameworks>netstandard1.1;net451</TargetFrameworks>
+    <AssemblyName>Scientist</AssemblyName>
+    <PackageId>Scientist</PackageId>
+    <PackageTags>scientist;refactoring</PackageTags>
+    <PackageProjectUrl>http://github.com/github/Scientist.net</PackageProjectUrl>
+    <PackageLicenseUrl>https://raw.githubusercontent.com/github/Scientist.net/master/LICENSE.txt</PackageLicenseUrl>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="..\..\LICENSE.txt;..\..\README.md;..\..\ReleaseNotes.md">
+      <Pack>true</Pack>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.1' ">
+    <PackageReference Include="Microsoft.CSharp" Version="4.0.1" />
+    <PackageReference Include="System.Collections" Version="4.0.11" />
+    <PackageReference Include="System.Collections.Concurrent" Version="4.0.12" />
+    <PackageReference Include="System.Linq" Version="4.1.0" />
+    <PackageReference Include="System.Runtime" Version="4.1.0" />
+    <PackageReference Include="System.Runtime.Extensions" Version="4.1.0" />
+    <PackageReference Include="System.Runtime.InteropServices" Version="4.1.0" />
+    <PackageReference Include="System.Threading" Version="4.0.11" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+</Project>
