@@ -1,21 +1,22 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Meta", "Meta", "{0FF544BE-E75C-4EF7-AEB3-A534ED5D7BB5}"
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
-		global.json = global.json
+		build.cmd = build.cmd
+		build.fsx = build.fsx
 		LICENSE.txt = LICENSE.txt
 		README.md = README.md
 		ReleaseNotes.md = ReleaseNotes.md
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Scientist", "src\Scientist\Scientist.xproj", "{AF3E98CD-DA8C-43B2-8217-76B6AE8BCA20}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scientist", "src\Scientist\Scientist.csproj", "{AF3E98CD-DA8C-43B2-8217-76B6AE8BCA20}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Scientist.Test", "test\Scientist.Test\Scientist.Test.xproj", "{0686E0A8-FB25-4B20-9BC0-CD05E916E5AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scientist.Test", "test\Scientist.Test\Scientist.Test.csproj", "{0686E0A8-FB25-4B20-9BC0-CD05E916E5AD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,5 +35,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8CFF3922-3285-4B9E-9E64-7FC7D5332E56}
 	EndGlobalSection
 EndGlobal
