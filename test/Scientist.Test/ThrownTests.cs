@@ -140,4 +140,29 @@ public class ThrownTests
         Assert.Equal(expectedResult, result);
         mock.Received().Thrown(Operation.RunIf, ex);
     }
+
+    [Fact]
+    public void DefaultThrow()
+    {
+        var mock = Substitute.For<IControlCandidate<int>>();
+
+        var ex = new Exception();
+
+        Action action = () => Scientist.Science<int>(nameof(DefaultThrow), experiment =>
+        {
+            experiment.Compare((x, y) =>
+            {
+                throw ex;
+            });
+            experiment.Use(mock.Control);
+            experiment.Try(mock.Candidate);
+        });
+
+        var exception = Assert.Throws<AggregateException>(action);
+        var operationException = Assert.IsType<OperationException>(exception.InnerException);
+        Assert.Equal(Operation.Compare, operationException.Operation);
+
+        var actualException = Assert.IsType<Exception>(operationException.InnerException);
+        Assert.Equal(ex, actualException);
+    }
 }
