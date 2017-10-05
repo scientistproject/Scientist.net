@@ -47,21 +47,12 @@ let Run workingDirectory fileName args =
 
     ProcessResult.New code messages errors
 
-let dotnetHome = ".\\tools\dotnet\\"
-let dotnetExe = dotnetHome + "dotnet.exe"
-let dotnetInstall = dotnetHome + "dotnet-install.ps1"
-let dotnetInstallPath = "https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/dotnet-install.ps1"
-let powershell = "powershell.exe"
+let dotnetExe = "dotnet.exe"
 
 let UpdateProject csprojPath nuspecPath =
     let fullCsprojPath = (__SOURCE_DIRECTORY__ + csprojPath)
     let fullNuspecPath = (__SOURCE_DIRECTORY__ + csprojPath)
-    let backupCsprojPath = (fullCsprojPath + ".bak")
-    let backupNuspecPath = (fullNuspecPath + ".bak")
-
-    CopyFile backupCsprojPath fullCsprojPath
-    CopyFile backupNuspecPath fullNuspecPath
-    
+   
     let tempReleaseNotes = toLines releaseNotes.Notes
     RegexReplaceInFileWithEncoding "<releaseNotes></releaseNotes>" ("<releaseNotes>" + tempReleaseNotes +  "</releaseNotes>") Encoding.UTF8 fullCsprojPath
 
@@ -70,16 +61,10 @@ let UpdateProject csprojPath nuspecPath =
 let RestoreProject csprojPath nuspecPath =
     let fullCsprojPath = (__SOURCE_DIRECTORY__ + csprojPath)
     let fullNuspecPath = (__SOURCE_DIRECTORY__ + csprojPath)
-    let backupCsprojPath = (fullCsprojPath + ".bak")
     let backupNuspecPath = (fullNuspecPath + ".bak")
     
-    DeleteFile fullCsprojPath
-    CopyFile fullCsprojPath backupCsprojPath
-    DeleteFile backupCsprojPath
-    
+    DeleteFile fullCsprojPath    
     DeleteFile fullNuspecPath
-    CopyFile fullNuspecPath backupNuspecPath
-    DeleteFile backupNuspecPath
 
 let SetBuildVersion =
     setProcessEnvironVar "DOTNET_BUILD_VERSION" (environVarOrDefault "APPVEYOR_BUILD_NUMBER" "local")
@@ -92,14 +77,6 @@ Target "Clean" (fun _ ->
 Target "SetupBuild" (fun _ ->
     SetBuildVersion
     
-    if not (fileExists dotnetExe) then 
-        CreateDir dotnetHome
-        
-        let wc = new WebClient()
-        wc.DownloadFile(dotnetInstallPath, dotnetInstall)
-        
-        Run currentDirectory powershell ("-file " + dotnetInstall + " -InstallDir .\\tools\\dotnet\\ -Version 1.0.0") |> ignore
-
     Run currentDirectory dotnetExe "restore" |> ignore
 )
 
