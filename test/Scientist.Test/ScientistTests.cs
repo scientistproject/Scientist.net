@@ -69,8 +69,8 @@ public class TheScientistClass
             var mock = Substitute.For<IControlCandidate<Task<int>>>();
             var controlException = new InvalidOperationException(null, new Exception());
             var candidateException = new InvalidOperationException(null, new Exception());
-            mock.Control().Returns(x => { throw controlException; return Task.FromResult(0); });
-            mock.Candidate().Returns(x => { throw controlException; return Task.FromResult(0); });
+            mock.Control().Returns<Task<int>>(x => { throw controlException; });
+            mock.Candidate().Returns<Task<int>>(x => { throw controlException; });
             const string experimentName = nameof(RunsBothBranchesOfTheExperimentAndThrowsCorrectInnerException);
 
             await Assert.ThrowsAsync<InvalidOperationException>(async () =>
