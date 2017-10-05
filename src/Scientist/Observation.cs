@@ -122,9 +122,13 @@ namespace GitHub
             {
                 Value = await block();
             }
-            catch (Exception ex)
+            catch (AggregateException ex)
             {
                 Exception = ex.GetBaseException();
+            }
+            catch (Exception ex)
+            {
+                Exception = ex;
             }
             var stop = Stopwatch.GetTimestamp();
 

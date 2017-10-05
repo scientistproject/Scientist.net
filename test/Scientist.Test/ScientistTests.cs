@@ -64,6 +64,26 @@ public class TheScientistClass
         }
 
         [Fact]
+        public async Task RunsBothBranchesOfTheExperimentAndThrowsCorrectInnerException()
+        {
+            var mock = Substitute.For<IControlCandidate<Task<int>>>();
+            var controlException = new InvalidOperationException(null, new Exception());
+            var candidateException = new InvalidOperationException(null, new Exception());
+            mock.Control().Returns(x => { throw controlException; return Task.FromResult(0); });
+            mock.Candidate().Returns(x => { throw controlException; return Task.FromResult(0); });
+            const string experimentName = nameof(RunsBothBranchesOfTheExperimentAndThrowsCorrectInnerException);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                await Scientist.ScienceAsync<int>(experimentName, experiment =>
+                {
+                    experiment.Use(mock.Control);
+                    experiment.Try("candidate", mock.Candidate);
+                });
+            });
+        }
+
+        [Fact]
         public void RunsBothBranchesOfTheExperimentAndReportsSuccess()
         {
             var mock = Substitute.For<IControlCandidate<int>>();
