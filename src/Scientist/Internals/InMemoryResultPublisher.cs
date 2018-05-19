@@ -8,8 +8,8 @@ namespace GitHub.Internals
 {
     public class InMemoryResultPublisher : IResultPublisher
     {
-        readonly static Task _completed = Task.FromResult(0);
-        readonly static ConcurrentDictionary<int, ConcurrentBag<object>> _results 
+        readonly Task _completed = Task.FromResult(0);
+        readonly ConcurrentDictionary<int, ConcurrentBag<object>> _results 
             = new ConcurrentDictionary<int, ConcurrentBag<object>>();
 
         static int GetKey<T, TClean>()
