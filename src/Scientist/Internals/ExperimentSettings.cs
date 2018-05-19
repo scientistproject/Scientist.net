@@ -25,5 +25,6 @@ namespace GitHub.Internals
         public Func<Task<bool>> RunIf { get; set; }
         public bool ThrowOnMismatches { get; set; }
         public Action<Operation, Exception> Thrown { get; set; }
+        public IResultPublisher ResultPublisher { get; set; }
     }
 }

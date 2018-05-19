@@ -23,7 +23,7 @@ namespace GitHub
         {
             // TODO: Maybe we could automatically generate the name if none is provided using the calling method name. We'd have to 
             // make sure we don't inline this method though.
-            var experimentBuilder = new Experiment<T, TClean>(name, _enabled, concurrentTasks);
+            var experimentBuilder = new Experiment<T, TClean>(name, _enabled, concurrentTasks, ResultPublisher);
 
             experiment(experimentBuilder);
 
@@ -32,7 +32,7 @@ namespace GitHub
 
         static Experiment<T, TClean> Build<T, TClean>(string name, int concurrentTasks, Action<IExperimentAsync<T, TClean>> experiment)
         {
-            var builder = new Experiment<T, TClean>(name, _enabled, concurrentTasks);
+            var builder = new Experiment<T, TClean>(name, _enabled, concurrentTasks, ResultPublisher);
 
             experiment(builder);
 
