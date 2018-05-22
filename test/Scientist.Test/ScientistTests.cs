@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GitHub;
+using GitHub.Internals;
 using NSubstitute;
 using UnitTests;
 using Xunit;
@@ -988,6 +989,102 @@ public class TheScientistClass
             mock.DidNotReceive().Candidate();
             mock.Received().Control();
             Assert.False(TestHelper.Results<int>(experimentName).Any());
+        }
+
+        [Fact]
+        public void RunsBothBranchesOfTheExperimentAndMatchesExceptionsForInstance()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(x => { throw new InvalidOperationException(); });
+            mock.Candidate().Returns(x => { throw new InvalidOperationException(); });
+            const string experimentName = nameof(RunsBothBranchesOfTheExperimentAndMatchesExceptions);
+
+            var resultPublisher = new InMemoryResultPublisher();
+            var scientist = new Scientist(resultPublisher);
+
+            var ex = Assert.Throws<AggregateException>(() =>
+            {
+                scientist.Experiment<int>(experimentName, experiment =>
+                {
+                    experiment.Use(mock.Control);
+                    experiment.Try("candidate", mock.Candidate);
+                });
+            });
+
+            Exception baseException = ex.GetBaseException();
+            Assert.IsType<InvalidOperationException>(baseException);
+            mock.Received().Control();
+            mock.Received().Candidate();
+            Assert.True(resultPublisher.Results<int>(experimentName).First().Matched);
+        }
+
+        [Fact]
+        public async Task RunsBothBranchesOfTheExperimentAndThrowsCorrectInnerExceptionForInstance()
+        {
+            var mock = Substitute.For<IControlCandidate<Task<int>>>();
+            var controlException = new InvalidOperationException(null, new Exception());
+            var candidateException = new InvalidOperationException(null, new Exception());
+            mock.Control().Returns<Task<int>>(x => { throw controlException; });
+            mock.Candidate().Returns<Task<int>>(x => { throw controlException; });
+            const string experimentName = nameof(RunsBothBranchesOfTheExperimentAndThrowsCorrectInnerException);
+
+            var resultPublisher = new InMemoryResultPublisher();
+            var scientist = new Scientist(resultPublisher);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                await scientist.ExperimentAsync<int>(experimentName, experiment =>
+                {
+                    experiment.Use(mock.Control);
+                    experiment.Try("candidate", mock.Candidate);
+                });
+            });
+        }
+
+        [Fact]
+        public void RunsBothBranchesOfTheExperimentAndReportsSuccessForInstance()
+        {
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(42);
+            mock.Candidate().Returns(42);
+            const string experimentName = nameof(RunsBothBranchesOfTheExperimentAndReportsSuccess);
+
+            var resultPublisher = new InMemoryResultPublisher();
+            var scientist = new Scientist(resultPublisher);
+
+            var result = scientist.Experiment<int>(experimentName, experiment =>
+            {
+                experiment.Use(mock.Control);
+                experiment.Try("candidate", mock.Candidate);
+            });
+
+            Assert.Equal(42, result);
+            mock.Received().Control();
+            mock.Received().Candidate();
+            Assert.True(resultPublisher.Results<int>(experimentName).First().Matched);
+        }
+
+        [Fact]
+        public async Task RunsBothBranchesOfTheExperimentAsyncAndReportsFailureForInstance()
+        {
+            var mock = Substitute.For<IControlCandidateTask<int>>();
+            mock.Control().Returns(Task.FromResult(42));
+            mock.Candidate().Returns(Task.FromResult(43));
+            const string experimentName = nameof(RunsBothBranchesOfTheExperimentAsyncAndReportsFailure);
+
+            var resultPublisher = new InMemoryResultPublisher();
+            var scientist = new Scientist(resultPublisher);
+
+            var result = await scientist.ExperimentAsync<int>(experimentName, experiment =>
+            {
+                experiment.Use(mock.Control);
+                experiment.Try("candidate", mock.Candidate);
+            });
+
+            Assert.Equal(42, result);
+            await mock.Received().Control();
+            await mock.Received().Candidate();
+            Assert.False(resultPublisher.Results<int>(experimentName).First().Matched);
         }
 
         private sealed class MyScientist : Scientist
