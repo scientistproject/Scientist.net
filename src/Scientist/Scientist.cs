@@ -41,20 +41,20 @@ namespace GitHub
 
         static Scientist CreateSharedInstance() => new SharedScientist(ResultPublisher);
 
-        static Experiment<T, TClean> Build<T, TClean>(string name, int concurrentTasks, Action<IExperiment<T, TClean>> experiment)
+        Experiment<T, TClean> Build<T, TClean>(string name, int concurrentTasks, Action<IExperiment<T, TClean>> experiment)
         {
             // TODO: Maybe we could automatically generate the name if none is provided using the calling method name. We'd have to 
             // make sure we don't inline this method though.
-            var experimentBuilder = new Experiment<T, TClean>(name, _enabled, concurrentTasks, ResultPublisher);
+            var experimentBuilder = new Experiment<T, TClean>(name, IsEnabledAsync, concurrentTasks, _resultPublisher);
 
             experiment(experimentBuilder);
 
             return experimentBuilder;
         }
 
-        static Experiment<T, TClean> Build<T, TClean>(string name, int concurrentTasks, Action<IExperimentAsync<T, TClean>> experiment)
+        Experiment<T, TClean> Build<T, TClean>(string name, int concurrentTasks, Action<IExperimentAsync<T, TClean>> experiment)
         {
-            var builder = new Experiment<T, TClean>(name, _enabled, concurrentTasks, ResultPublisher);
+            var builder = new Experiment<T, TClean>(name, IsEnabledAsync, concurrentTasks, _resultPublisher);
 
             experiment(builder);
 

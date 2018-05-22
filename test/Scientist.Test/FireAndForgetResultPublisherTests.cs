@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using GitHub;
 using NSubstitute;
@@ -29,22 +28,22 @@ public class FireAndForgetResultPublisherTests
         mock.Control().Returns(expectedResult);
         mock.Candidate().Returns(expectedResult);
 
-        const int count = 10;
-        using (Swap.Publisher(fireAndForgetPublisher))
-        {
-            Parallel.ForEach(
-                Enumerable.Repeat(0, count),
-                src =>
-                {
-                    var result = Scientist.Science<int>("myExperiment", experiment =>
-                    {
-                        experiment.Use(mock.Control);
-                        experiment.Try(mock.Candidate);
-                    });
+        var scientist = new Scientist(fireAndForgetPublisher);
 
-                    Assert.Equal(expectedResult, result);
+        const int count = 10;
+
+        Parallel.ForEach(
+            Enumerable.Repeat(0, count),
+            src =>
+            {
+                var result = scientist.Experiment<int>("myExperiment", experiment =>
+                {
+                    experiment.Use(mock.Control);
+                    experiment.Try(mock.Candidate);
                 });
-        }
+
+                Assert.Equal(expectedResult, result);
+            });
 
         // Make sure that the above science calls are still publishing.
         Task whenPublished = fireAndForgetPublisher.WhenPublished();
@@ -82,14 +81,13 @@ public class FireAndForgetResultPublisherTests
         mock.Control().Returns(expectedResult);
         mock.Candidate().Returns(expectedResult);
 
-        using (Swap.Publisher(fireAndForgetPublisher))
+        var scientist = new Scientist(fireAndForgetPublisher);
+
+        var result = scientist.Experiment<int>("myExperiment", experiment =>
         {
-            var result = Scientist.Science<int>("myExperiment", experiment =>
-            {
-                experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
-            });
-        }
+            experiment.Use(mock.Control);
+            experiment.Try(mock.Candidate);
+        });
 
         await fireAndForgetPublisher.WhenPublished();
 
@@ -114,14 +112,13 @@ public class FireAndForgetResultPublisherTests
         mock.Control().Returns(expectedResult);
         mock.Candidate().Returns(expectedResult);
 
-        using (Swap.Publisher(fireAndForgetPublisher))
+        var scientist = new Scientist(fireAndForgetPublisher);
+
+        var result = scientist.Experiment<int>("myExperiment", experiment =>
         {
-            var result = Scientist.Science<int>("myExperiment", experiment =>
-            {
-                experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
-            });
-        }
+            experiment.Use(mock.Control);
+            experiment.Try(mock.Candidate);
+        });
 
         var whenPublished = fireAndForgetPublisher.WhenPublished();
 

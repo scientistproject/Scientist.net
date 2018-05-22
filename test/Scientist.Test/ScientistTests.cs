@@ -964,5 +964,40 @@ public class TheScientistClass
 
             Assert.Throws<ArgumentNullException>("resultPublisher", () => new Scientist(resultPublisher));
         }
+
+        [Fact]
+        public void DoesntRunCandidateIfIsEnabledAsyncReturnsFalse()
+        {
+            const int expectedResult = 42;
+
+            var scientist = new MyScientist(Scientist.ResultPublisher);
+
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(expectedResult);
+
+            const string experimentName = "doesNotRunIfNotEnabled";
+
+            var result = scientist.Experiment<int>(experimentName, experiment =>
+            {
+                experiment.Use(mock.Control);
+                experiment.Try("candidate", mock.Candidate);
+            });
+
+            Assert.Equal(expectedResult, result);
+
+            mock.DidNotReceive().Candidate();
+            mock.Received().Control();
+            Assert.False(TestHelper.Results<int>(experimentName).Any());
+        }
+
+        private sealed class MyScientist : Scientist
+        {
+            internal MyScientist(IResultPublisher resultPublisher)
+                : base(resultPublisher)
+            {
+            }
+
+            protected override Task<bool> IsEnabledAsync() => Task.FromResult(false);
+        }
     }
 }

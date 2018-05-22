@@ -1,6 +1,6 @@
-﻿using GitHub;
+﻿using System;
+using GitHub;
 using NSubstitute;
-using System;
 using UnitTests;
 using Xunit;
 
@@ -95,24 +95,23 @@ public class ThrownTests
         var ex = new Exception();
         publisher.Publish(Arg.Any<Result<int, int>>()).Throws(ex);
 
-        using (Swap.Publisher(publisher))
+        const int expectedResult = 42;
+
+        var mock = Substitute.For<IControlCandidate<int>>();
+        mock.Control().Returns(expectedResult);
+        mock.Candidate().Returns(0);
+
+        var scientist = new Scientist(publisher);
+
+        var result = scientist.Experiment<int>(nameof(PublishOperation), experiment =>
         {
-            const int expectedResult = 42;
+            experiment.Thrown(mock.Thrown);
+            experiment.Use(mock.Control);
+            experiment.Try(mock.Candidate);
+        });
 
-            var mock = Substitute.For<IControlCandidate<int>>();
-            mock.Control().Returns(expectedResult);
-            mock.Candidate().Returns(0);
-
-            var result = Scientist.Science<int>(nameof(PublishOperation), experiment =>
-            {
-                experiment.Thrown(mock.Thrown);
-                experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
-            });
-
-            Assert.Equal(expectedResult, result);
-            mock.Received().Thrown(Operation.Publish, ex);
-        }
+        Assert.Equal(expectedResult, result);
+        mock.Received().Thrown(Operation.Publish, ex);
     }
 
     [Fact]
