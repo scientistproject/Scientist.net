@@ -20,7 +20,13 @@ namespace GitHub
         /// <param name="experiment">Experiment callback used to configure the experiment</param>
         /// <returns>The value of the experiment's control function.</returns>
         public static T Experiment<T>(this IScientist scientist, string name, Action<IExperiment<T>> experiment) =>
-            scientist.Experiment<T, T>(name, e => experiment(e));
+            scientist.Experiment<T, T>(
+                name,
+                e =>
+                {
+                    e.Clean(NoOpClean);
+                    experiment(e);
+                });
 
         /// <summary>
         /// Conduct a synchronous experiment
@@ -44,7 +50,14 @@ namespace GitHub
         /// <param name="experiment">Experiment callback used to configure the experiment</param>
         /// <returns>The value of the experiment's control function.</returns>
         public static Task<T> ExperimentAsync<T>(this IScientist scientist, string name, int concurrentTasks, Action<IExperimentAsync<T>> experiment) =>
-            scientist.ExperimentAsync<T, T>(name, concurrentTasks, e => experiment(e));
+            scientist.ExperimentAsync<T, T>(
+                name,
+                concurrentTasks,
+                e =>
+                {
+                    ////e.Clean(NoOpClean);
+                    experiment(e);
+                });
 
         /// <summary>
         /// Conduct an asynchronous experiment
@@ -57,5 +70,7 @@ namespace GitHub
         /// <returns>The value of the experiment's control function.</returns>
         public static Task<T> ExperimentAsync<T, TClean>(this IScientist scientist, string name, Action<IExperimentAsync<T, TClean>> experiment) =>
             scientist.ExperimentAsync(name, 1, experiment);
+
+        private static T NoOpClean<T>(T value) => value;
     }
 }

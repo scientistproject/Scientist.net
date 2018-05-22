@@ -1088,6 +1088,44 @@ public class TheScientistClass
             Assert.False(resultPublisher.Results<int>(experimentName).First().Matched);
         }
 
+        [Fact]
+        public void RunsBothBranchesOfSimpleSynchronousExperimentAndReportsFailure()
+        {
+            const string experimentName = nameof(RunsBothBranchesOfSimpleSynchronousExperimentAndReportsFailure);
+
+            var resultPublisher = new InMemoryResultPublisher();
+            var science = new Scientist(resultPublisher);
+
+            var result = science.Experiment<int>(experimentName, experiment =>
+            {
+                experiment.Use(() => 42);
+                experiment.Try(() => 37);
+            });
+
+            Assert.Equal(42, result);
+            Assert.False(resultPublisher.Results<int>(experimentName).First().Matched);
+            Assert.True(resultPublisher.Results<int>(experimentName).First().Mismatched);
+        }
+
+        [Fact]
+        public async Task RunsBothBranchesOfSimpleAsynchronousExperimentAndReportsFailure()
+        {
+            const string experimentName = nameof(RunsBothBranchesOfSimpleAsynchronousExperimentAndReportsFailure);
+
+            var resultPublisher = new InMemoryResultPublisher();
+            var science = new Scientist(resultPublisher);
+
+            var result = await science.ExperimentAsync<int>(experimentName, experiment =>
+            {
+                experiment.Use(() => Task.FromResult(42));
+                experiment.Try(() => Task.FromResult(37));
+            });
+
+            Assert.Equal(42, result);
+            Assert.False(resultPublisher.Results<int>(experimentName).First().Matched);
+            Assert.True(resultPublisher.Results<int>(experimentName).First().Mismatched);
+        }
+
         private sealed class MyScientist : Scientist
         {
             internal MyScientist(IResultPublisher resultPublisher)
