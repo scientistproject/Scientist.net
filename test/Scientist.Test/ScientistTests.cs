@@ -971,7 +971,8 @@ public class TheScientistClass
         {
             const int expectedResult = 42;
 
-            var scientist = new MyScientist(Scientist.ResultPublisher);
+            var resultPublisher = new InMemoryResultPublisher();
+            var scientist = new MyScientist(resultPublisher);
 
             var mock = Substitute.For<IControlCandidate<int>>();
             mock.Control().Returns(expectedResult);
@@ -988,7 +989,7 @@ public class TheScientistClass
 
             mock.DidNotReceive().Candidate();
             mock.Received().Control();
-            Assert.False(TestHelper.Results<int>(experimentName).Any());
+            Assert.False(resultPublisher.Results<int>(experimentName).Any());
         }
 
         [Fact]
