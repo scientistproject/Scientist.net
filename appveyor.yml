@@ -1,13 +1,12 @@
-os: Visual Studio 2017
 build_script:
-  - cmd: build.cmd BuildApp
-  - cmd: build.cmd RunTests
-  - cmd: build.cmd CreatePackages
+- cmd: build.cmd BuildApp
+- cmd: build.cmd RunTests
+- cmd: build.cmd CreatePackages
 test: off
 nuget:
     project_feed: true
 artifacts:
-  - path: 'packaging\**\scientist*.nupkg'
-    name: ScientistPackages
+- path: 'packaging\**\scientist*.nupkg'
+  name: ScientistPackages
 build:
   verbosity: normal
