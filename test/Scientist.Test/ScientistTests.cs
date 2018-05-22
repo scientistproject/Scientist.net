@@ -956,5 +956,13 @@ public class TheScientistClass
             // verify that no results were published for this experiment
             Assert.Empty(TestHelper.Results<int>(experimentName));
         }
+
+        [Fact]
+        public void ConstructorThrowsIfResultPublisherIsNull()
+        {
+            IResultPublisher resultPublisher = null;
+
+            Assert.Throws<ArgumentNullException>("resultPublisher", () => new Scientist(resultPublisher));
+        }
     }
 }

@@ -21,7 +21,7 @@ namespace GitHub
         public Scientist(IResultPublisher resultPublisher)
         {
             if (resultPublisher == null)
-                throw new ArgumentNullException("A result publisher must be specified", nameof(resultPublisher));
+                throw new ArgumentNullException(nameof(resultPublisher), "A result publisher must be specified");
 
             _resultPublisher = resultPublisher;
         }
