@@ -55,7 +55,7 @@ namespace GitHub
                 concurrentTasks,
                 e =>
                 {
-                    ////e.Clean(NoOpClean);
+                    e.Clean(NoOpClean);
                     experiment(e);
                 });
 
