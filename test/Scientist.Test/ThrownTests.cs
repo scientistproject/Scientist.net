@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using GitHub;
 using NSubstitute;
 using UnitTests;
@@ -163,5 +164,27 @@ public class ThrownTests
 
         var actualException = Assert.IsType<Exception>(operationException.InnerException);
         Assert.Equal(ex, actualException);
+    }
+
+    [Fact]
+    public void CannotChangeStaticResultPublisherAfterAnExperiment()
+    {
+        var mock = Substitute.For<IControlCandidate<int>>();
+        mock.Control().Returns(42);
+        mock.Candidate().Returns(42);
+        const string experimentName = nameof(CannotChangeStaticResultPublisherAfterAnExperiment);
+
+        var result = Scientist.Science<int>(experimentName, experiment =>
+        {
+            experiment.Use(mock.Control);
+            experiment.Try("candidate", mock.Candidate);
+        });
+
+        Assert.Equal(42, result);
+        mock.Received().Control();
+        mock.Received().Candidate();
+        Assert.True(TestHelper.Results<int>(experimentName).First().Matched);
+
+        Assert.Throws<InvalidOperationException>(() => Scientist.ResultPublisher = Substitute.For<IResultPublisher>());
     }
 }

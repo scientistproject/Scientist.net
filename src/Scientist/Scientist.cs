@@ -12,6 +12,7 @@ namespace GitHub
         static readonly Task<bool> EnabledTask = Task.FromResult(true);
         static readonly Lazy<Scientist> _sharedScientist = new Lazy<Scientist>(CreateSharedInstance);
         static Func<Task<bool>> _enabled = () => EnabledTask;
+        static IResultPublisher _sharedPublisher = new InMemoryResultPublisher();
         readonly IResultPublisher _resultPublisher;
 
         /// <summary>
@@ -29,15 +30,29 @@ namespace GitHub
         // TODO: How can we guide the developer to the pit of success
 
         /// <summary>
-        /// Gets or sets the result publisher to use. This should be configured once
-        /// before starting observations. Changes to the value once the first
-        /// experiment is run are not observed.
+        /// Gets or sets the result publisher to use.
+        /// This should be configured once before starting observations.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// An attempt to set the value was made after the first experiment has been run.
+        /// </exception>
         public static IResultPublisher ResultPublisher
         {
-            get;
-            set;
-        } = new InMemoryResultPublisher();
+            get
+            {
+                return _sharedPublisher;
+            }
+
+            set
+            {
+                if (_sharedScientist.IsValueCreated)
+                {
+                    throw new InvalidOperationException($"The value of the {nameof(ResultPublisher)} property cannot be changed once an experiment has been run.");
+                }
+
+                _sharedPublisher = value;
+            }
+        }
 
         static Scientist CreateSharedInstance() => new SharedScientist(ResultPublisher);
 
