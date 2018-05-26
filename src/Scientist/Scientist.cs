@@ -21,10 +21,8 @@ namespace GitHub
         /// </summary>
         public Scientist(IResultPublisher resultPublisher)
         {
-            if (resultPublisher == null)
-                throw new ArgumentNullException(nameof(resultPublisher), "A result publisher must be specified");
-
-            _resultPublisher = resultPublisher;
+            _resultPublisher = resultPublisher
+                ?? throw new ArgumentNullException(nameof(resultPublisher), "A result publisher must be specified");
         }
 
         // TODO: How can we guide the developer to the pit of success
@@ -107,7 +105,7 @@ namespace GitHub
         /// <param name="experiment">Experiment callback used to configure the experiment</param>
         /// <returns>The value of the experiment's control function.</returns>
         public static T Science<T, TClean>(string name, Action<IExperiment<T, TClean>> experiment) =>
-             _sharedScientist.Value.Experiment(name, experiment);
+            _sharedScientist.Value.Experiment(name, experiment);
 
         /// <summary>
         /// Conduct an asynchronous experiment
@@ -117,7 +115,7 @@ namespace GitHub
         /// <param name="experiment">Experiment callback used to configure the experiment</param>
         /// <returns>The value of the experiment's control function.</returns>
         public static Task<T> ScienceAsync<T>(string name, Action<IExperimentAsync<T>> experiment) =>
-             _sharedScientist.Value.ExperimentAsync(name, experiment);
+            _sharedScientist.Value.ExperimentAsync(name, experiment);
 
         /// <summary>
         /// Conduct an asynchronous experiment
@@ -128,7 +126,7 @@ namespace GitHub
         /// <param name="experiment">Experiment callback used to configure the experiment</param>
         /// <returns>The value of the experiment's control function.</returns>
         public static Task<T> ScienceAsync<T>(string name, int concurrentTasks, Action<IExperimentAsync<T>> experiment) =>
-             _sharedScientist.Value.ExperimentAsync(name, concurrentTasks, experiment);
+            _sharedScientist.Value.ExperimentAsync(name, concurrentTasks, experiment);
 
         /// <summary>
         /// Conduct an asynchronous experiment
