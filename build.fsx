@@ -9,7 +9,7 @@ open System.Text
 
 let architecture = getBuildParamOrDefault "architecture" "x86"
 let runtime = getBuildParamOrDefault "runtime" "clr"
-let runtimeVersion = getBuildParamOrDefault "runtimeVersion" "2.1.200"
+let runtimeVersion = getBuildParamOrDefault "runtimeVersion" "2.1.300"
 let buildMode = getBuildParamOrDefault "buildMode" "Release"
 
 let versionRegex = "(<VersionPrefix>)([^\"]+)(</VersionPrefix>)"
