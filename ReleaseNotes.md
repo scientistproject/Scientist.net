@@ -1,3 +1,9 @@
+### New in 2.0.0 (Released xxxx/xx/xx)
+
+**Features**
+
+ - Make IoC/DI friendlier - #108 via @martincostello
+
 ### New in 1.0.1 (Released 2016/09/29)
 
 Initial stable release of Scientist.NET, a port of the Ruby Scientist library for carefully refactoring critical paths.
