@@ -26,16 +26,21 @@ namespace GitHub.Internals
         private Func<Task<bool>> _runIf = _alwaysRun;
         private readonly List<Func<T, T, Task<bool>>> _ignores = new List<Func<T, T, Task<bool>>>();
         private readonly Dictionary<string, dynamic> _contexts = new Dictionary<string, dynamic>();
+        private readonly IResultPublisher _resultPublisher;
 
-        public Experiment(string name, Func<Task<bool>> enabled, int concurrentTasks)
+        public Experiment(string name, Func<Task<bool>> enabled, int concurrentTasks, IResultPublisher resultPublisher)
         {
             if (concurrentTasks <= 0)
                 throw new ArgumentException("Argument must be greater than 0", nameof(concurrentTasks));
+
+            if (resultPublisher == null)
+                throw new ArgumentNullException("A result publisher must be specified", nameof(resultPublisher));
 
             _name = name;
             _candidates = new Dictionary<string, Func<Task<T>>>();
             _enabled = enabled;
             _concurrentTasks = concurrentTasks;
+            _resultPublisher = resultPublisher;
         }
 
         public bool ThrowOnMismatches { get; set; }
@@ -124,7 +129,8 @@ namespace GitHub.Internals
                 Name = _name,
                 RunIf = _runIf,
                 Thrown = _thrown,
-                ThrowOnMismatches = ThrowOnMismatches
+                ThrowOnMismatches = ThrowOnMismatches,
+                ResultPublisher = _resultPublisher
             });
 
         public void Compare(Func<T, T, bool> comparison)

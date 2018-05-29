@@ -1,6 +1,7 @@
-﻿using GitHub;
+﻿using System;
+using System.Linq;
+using GitHub;
 using NSubstitute;
-using System;
 using UnitTests;
 using Xunit;
 
@@ -95,24 +96,23 @@ public class ThrownTests
         var ex = new Exception();
         publisher.Publish(Arg.Any<Result<int, int>>()).Throws(ex);
 
-        using (Swap.Publisher(publisher))
+        const int expectedResult = 42;
+
+        var mock = Substitute.For<IControlCandidate<int>>();
+        mock.Control().Returns(expectedResult);
+        mock.Candidate().Returns(0);
+
+        var scientist = new Scientist(publisher);
+
+        var result = scientist.Experiment<int>(nameof(PublishOperation), experiment =>
         {
-            const int expectedResult = 42;
+            experiment.Thrown(mock.Thrown);
+            experiment.Use(mock.Control);
+            experiment.Try(mock.Candidate);
+        });
 
-            var mock = Substitute.For<IControlCandidate<int>>();
-            mock.Control().Returns(expectedResult);
-            mock.Candidate().Returns(0);
-
-            var result = Scientist.Science<int>(nameof(PublishOperation), experiment =>
-            {
-                experiment.Thrown(mock.Thrown);
-                experiment.Use(mock.Control);
-                experiment.Try(mock.Candidate);
-            });
-
-            Assert.Equal(expectedResult, result);
-            mock.Received().Thrown(Operation.Publish, ex);
-        }
+        Assert.Equal(expectedResult, result);
+        mock.Received().Thrown(Operation.Publish, ex);
     }
 
     [Fact]
@@ -164,5 +164,27 @@ public class ThrownTests
 
         var actualException = Assert.IsType<Exception>(operationException.InnerException);
         Assert.Equal(ex, actualException);
+    }
+
+    [Fact]
+    public void CannotChangeStaticResultPublisherAfterAnExperiment()
+    {
+        var mock = Substitute.For<IControlCandidate<int>>();
+        mock.Control().Returns(42);
+        mock.Candidate().Returns(42);
+        const string experimentName = nameof(CannotChangeStaticResultPublisherAfterAnExperiment);
+
+        var result = Scientist.Science<int>(experimentName, experiment =>
+        {
+            experiment.Use(mock.Control);
+            experiment.Try("candidate", mock.Candidate);
+        });
+
+        Assert.Equal(42, result);
+        mock.Received().Control();
+        mock.Received().Candidate();
+        Assert.True(TestHelper.Results<int>(experimentName).First().Matched);
+
+        Assert.Throws<InvalidOperationException>(() => Scientist.ResultPublisher = Substitute.For<IResultPublisher>());
     }
 }

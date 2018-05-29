@@ -1,15 +1,10 @@
 #r @"tools/FAKE.Core/tools/FakeLib.dll"
 
 open Fake
-open Fake.FileHelper
 open System
 open System.Collections.Generic
-open System.Net;
 open System.Text
 
-let architecture = getBuildParamOrDefault "architecture" "x86"
-let runtime = getBuildParamOrDefault "runtime" "clr"
-let runtimeVersion = getBuildParamOrDefault "runtimeVersion" "1.0.0-rc1-update1"
 let buildMode = getBuildParamOrDefault "buildMode" "Release"
 
 let versionRegex = "(<VersionPrefix>)([^\"]+)(</VersionPrefix>)"

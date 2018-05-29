@@ -8,6 +8,6 @@ SET TARGET="Default"
 
 IF NOT [%1]==[] (set TARGET="%1")
 
-"tools\FAKE.core\tools\Fake.exe" "build.fsx" "target=%TARGET%" "buildMode=Release" "architecture=x86" "runtime=clr" "runtimeVersion=1.0.0-rc1-update1"
+"tools\FAKE.core\tools\Fake.exe" "build.fsx" "target=%TARGET%" "buildMode=Release"
 
 exit /b %errorlevel%

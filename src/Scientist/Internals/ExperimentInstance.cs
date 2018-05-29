@@ -27,6 +27,7 @@ namespace GitHub.Internals
         internal readonly Dictionary<string, dynamic> Contexts;
         internal readonly Action<Operation, Exception> Thrown;
         internal readonly bool ThrowOnMismatches;
+        internal readonly IResultPublisher ResultPublisher;
         
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
         
@@ -51,6 +52,7 @@ namespace GitHub.Internals
             Ignores = settings.Ignores;
             Thrown = settings.Thrown;
             ThrowOnMismatches = settings.ThrowOnMismatches;
+            ResultPublisher = settings.ResultPublisher;
         }
 
         public async Task<T> Run()
@@ -99,7 +101,7 @@ namespace GitHub.Internals
 
             try
             {
-                await Scientist.ResultPublisher.Publish(result);
+                await ResultPublisher.Publish(result);
             }
             catch (Exception ex)
             {
