@@ -3,6 +3,7 @@
 **Features**
 
  - Make IoC/DI friendlier - #108 via @martincostello
+ - Add `FireAndForgetResultPublisher`. Wrap an existing `IResultPublisher` to delegate publishing to another thread and avoid publishing delays when running experiments - #83 via @thematthopkins and @joncloud
 
 ### New in 1.0.1 (Released 2016/09/29)
 
