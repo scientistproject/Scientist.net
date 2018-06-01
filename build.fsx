@@ -10,8 +10,8 @@ let buildMode = getBuildParamOrDefault "buildMode" "Release"
 let versionRegex = "(<VersionPrefix>)([^\"]+)(</VersionPrefix>)"
 
 //Directories
-let packagingRoot = "./packaging/"
-let packagingDir = packagingRoot @@ "scientist.net"
+let packagingRoot = __SOURCE_DIRECTORY__ + "/packaging/"
+let packagingDir =  packagingRoot + "scientist.net"
 let buildDir = "./src/Scientist/bin"
 let testBuildDir = "./test/Scientist.Test/bin"
 
@@ -44,22 +44,12 @@ let Run workingDirectory fileName args =
 
 let dotnetExe = "dotnet.exe"
 
-let UpdateProject csprojPath nuspecPath =
+let UpdateProject csprojPath =
     let fullCsprojPath = (__SOURCE_DIRECTORY__ + csprojPath)
-    let fullNuspecPath = (__SOURCE_DIRECTORY__ + csprojPath)
    
     let tempReleaseNotes = toLines releaseNotes.Notes
-    RegexReplaceInFileWithEncoding "<releaseNotes></releaseNotes>" ("<releaseNotes>" + tempReleaseNotes +  "</releaseNotes>") Encoding.UTF8 fullCsprojPath
-
-    RegexReplaceInFileWithEncoding versionRegex ("${1}" + (releaseNotes.NugetVersion) + "${3}") Encoding.UTF8 fullNuspecPath
-
-let RestoreProject csprojPath nuspecPath =
-    let fullCsprojPath = (__SOURCE_DIRECTORY__ + csprojPath)
-    let fullNuspecPath = (__SOURCE_DIRECTORY__ + csprojPath)
-    let backupNuspecPath = (fullNuspecPath + ".bak")
-    
-    DeleteFile fullCsprojPath    
-    DeleteFile fullNuspecPath
+    RegexReplaceInFileWithEncoding "<PackageReleaseNotes>.*</PackageReleaseNotes>" ("<PackageReleaseNotes>" + tempReleaseNotes +  "</PackageReleaseNotes>") Encoding.UTF8 fullCsprojPath
+    RegexReplaceInFileWithEncoding versionRegex ("${1}" + (releaseNotes.NugetVersion) + "${3}") Encoding.UTF8 fullCsprojPath
 
 let SetBuildVersion =
     setProcessEnvironVar "DOTNET_BUILD_VERSION" (environVarOrDefault "APPVEYOR_BUILD_NUMBER" "local")
@@ -82,13 +72,10 @@ Target "BuildApp" (fun _ ->
 
 Target "CreatePackages" (fun _ ->
     let csprojPath = "/src/Scientist/Scientist.csproj"
-    let nuspecPath = "/src/Scientist/scientist.nuspec"
 
-    UpdateProject csprojPath nuspecPath
+    UpdateProject csprojPath
 
     Run currentDirectory dotnetExe ("pack .\\src\\Scientist\\ --configuration " + buildMode + " --output " + packagingDir) |> ignore
-
-    RestoreProject csprojPath nuspecPath
 )
 
 Target "RunTests" (fun _ ->
