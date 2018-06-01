@@ -10,8 +10,8 @@ let buildMode = getBuildParamOrDefault "buildMode" "Release"
 let versionRegex = "(<VersionPrefix>)([^\"]+)(</VersionPrefix>)"
 
 //Directories
-let packagingRoot = "./packaging/"
-let packagingDir = packagingRoot @@ "scientist.net"
+let packagingRoot = __SOURCE_DIRECTORY__ + "/packaging/"
+let packagingDir =  packagingRoot + "scientist.net"
 let buildDir = "./src/Scientist/bin"
 let testBuildDir = "./test/Scientist.Test/bin"
 
