@@ -1,4 +1,4 @@
-### New in 2.0.0 (Released xxxx/xx/xx)
+### New in 2.0.0-alpha (Released 2018/06/01)
 
 **Features**
 
