@@ -7,6 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Meta", "Meta", "{0FF544BE-E
 	ProjectSection(SolutionItems) = preProject
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
+		appveyor.yml = appveyor.yml
 		build.cmd = build.cmd
 		build.fsx = build.fsx
 		LICENSE.txt = LICENSE.txt
@@ -18,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scientist", "src\Scientist\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scientist.Test", "test\Scientist.Test\Scientist.Test.csproj", "{0686E0A8-FB25-4B20-9BC0-CD05E916E5AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scientist.Benchmark", "test\Scientist.Benchmark\Scientist.Benchmark.csproj", "{243420EF-8A98-4D0F-9E2E-86F4E70C3128}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scientist.Benchmark", "test\Scientist.Benchmark\Scientist.Benchmark.csproj", "{243420EF-8A98-4D0F-9E2E-86F4E70C3128}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
