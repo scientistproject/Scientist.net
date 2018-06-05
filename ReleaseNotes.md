@@ -1,4 +1,4 @@
-### New in 2.0.0-beta (Released 2018/06/01)
+### New in 2.0.0 (Released 2018/06/05)
 
 **Features**
 
