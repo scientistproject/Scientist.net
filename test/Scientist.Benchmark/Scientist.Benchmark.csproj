@@ -3,8 +3,10 @@
     <Description>Benchmarks for scientist</Description>
     <OutputType>Exe</OutputType>
     <RootNamespace>GitHub</RootNamespace>
-    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\src\Scientist\Scientist.csproj" />
   </ItemGroup>

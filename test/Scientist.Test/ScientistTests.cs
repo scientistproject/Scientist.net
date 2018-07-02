@@ -1126,6 +1126,52 @@ public class TheScientistClass
             Assert.True(resultPublisher.Results<int>(experimentName).First().Mismatched);
         }
 
+        [Fact]
+        public void ObservesZeroAllocationsCorrectly()
+        {
+            const string experimentName = nameof(ObservesZeroAllocationsCorrectly);
+            const long expectedBytes = 0L;
+
+            var resultPublisher = new InMemoryResultPublisher();
+            var science = new Scientist(resultPublisher);
+            
+            var result = science.Experiment<int>(experimentName, experiment =>
+            {
+                experiment.Use(() => 42);
+                experiment.Try(() => 37);
+            });
+            
+            Assert.Equal(resultPublisher.Results<int>(experimentName).First().Control.AllocatedBytes, expectedBytes);
+        }
+
+        [Fact]
+        public void ObservesAllocationsCorrectly()
+        {
+            const string experimentName = nameof(ObservesAllocationsCorrectly);
+
+            Func<int> allocatingFunc = () => 
+            {
+                var foo = new int[] { 1, 2, 3, 4, 5, 42 };
+                return foo.Last();
+            };
+
+            var initialBytes = GC.GetAllocatedBytesForCurrentThread();
+            allocatingFunc.Invoke();
+            var expectedBytes = GC.GetAllocatedBytesForCurrentThread() - initialBytes;
+
+            var resultPublisher = new InMemoryResultPublisher();
+            var science = new Scientist(resultPublisher);
+
+            var result = science.Experiment<int>(experimentName, experiment =>
+            {
+                experiment.Use(allocatingFunc);
+                experiment.Try(allocatingFunc);
+            });
+
+            Assert.Equal(resultPublisher.Results<int>(experimentName).First().Control.AllocatedBytes, expectedBytes);
+        }
+
+
         private sealed class MyScientist : Scientist
         {
             internal MyScientist(IResultPublisher resultPublisher)
