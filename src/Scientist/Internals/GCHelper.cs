@@ -26,9 +26,9 @@
             System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription.StartsWith(".NET Core", StringComparison.OrdinalIgnoreCase);
 #endif
 
-        private static long AllocationQuantum { get; } = CalculateAllocationQuantumSize();
+        private static long AllocationQuantum { get; } = IsNetCore ? 0 : CalculateAllocationQuantumSize();
 
-        private static readonly Func<long> GetAllocatedBytesForCurrentThreadDelegate = GetAllocatedBytesForCurrentThread();
+        private static readonly Func<long> GetCurrentAllocatedBytesDelegate = GetAllocatedBytesDelegate();
 
         /// <summary>
         /// returns total allocated bytes (not per operation)
@@ -38,62 +38,53 @@
         /// <returns></returns>
         public static long GetAllocatedBytes()
         {
-            var allocation = GetAllocatedBytesByRuntime();
-
-            if (IsNetCore)
-            {
-                return allocation;
-            }
-
-            return allocation <= AllocationQuantum ? 0L : allocation;
+            return GetCurrentAllocatedBytesDelegate();
         }
 
-        private static long GetAllocatedBytesByRuntime()
+        private static Func<long> GetAllocatedBytesDelegate()
         {
             // Monitoring is not available in Mono, see http://stackoverflow.com/questions/40234948/how-to-get-the-number-of-allocated-bytes-
             if (IsMono)
             {
-                return 0;
+                return () => 0L;
             }
-            //GC.Collect();
-
 #if (NET451)
-            // "This instance Int64 property returns the number of bytes that have been allocated by a specific 
-            // AppDomain. The number is accurate as of the last garbage collection." - CLR via C#
-            // so we enforce GC.Collect here just to make sure we get accurate results
-            return AppDomain.CurrentDomain.MonitoringTotalAllocatedMemorySize;
-#elif (NETSTANDARD2_0)
-            // it can be a .NET app consuming our .NET Standard package
-            if (IsFullFramework) 
-            {
+
+            return () => {
                 GC.Collect();
-                return AppDomain.CurrentDomain.MonitoringTotalAllocatedMemorySize;
+                var allocation = AppDomain.CurrentDomain.MonitoringTotalAllocatedMemorySize;
+                return allocation <= AllocationQuantum ? 0L : allocation;
+            };
+
+#elif (NETSTANDARD2_0)
+            // While part of the standard, AppDomain is NotImplemented in .Net Core
+            if (IsFullFramework)
+            {
+                return () =>
+                {
+                    GC.Collect();
+                    var allocation = AppDomain.CurrentDomain.MonitoringTotalAllocatedMemorySize;
+                    return allocation <= AllocationQuantum ? 0L : allocation;
+                };
             }
-            // https://apisof.net/catalog/System.GC.GetAllocatedBytesForCurrentThread() is not part of the .NET Standard, so we use reflection to call it..
-            return GetAllocatedBytesForCurrentThreadDelegate.Invoke();
+            else
+            {
+                // for some versions of .NET Core this method is internal, 
+                // for some public and for others public and exposed ;)
+                var method = typeof(GC)
+                                .GetTypeInfo()
+                                .GetMethod("GetAllocatedBytesForCurrentThread",
+                                BindingFlags.Public | BindingFlags.Static)
+                             ?? typeof(GC)
+                                .GetTypeInfo()
+                                .GetMethod("GetAllocatedBytesForCurrentThread",
+                                BindingFlags.NonPublic | BindingFlags.Static);
+                return (Func<long>) method.CreateDelegate(typeof(Func<long>));
+            }
 #elif (NETCOREAPP2_1)
             // but CoreRT does not support the reflection yet, so only because of that we have to target .NET Core 2.1
             // to be able to call this method without reflection and get MemoryDiagnoser support for CoreRT ;)
             return GC.GetAllocatedBytesForCurrentThread();
-#else
-            return 0;
-#endif
-        }
-
-        private static Func<long> GetAllocatedBytesForCurrentThread()
-        {
-            // for some versions of .NET Core this method is internal, 
-            // for some public and for others public and exposed ;)
-#if (NETSTANDARD2_0 || NETCOREAPP2_1)
-            var method = typeof(GC)
-                            .GetTypeInfo()
-                            .GetMethod("GetAllocatedBytesForCurrentThread",
-                            BindingFlags.Public | BindingFlags.Static)
-                         ?? typeof(GC)
-                            .GetTypeInfo()
-                            .GetMethod("GetAllocatedBytesForCurrentThread",
-                            BindingFlags.NonPublic | BindingFlags.Static);
-            return () => (long)method.Invoke(null, null);
 #else
             return () => 0L;
 #endif
