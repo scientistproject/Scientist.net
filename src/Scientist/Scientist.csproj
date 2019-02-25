@@ -7,7 +7,7 @@
     <TargetFrameworks>netstandard1.1;net451</TargetFrameworks>
     <AssemblyName>Scientist</AssemblyName>
     <PackageId>Scientist</PackageId>
-    <Authors>GitHub</Authors>
+     <Authors>GitHub, Scientist.net maintainers</Authors>
     <Description>Implementation of the Scientist library from GitHub</Description>
     <PackageTags>scientist;refactoring</PackageTags>
     <PackageProjectUrl>http://github.com/scientistproject/Scientist.net</PackageProjectUrl>
