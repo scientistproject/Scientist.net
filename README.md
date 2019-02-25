@@ -2,6 +2,8 @@
 
 A .NET Port of the [Scientist](https://github.com/github/scientist) library for carefully refactoring critical paths. 
 
+[![Build status](https://ci.appveyor.com/api/projects/status/b548cd5okkel3h4x/branch/master?svg=true)](https://ci.appveyor.com/project/shiftkey/scientist-net/branch/master)
+
 To give it a twirl, use NuGet to install: `Install-Package Scientist`
 
 ## How do I science?
