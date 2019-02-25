@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GitHub.Internals;
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
@@ -22,6 +23,11 @@ namespace GitHub
         /// Gets the total time that the experiment behavior ran for.
         /// </summary>
         public TimeSpan Duration { get; private set; }
+        
+        /// <summary>
+        /// Gets the total bytes allocated during the experiment behavior.
+        /// </summary>
+        public long AllocatedBytes { get; private set; }
 
         /// <summary>
         /// Gets an exception if one was thrown from the experiment behavior.
@@ -33,6 +39,8 @@ namespace GitHub
         }
 
         internal readonly Action<Operation, Exception> ExperimentThrown;
+
+        internal static long BaselineAllocatedBytes { get; } = GetBaselineAllocatedBytes();
 
         /// <summary>
         /// Gets the cleaned value of the experiment behavior if successful.
@@ -117,9 +125,11 @@ namespace GitHub
         /// </summary>
         internal async Task Run(Func<Task<T>> block)
         {
+            var allocatedBytes = 0L;
             var start = Stopwatch.GetTimestamp();
             try
             {
+                allocatedBytes = GCHelper.GetAllocatedBytes();
                 Value = await block();
             }
             catch (AggregateException ex)
@@ -130,9 +140,25 @@ namespace GitHub
             {
                 Exception = ex;
             }
+            AllocatedBytes = GCHelper.GetAllocatedBytes() - (allocatedBytes + BaselineAllocatedBytes);
             var stop = Stopwatch.GetTimestamp();
-
+            
             Duration = new TimeSpan((long)(TimestampToTicks * (stop - start)));
         }
+
+        /// <summary>
+        /// Observation itself allocates meaning we need to baseline the allocation to eliminate the noise in the results. 
+        /// There is no guarantee that the allocation amount will be constant so we recalculate once in process
+        /// </summary>
+        /// <returns></returns>
+        private static long GetBaselineAllocatedBytes() =>
+            Observation<int, int>.New(
+                                      "Baseline",
+                                      () => { return Task.FromResult(0); },
+                                      (_, __) => { return true; },
+                                      (_, __) => { },
+                                      (i) => { return i; })
+                                 .Result
+                                 .AllocatedBytes;
     }
 }

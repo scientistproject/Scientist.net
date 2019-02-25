@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <Description>scientist</Description>
-    <VersionPrefix>2.0.0</VersionPrefix>
+    <VersionPrefix>2.1.0</VersionPrefix>
     <Authors>Github</Authors>
-    <TargetFrameworks>netstandard1.1;net451</TargetFrameworks>
+    <TargetFrameworks>netstandard1.1;netstandard2.0;net451</TargetFrameworks>
     <AssemblyName>Scientist</AssemblyName>
     <PackageId>Scientist</PackageId>
      <Authors>GitHub, Scientist.net maintainers</Authors>
@@ -34,8 +34,9 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.1' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.1' or '$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Microsoft.CSharp" Version="4.4.0" />
+    <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
     <PackageReference Include="System.Collections" Version="4.3.0" />
     <PackageReference Include="System.Collections.Concurrent" Version="4.3.0" />
     <PackageReference Include="System.Linq" Version="4.3.0" />
@@ -53,7 +54,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta-62925-02" PrivateAssets="All" />
   </ItemGroup>
-
+  
   <PropertyGroup>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
