@@ -5,5 +5,7 @@ namespace UnitTests
     public interface IScientistSettings
     {
         Task<bool> Enabled();
+
+        Task<bool> EnableControl();
     }
 }

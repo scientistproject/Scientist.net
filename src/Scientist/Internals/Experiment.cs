@@ -22,13 +22,14 @@ namespace GitHub.Internals
         private Func<T, T, bool> _comparison = DefaultComparison;
         private Func<Task> _beforeRun;
         private readonly Func<Task<bool>> _enabled;
+        private readonly Func<Task<bool>> _enableControl;
         private Action<Operation, Exception> _thrown = _alwaysThrow;
         private Func<Task<bool>> _runIf = _alwaysRun;
         private readonly List<Func<T, T, Task<bool>>> _ignores = new List<Func<T, T, Task<bool>>>();
         private readonly Dictionary<string, dynamic> _contexts = new Dictionary<string, dynamic>();
         private readonly IResultPublisher _resultPublisher;
 
-        public Experiment(string name, Func<Task<bool>> enabled, int concurrentTasks, IResultPublisher resultPublisher)
+        public Experiment(string name, Func<Task<bool>> enabled, Func<Task<bool>> enableControl, int concurrentTasks, IResultPublisher resultPublisher)
         {
             if (concurrentTasks <= 0)
                 throw new ArgumentException("Argument must be greater than 0", nameof(concurrentTasks));
@@ -39,6 +40,7 @@ namespace GitHub.Internals
             _name = name;
             _candidates = new Dictionary<string, Func<Task<T>>>();
             _enabled = enabled;
+            _enableControl = enableControl;
             _concurrentTasks = concurrentTasks;
             _resultPublisher = resultPublisher;
         }
@@ -125,6 +127,7 @@ namespace GitHub.Internals
                 Contexts = _contexts,
                 Control = _control,
                 Enabled = _enabled,
+                EnableControl = _enableControl,
                 Ignores = _ignores,
                 Name = _name,
                 RunIf = _runIf,
