@@ -9,6 +9,6 @@
     <ProjectReference Include="..\..\src\Scientist\Scientist.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.10.14" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.11.5" />
   </ItemGroup>
 </Project>

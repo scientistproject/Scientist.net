@@ -4,10 +4,10 @@
     <Description>scientist</Description>
     <VersionPrefix>2.0.0</VersionPrefix>
     <Authors>Github</Authors>
-    <TargetFrameworks>netstandard1.1;net451</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard1.1;net451</TargetFrameworks>
     <AssemblyName>Scientist</AssemblyName>
     <PackageId>Scientist</PackageId>
-     <Authors>GitHub, Scientist.net maintainers</Authors>
+    <Authors>GitHub, Scientist.net maintainers</Authors>
     <Description>Implementation of the Scientist library for .NET, inspired by the Ruby library from GitHub</Description>
     <PackageTags>scientist;refactoring</PackageTags>
     <PackageProjectUrl>http://github.com/scientistproject/Scientist.net</PackageProjectUrl>
@@ -34,13 +34,24 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.1' ">
-    <PackageReference Include="Microsoft.CSharp" Version="4.4.0" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
     <PackageReference Include="System.Collections" Version="4.3.0" />
     <PackageReference Include="System.Collections.Concurrent" Version="4.3.0" />
     <PackageReference Include="System.Linq" Version="4.3.0" />
-    <PackageReference Include="System.Runtime" Version="4.3.0" />
-    <PackageReference Include="System.Runtime.Extensions" Version="4.3.0" />
+    <PackageReference Include="System.Runtime" Version="4.3.1" />
+    <PackageReference Include="System.Runtime.Extensions" Version="4.3.1" />
+    <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
+    <PackageReference Include="System.Threading" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.1' ">
+    <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
+    <PackageReference Include="System.Collections" Version="4.3.0" />
+    <PackageReference Include="System.Collections.Concurrent" Version="4.3.0" />
+    <PackageReference Include="System.Linq" Version="4.3.0" />
+    <PackageReference Include="System.Runtime" Version="4.3.1" />
+    <PackageReference Include="System.Runtime.Extensions" Version="4.3.1" />
     <PackageReference Include="System.Runtime.InteropServices" Version="4.3.0" />
     <PackageReference Include="System.Threading" Version="4.3.0" />
   </ItemGroup>
