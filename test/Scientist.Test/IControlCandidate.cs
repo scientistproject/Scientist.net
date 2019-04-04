@@ -31,4 +31,9 @@ namespace UnitTests
         Task<T>  Candidate();
         void BeforeRun();
     }
+
+    public interface IControlCandidateTask<T, TClean> : IControlCandidateTask<T>
+    {
+        TClean Clean(T value);
+    }
 }

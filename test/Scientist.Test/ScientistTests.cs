@@ -661,7 +661,7 @@ public class TheScientistClass
             Assert.Equal(42, result);
             Assert.False(publishResults.Contexts.Any());
         }
-        
+
         [Fact]
         public void AddContextThrowsIfDuplicateKeyAdded()
         {
@@ -769,6 +769,36 @@ public class TheScientistClass
         }
 
         [Fact]
+        public async Task KeepingItCleanWithParallelTasks()
+        {
+            const int expectedResult = 42;
+            const string expectedCleanResult = "Forty Two";
+
+            var mock = Substitute.For<IControlCandidateTask<int, string>>();
+            mock.Control().Returns(expectedResult);
+            mock.Candidate().Returns(0);
+            mock.Clean(expectedResult).Returns(expectedCleanResult);
+
+            var result = await Scientist.ScienceAsync<int, string>(nameof(KeepingItCleanWithParallelTasks), experiment =>
+            {
+                experiment.Use(mock.Control);
+                experiment.Try(mock.Candidate);
+                experiment.Clean(mock.Clean);
+            });
+
+            Assert.Equal(expectedResult, result);
+
+            // Make sure that the observations aren't cleaned unless called explicitly.
+            mock.DidNotReceive().Clean(expectedResult);
+
+            Assert.Equal(
+                expectedCleanResult,
+                TestHelper.Results<int, string>(nameof(KeepingItCleanWithParallelTasks)).First().Control.CleanedValue);
+
+            mock.Received().Clean(expectedResult);
+        }
+
+        [Fact]
         public void ThrowsArgumentExceptionWhenConcurrentTasksInvalid()
         {
             var mock = Substitute.For<IControlCandidateTask<int>>();
@@ -860,7 +890,7 @@ public class TheScientistClass
 
             // Consolidate the returned values from the tasks
             var results = result.Observations.Select(x => x.Value);
-            
+
             // Assert correct number of batches
             Assert.Equal(expectedBatches, results.Select(x => x.Key).Distinct().Count());
 
