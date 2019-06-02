@@ -1,9 +1,10 @@
 # Scientist.NET
 
-A .NET Port of the [Scientist](https://github.com/github/scientist) library for carefully refactoring critical paths. 
+A .NET Port of the [Scientist](https://github.com/github/scientist) library for carefully refactoring critical paths.
 
 [![Build status](https://ci.appveyor.com/api/projects/status/b548cd5okkel3h4x/branch/master?svg=true)](https://ci.appveyor.com/project/shiftkey/scientist-net/branch/master)
 [![Gitter](https://badges.gitter.im/scientistproject/community.svg)](https://gitter.im/scientistproject/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Open Source Helpers](https://www.codetriage.com/haacked/scientist.net/badges/users.svg)](https://www.codetriage.com/haacked/scientist.net)
 
 To give it a twirl, use NuGet to install: `Install-Package Scientist`
 
@@ -165,7 +166,7 @@ public IUser GetUserByEmail(string emailAddress)
     {
         experiment.Use(() => OldApi.FindUserByEmail(emailAddress));
         experiment.Try(() => NewApi.GetUserByEmail(emailAddress));
-        
+
         experiment.Clean(user => user.Login);
     });
 }
@@ -181,10 +182,10 @@ public class MyResultPublisher : IResultPublisher
         // result.Control.Value = <IUser object>
         IUser user = (IUser)result.Control.Value;
         Console.WriteLine($"Login from raw object: {user.Login}");
-        
+
         // result.Control.CleanedValue = "user name"
         Console.WriteLine($"Login from cleaned object: {result.Control.CleanedValue}");
-        
+
         return Task.FromResult(0);
     }
 }
@@ -253,7 +254,7 @@ In cases where Scientist is used for production refactoring, for example, this e
 ```csharp
 await Scientist.ScienceAsync<int>(
 	"ExperimentName",
-	3, // number of tasks to run concurrently 
+	3, // number of tasks to run concurrently
 	experiment => {
         experiment.Use(async () => await StartRunningSomething(myData));
         experiment.Try(async () => await RunAtTheSameTimeAsTheControlMethod(myData));
@@ -270,7 +271,7 @@ When running your test suite, it's helpful to know that the experimental results
 To throw on mismatches:
 
 ```csharp
-Scientist.Science<int>("ExperimentN", experiment => 
+Scientist.Science<int>("ExperimentN", experiment =>
 {
     experiment.ThrowOnMismatches = true;
     // ...
