@@ -9,7 +9,7 @@ namespace GitHub
     /// </summary>
     public class Scientist : IScientist
     {
-        static readonly Lazy<Scientist> SharedScientist = new Lazy<Scientist>(CreateSharedInstance);
+        static readonly Lazy<Scientist> _sharedScientist = new Lazy<Scientist>(CreateSharedInstance);
         static Func<Task<bool>> _enabled = () => Task.FromResult(true);
         static IResultPublisher _sharedPublisher = new InMemoryResultPublisher();
         readonly IResultPublisher _resultPublisher;
@@ -42,7 +42,7 @@ namespace GitHub
 
             set
             {
-                if (SharedScientist.IsValueCreated)
+                if (_sharedScientist.IsValueCreated)
                 {
                     throw new InvalidOperationException($"The value of the {nameof(ResultPublisher)} property cannot be changed once an experiment has been run.");
                 }
@@ -93,7 +93,7 @@ namespace GitHub
         /// <param name="experiment">Experiment callback used to configure the experiment</param>
         /// <returns>The value of the experiment's control function.</returns>
         public static T Science<T>(string name, Action<IExperiment<T>> experiment) =>
-            SharedScientist.Value.Experiment(name, experiment);
+            _sharedScientist.Value.Experiment(name, experiment);
 
         /// <summary>
         /// Conduct a synchronous experiment
@@ -104,7 +104,7 @@ namespace GitHub
         /// <param name="experiment">Experiment callback used to configure the experiment</param>
         /// <returns>The value of the experiment's control function.</returns>
         public static T Science<T, TClean>(string name, Action<IExperiment<T, TClean>> experiment) =>
-            SharedScientist.Value.Experiment(name, experiment);
+            _sharedScientist.Value.Experiment(name, experiment);
 
         /// <summary>
         /// Conduct an asynchronous experiment
@@ -114,7 +114,7 @@ namespace GitHub
         /// <param name="experiment">Experiment callback used to configure the experiment</param>
         /// <returns>The value of the experiment's control function.</returns>
         public static Task<T> ScienceAsync<T>(string name, Action<IExperimentAsync<T>> experiment) =>
-            SharedScientist.Value.ExperimentAsync(name, experiment);
+            _sharedScientist.Value.ExperimentAsync(name, experiment);
 
         /// <summary>
         /// Conduct an asynchronous experiment
@@ -125,7 +125,7 @@ namespace GitHub
         /// <param name="experiment">Experiment callback used to configure the experiment</param>
         /// <returns>The value of the experiment's control function.</returns>
         public static Task<T> ScienceAsync<T>(string name, int concurrentTasks, Action<IExperimentAsync<T>> experiment) =>
-            SharedScientist.Value.ExperimentAsync(name, concurrentTasks, experiment);
+            _sharedScientist.Value.ExperimentAsync(name, concurrentTasks, experiment);
 
         /// <summary>
         /// Conduct an asynchronous experiment
@@ -136,7 +136,7 @@ namespace GitHub
         /// <param name="experiment">Experiment callback used to configure the experiment</param>
         /// <returns>The value of the experiment's control function.</returns>
         public static Task<T> ScienceAsync<T, TClean>(string name, Action<IExperimentAsync<T, TClean>> experiment) =>
-            SharedScientist.Value.ExperimentAsync(name, experiment);
+            _sharedScientist.Value.ExperimentAsync(name, experiment);
 
         /// <summary>
         /// Conduct an asynchronous experiment
@@ -148,7 +148,7 @@ namespace GitHub
         /// <param name="experiment">Experiment callback used to configure the experiment</param>
         /// <returns>The value of the experiment's control function.</returns>
         public static Task<T> ScienceAsync<T, TClean>(string name, int concurrentTasks, Action<IExperimentAsync<T, TClean>> experiment) =>
-            SharedScientist.Value.ExperimentAsync(name, concurrentTasks, experiment);
+            _sharedScientist.Value.ExperimentAsync(name, concurrentTasks, experiment);
 
         /// <summary>
         /// Conduct a synchronous experiment
