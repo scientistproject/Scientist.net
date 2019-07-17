@@ -765,6 +765,32 @@ public class TheScientistClass
         }
 
         [Fact]
+        public void ScientistEnableControl()
+        {
+            const int expectedResult = 42;
+
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(expectedResult);
+            mock.Candidate().Returns(0);
+
+            var settings = Substitute.For<IScientistSettings>();
+            settings.EnableControl().Returns(Task.FromResult(true));
+            using (Swap.EnableControl(settings.EnableControl))
+            {
+                var result = Scientist.Science<int>(nameof(ScientistEnableControl), experiment =>
+                {
+                    experiment.Use(mock.Control);
+                    experiment.Try(mock.Candidate);
+                });
+
+                Assert.Equal(expectedResult, result);
+                mock.Received().Control();
+                mock.Received().Candidate();
+                settings.Received().EnableControl();
+            }
+        }
+
+        [Fact]
         public void KeepingItClean()
         {
             const int expectedResult = 42;
