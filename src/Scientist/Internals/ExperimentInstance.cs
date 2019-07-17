@@ -66,7 +66,7 @@ namespace GitHub.Internals
                 return await Behaviors[0].Behavior();
             }
 
-            if (!await ShouldControlRun())
+            if (!await ReturnFirstCandidate())
             {
                 return await Behaviors[1].Behavior();
             }
@@ -177,9 +177,9 @@ namespace GitHub.Internals
         }
 
         /// <summary>
-        /// Determine whether or not the Control should run.
+        /// Determine whether or not to return the result of the first candidate.
         /// </summary>
-        async Task<bool> ShouldControlRun()
+        async Task<bool> ReturnFirstCandidate()
         {
             try
             {
