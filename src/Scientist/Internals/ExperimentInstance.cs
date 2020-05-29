@@ -58,15 +58,15 @@ namespace GitHub.Internals
         public async Task<T> Run()
         {
             // Determine if experiments should be run.
-            if (!await ShouldExperimentRun())
+            if (!await ShouldExperimentRun().ConfigureAwait(false))
             {
                 // Run the control behavior.
-                return await Behaviors[0].Behavior();
+                return await Behaviors[0].Behavior().ConfigureAwait(false);
             }
 
             if (BeforeRun != null)
             {
-                await BeforeRun();
+                await BeforeRun().ConfigureAwait(false);
             }
 
             // Randomize ordering...
@@ -92,7 +92,7 @@ namespace GitHub.Internals
                 });
 
                 // Collect the observations
-                observations.AddRange(await Task.WhenAll(tasks));
+                observations.AddRange(await Task.WhenAll(tasks).ConfigureAwait(false));
             }
 
             var controlObservation = observations.FirstOrDefault(o => o.Name == ControlExperimentName);
@@ -101,7 +101,7 @@ namespace GitHub.Internals
 
             try
             {
-                await ResultPublisher.Publish(result);
+                await ResultPublisher.Publish(result).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -122,7 +122,7 @@ namespace GitHub.Internals
         /// </summary>
         async Task<bool> RunIfAllows()
         {
-            try { return await RunIf(); }
+            try { return await RunIf().ConfigureAwait(false); }
             catch (Exception ex)
             {
                 Thrown(Operation.RunIf, ex);
@@ -140,7 +140,7 @@ namespace GitHub.Internals
             try
             {
                 //TODO: Does this really need to be async? We could run sync and return on first true
-                var results = await Task.WhenAll(Ignores.Select(i => i(control.Value, candidate.Value)));
+                var results = await Task.WhenAll(Ignores.Select(i => i(control.Value, candidate.Value))).ConfigureAwait(false);
 
                 return results.Any(i => i);
             }
@@ -160,7 +160,7 @@ namespace GitHub.Internals
             {
                 // Only let the experiment run if at least one candidate (> 1 behaviors) is 
                 // included.  The control is always included behaviors count.
-                return Behaviors.Count > 1 && await Enabled() && await RunIfAllows();
+                return Behaviors.Count > 1 && await Enabled().ConfigureAwait(false) && await RunIfAllows().ConfigureAwait(false);
             }
             catch (Exception ex)
             {

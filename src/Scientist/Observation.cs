@@ -105,7 +105,7 @@ namespace GitHub
         {
             Observation<T, TClean> observation = new Observation<T, TClean>(name, thrown, cleaner);
 
-            await observation.Run(block);
+            await observation.Run(block).ConfigureAwait(false);
 
             return observation;
         }
@@ -120,7 +120,7 @@ namespace GitHub
             var start = Stopwatch.GetTimestamp();
             try
             {
-                Value = await block();
+                Value = await block().ConfigureAwait(false);
             }
             catch (AggregateException ex)
             {
