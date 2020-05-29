@@ -197,7 +197,7 @@ namespace GitHub
 
             protected override async Task<bool> IsEnabledAsync()
             {
-                return await _enabled();
+                return await _enabled().ConfigureAwait(false);
             }
         }
     }
