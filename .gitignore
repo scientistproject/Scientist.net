@@ -126,3 +126,5 @@ artifacts/
 *.scc
 
 BenchmarkDotNet.Artifacts
+
+**/.vs
