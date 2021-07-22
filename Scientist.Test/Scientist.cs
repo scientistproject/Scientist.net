@@ -3,13 +3,16 @@ using Xunit;
 
 namespace Scientist.Test
 {
-    public class Scientist
+    public class ScientistTest
     {
         [Fact]
-        public void DoesntRunCandidate()
+        public void IsEven_EvenNumber_ExpectTrue()
         {
-            const int expectedResult = 42;
+            const int testData = 42;
 
+            var isEven = Scientist.IsEven(testData);
+
+            Assert.True(isEven);
         }
     }
 }
