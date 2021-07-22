@@ -11,20 +11,26 @@ assignees: ''
 A clear and concise description of what the bug is.
 
 **To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+Please point us to a minimalistic repro project hosted in a GitHub repo.
+For a repo project, create a new project using the template of your your choice, apply the minimum required code to result in the issue you're observing.
+
+We will close this issue if:
+- the repro project you share with us is complex
+- if we will not be able to reproduce the behavior you're reporting
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
+### Exceptions (if any)
+Include the exception you get when facing this issue
+
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
-**Scientist.net version**
-e.g. 2.0.0
+### Further technical details
+- Scientist.net version
+- Include the output of `dotnet --info`
+- The IDE (VS / VS Code/ VS4Mac) you're running on, and its version
 
 **Additional context**
 Add any other context about the problem here.
