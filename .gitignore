@@ -128,3 +128,4 @@ artifacts/
 BenchmarkDotNet.Artifacts
 
 **/.vs
+/Scientist.Test/coverage.json
