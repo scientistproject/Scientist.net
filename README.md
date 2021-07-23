@@ -2,7 +2,7 @@
 
 A .NET Port of the [Scientist](https://github.com/github/scientist) library for carefully refactoring critical paths. 
 
-[![3.0.0 Unit Test](https://github.com/marblekirby/Scientist.net/actions/workflows/ver3-unit-test.yml/badge.svg?branch=3.0.0)](https://github.com/marblekirby/Scientist.net/actions/workflows/ver3build.yml)
+[![3.0.0 Unit Test](https://github.com/marblekirby/Scientist.net/actions/workflows/ver3-unit-test.yml/badge.svg?branch=3.0.0)](https://github.com/marblekirby/Scientist.net/actions/workflows/ver3-unit-test.yml)
 [![Gitter](https://badges.gitter.im/scientistproject/community.svg)](https://gitter.im/scientistproject/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 To give it a twirl, use NuGet to install: `Install-Package Scientist`
