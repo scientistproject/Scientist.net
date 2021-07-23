@@ -1,4 +1,4 @@
-name: 3.0.0 Build
+name: 3.0.0 Unit Test
 
 on:
   workflow_dispatch:
