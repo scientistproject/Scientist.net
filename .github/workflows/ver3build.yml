@@ -1,10 +1,11 @@
-name: .NET Build
+name: 3.0.0 Build
 
 on:
+  workflow_dispatch:
   push:
-    branches: [ master ]
+    branches: [ 3.0.0 ]
   pull_request:
-    branches: [ master ]
+    branches: [ 3.0.0 ]
 
 jobs:
   build:
