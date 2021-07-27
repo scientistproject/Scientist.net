@@ -60,11 +60,7 @@ representative at an online or offline event.
 ## Enforcement
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leaders responsible for enforcement at
-[INSERT CONTACT METHOD].
-
-> TODO
-
+reported to the community leaders responsible for enforcement on [Gitter](https://gitter.im/scientistproject/community).
 
 All complaints will be reviewed and investigated promptly and fairly.
 
