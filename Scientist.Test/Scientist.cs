@@ -3,13 +3,12 @@ using Xunit;
 
 namespace Scientist.Test
 {
-    public class Scientist
+    public class ScientistTest
     {
         [Fact]
-        public void DoesntRunCandidate()
+        public void Test_Method()
         {
-            const int expectedResult = 42;
-
+         
         }
     }
 }
