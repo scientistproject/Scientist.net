@@ -739,6 +739,48 @@ public class TheScientistClass
         }
 
         [Fact]
+        public void ScientistDisablesAllExperiments()
+        {
+            const int expectedResult = 42;
+
+            var mock = Substitute.For<IControlCandidate<int>>();
+            mock.Control().Returns(expectedResult);
+            mock.Candidate().Returns(0);
+
+            var settings = Substitute.For<IScientistSettings>();
+            settings.Enabled().Returns(Task.FromResult(false));
+
+            var instanceMock = Substitute.For<IControlCandidate<int>>();
+            instanceMock.Control().Returns(expectedResult);
+            instanceMock.Candidate().Returns(0);
+
+            using (Swap.Enabled(settings.Enabled))
+            {
+
+                var result = Scientist.Science<int>(nameof(ScientistDisablesExperiment), experiment =>
+                {
+                    experiment.Use(mock.Control);
+                    experiment.Try(mock.Candidate);
+                });
+
+                mock.DidNotReceive().Candidate();
+                mock.Received().Control();
+                settings.Received().Enabled();
+
+                var scientist = new Scientist(Substitute.For<IResultPublisher>());
+                scientist.Experiment<int>(nameof(ScientistDisablesAllExperiments), experiment =>
+                {
+                    experiment.Use(instanceMock.Control);
+                    experiment.Try(instanceMock.Candidate);
+                });
+
+                instanceMock.DidNotReceive().Candidate();
+                instanceMock.Received().Control();
+                settings.Received().Enabled();
+            }
+        }
+
+        [Fact]
         public void KeepingItClean()
         {
             const int expectedResult = 42;
