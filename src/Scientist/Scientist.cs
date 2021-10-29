@@ -10,8 +10,11 @@ namespace GitHub
     public class Scientist : IScientist
     {
         static readonly Task<bool> EnabledTask = Task.FromResult(true);
+        static readonly Task<bool> IsEnabledControl = Task.FromResult(true);
+        
         static readonly Lazy<Scientist> _sharedScientist = new Lazy<Scientist>(CreateSharedInstance);
         static Func<Task<bool>> _enabled = () => EnabledTask;
+        static Func<Task<bool>> _enabledControl = () => IsEnabledControl;
         static IResultPublisher _sharedPublisher = new InMemoryResultPublisher();
         readonly IResultPublisher _resultPublisher;
 
@@ -58,7 +61,7 @@ namespace GitHub
         {
             // TODO: Maybe we could automatically generate the name if none is provided using the calling method name. We'd have to 
             // make sure we don't inline this method though.
-            var experimentBuilder = new Experiment<T, TClean>(name, IsEnabledAsync, concurrentTasks, _resultPublisher);
+            var experimentBuilder = new Experiment<T, TClean>(name, IsEnabledAsync, IsEnabledControlAsync ,concurrentTasks, _resultPublisher);
 
             experiment(experimentBuilder);
 
@@ -67,7 +70,7 @@ namespace GitHub
 
         Experiment<T, TClean> Build<T, TClean>(string name, int concurrentTasks, Action<IExperimentAsync<T, TClean>> experiment)
         {
-            var builder = new Experiment<T, TClean>(name, IsEnabledAsync, concurrentTasks, _resultPublisher);
+            var builder = new Experiment<T, TClean>(name, IsEnabledAsync, IsEnabledControlAsync, concurrentTasks, _resultPublisher);
 
             experiment(builder);
 
@@ -85,6 +88,15 @@ namespace GitHub
         /// </summary>
         /// <param name="enabled">A delegate returning an asynchronous task determining if an experiment should run.</param>
         public static void Enabled(Func<Task<bool>> enabled) => _enabled = enabled;
+
+
+        public static void EnabledControl(Func<bool> enabledControl) => EnabledControl(() => Task.FromResult(enabledControl()));
+
+        /// <summary>
+        /// Determines if the control method should be enabled.
+        /// </summary>
+        /// <param name="enabled">A delegate returning an asynchronous task determining if the control method should run.</param>
+        public static void EnabledControl(Func<Task<bool>> enabledControl) => _enabledControl = enabledControl;
 
         /// <summary>
         /// Conduct a synchronous experiment
@@ -185,6 +197,8 @@ namespace GitHub
         /// </remarks>
         protected virtual Task<bool> IsEnabledAsync() => EnabledTask;
 
+        protected virtual Task<bool> IsEnabledControlAsync() => IsEnabledControl;
+
         /// <summary>
         /// This class acts as a proxy to allow the static methods to set the state on an instance of Scientist.
         /// </summary>
@@ -198,6 +212,11 @@ namespace GitHub
             protected override async Task<bool> IsEnabledAsync()
             {
                 return await _enabled().ConfigureAwait(false);
+            }
+
+            protected override async Task<bool> IsEnabledControlAsync()
+            {
+                return await _enabledControl();
             }
         }
     }

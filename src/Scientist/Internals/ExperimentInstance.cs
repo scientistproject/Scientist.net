@@ -22,6 +22,7 @@ namespace GitHub.Internals
         internal readonly Func<T, T, bool> Comparator;
         internal readonly Func<Task> BeforeRun;
         internal readonly Func<Task<bool>> Enabled;
+        internal readonly Func<Task<bool>> EnableControl;
         internal readonly Func<Task<bool>> RunIf;
         internal readonly IEnumerable<Func<T, T, Task<bool>>> Ignores;
         internal readonly Dictionary<string, dynamic> Contexts;
@@ -48,6 +49,7 @@ namespace GitHub.Internals
             ConcurrentTasks = settings.ConcurrentTasks;
             Contexts = settings.Contexts;
             Enabled = settings.Enabled;
+            EnableControl = settings.EnableControl;
             RunIf = settings.RunIf;
             Ignores = settings.Ignores;
             Thrown = settings.Thrown;
@@ -62,6 +64,11 @@ namespace GitHub.Internals
             {
                 // Run the control behavior.
                 return await Behaviors[0].Behavior().ConfigureAwait(false);
+            }
+
+            if (!await ReturnFirstCandidate())
+            {
+                return await Behaviors[1].Behavior();
             }
 
             if (BeforeRun != null)
@@ -161,6 +168,24 @@ namespace GitHub.Internals
                 // Only let the experiment run if at least one candidate (> 1 behaviors) is 
                 // included.  The control is always included behaviors count.
                 return Behaviors.Count > 1 && await Enabled().ConfigureAwait(false) && await RunIfAllows().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Thrown(Operation.Enabled, ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Determine whether or not to return the result of the first candidate.
+        /// </summary>
+        async Task<bool> ReturnFirstCandidate()
+        {
+            try
+            {
+                // Only let the experiment run if at least one candidate (> 1 behaviors) is 
+                // included.  The control is always included behaviors count.
+                return await Enabled() && await RunIfAllows() && await EnableControl();
             }
             catch (Exception ex)
             {
