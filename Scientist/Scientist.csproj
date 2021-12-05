@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
+    <PackageProjectUrl>http://github.com/scientistproject/Scientist.net</PackageProjectUrl>
+    <RepositoryUrl>http://github.com/scientistproject/Scientist.net</RepositoryUrl>
   </PropertyGroup>
 
 </Project>

@@ -5,7 +5,9 @@ VisualStudioVersion = 17.0.31512.422
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scientist", "Scientist\Scientist.csproj", "{8794D5E1-EC60-48CD-A834-63B3531D90B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scientist.Test", "Scientist.Test\Scientist.Test.csproj", "{8087793F-0EC4-4085-9C18-91D991FFE3DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Scientist.Test", "Scientist.Test\Scientist.Test.csproj", "{8087793F-0EC4-4085-9C18-91D991FFE3DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scientist.Benchmark", "Scientist.Benchmark\Scientist.Benchmark.csproj", "{122DCE6F-C488-4533-99B2-F7B67A3026B6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{8087793F-0EC4-4085-9C18-91D991FFE3DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8087793F-0EC4-4085-9C18-91D991FFE3DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8087793F-0EC4-4085-9C18-91D991FFE3DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{122DCE6F-C488-4533-99B2-F7B67A3026B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{122DCE6F-C488-4533-99B2-F7B67A3026B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{122DCE6F-C488-4533-99B2-F7B67A3026B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{122DCE6F-C488-4533-99B2-F7B67A3026B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
