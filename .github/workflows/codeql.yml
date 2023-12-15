@@ -4,7 +4,6 @@ on:
   push:
     branches: [3.0.0]
   pull_request:
-    # The branches below must be a subset of the branches above
     branches: [3.0.0]
   schedule:
     - cron: "0 0 * * 1"
@@ -24,11 +23,10 @@ jobs:
         language: ["csharp"]
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
+        uses: github/codeql-action/init@v3
         with:
           languages: ${{ matrix.language }}
 
@@ -36,12 +34,17 @@ jobs:
       # - name: Autobuild
       #   uses: github/codeql-action/autobuild@v1
 
-      - uses: actions/setup-dotnet@v1
+      - uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: "6.0.x"
-          include-prerelease: true
+          dotnet-version: 8.x
+          cache: true
+
+      - run: dotnet restore --locked-mode
+
       - run: |
           dotnet build /p:UseSharedCompilation=false
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v1
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
