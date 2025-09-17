@@ -95,5 +95,7 @@ Please refer to [Conventional commits](https://www.conventionalcommits.org/en/v1
 
 ### Running actions locally
 
-[nektos/act](https://github.com/nektos/act)
-`act workflow_dispatch -e payload.json`
+- You will need follow the instructions and install [nektos/act](https://github.com/nektos/act)
+
+Running the release workflow locally
+`act push -e ./internal/act-tag-payload.json`

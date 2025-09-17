@@ -1,3 +1,4 @@
+# This runs when a tag gets pushed matching the format below
 name: Release
 
 on:
