@@ -1,3 +1,9 @@
+### New in 2.0.1
+
+**Fixes**
+
+-  Resolve deadlock issue on async experiments when caller uses sync over async - #131  
+
 ### New in 2.0.0 (Released 2018/06/05)
 
 **Features**

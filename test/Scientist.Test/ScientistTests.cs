@@ -142,9 +142,11 @@ public class TheScientistClass
         public void EnsureNullGuardIsWorking()
         {
 #if !DEBUG
-            Assert.Throws<ArgumentNullException>(() =>
+           var ex = Assert.Throws<AggregateException>(() =>
                 Scientist.Science<object>(null, _ => { })
             );
+
+           Assert.IsType<NullReferenceException>(ex.InnerException);             
 #endif
         }
 
@@ -626,7 +628,7 @@ public class TheScientistClass
             {
                 e.Use(mock.Control);
                 e.Try(mock.Candidate);
-                e.AddContext("test", new {Id = 1, Name = "name", Date = testTime});
+                e.AddContext("test", new { Id = 1, Name = "name", Date = testTime });
             });
 
             var publishResults = TestHelper.Results<int>(experimentName).First();
@@ -799,26 +801,25 @@ public class TheScientistClass
         }
 
         [Fact]
-        public void ThrowsArgumentExceptionWhenConcurrentTasksInvalid()
+        public async Task ThrowsArgumentExceptionWhenConcurrentTasksInvalid()
         {
             var mock = Substitute.For<IControlCandidateTask<int>>();
             mock.Control().Returns(x => 1);
             mock.Candidate().Returns(x => 2);
             const string experimentName = nameof(ThrowsArgumentExceptionWhenConcurrentTasksInvalid);
 
-            var ex = Assert.Throws<ArgumentException>(() =>
-            {
-                Scientist.ScienceAsync<int>(experimentName, 0, experiment =>
+            var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
+             Scientist.ScienceAsync<int>(experimentName, 0, experiment =>
                 {
                     experiment.Use(mock.Control);
                     experiment.Try(mock.Candidate);
-                });
-            });
+                })
+            );
 
             Exception baseException = ex.GetBaseException();
             Assert.IsType<ArgumentException>(baseException);
-            mock.DidNotReceive().Control();
-            mock.DidNotReceive().Candidate();
+            await mock.DidNotReceive().Control();
+            await mock.DidNotReceive().Candidate();
         }
 
         [Theory,
@@ -841,7 +842,7 @@ public class TheScientistClass
             int batch = 1;
 
             // Our test task
-            var task = new Func<Task<KeyValuePair<int, int>>>(() => 
+            var task = new Func<Task<KeyValuePair<int, int>>>(() =>
             {
                 return Task.Run(() =>
                 {

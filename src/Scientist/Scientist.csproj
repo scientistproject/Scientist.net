@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <Description>scientist</Description>
-    <VersionPrefix>2.0.0</VersionPrefix>
     <Authors>Github</Authors>
     <TargetFrameworks>netstandard2.0;netstandard1.1;net451</TargetFrameworks>
     <AssemblyName>Scientist</AssemblyName>
