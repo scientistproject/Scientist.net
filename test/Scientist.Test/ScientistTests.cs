@@ -809,11 +809,11 @@ public class TheScientistClass
             const string experimentName = nameof(ThrowsArgumentExceptionWhenConcurrentTasksInvalid);
 
             var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
-             Scientist.ScienceAsync<int>(experimentName, 0, experiment =>
-                {
-                    experiment.Use(mock.Control);
-                    experiment.Try(mock.Candidate);
-                })
+                Scientist.ScienceAsync<int>(experimentName, 0, experiment =>
+                    {
+                        experiment.Use(mock.Control);
+                        experiment.Try(mock.Candidate);
+                    })
             );
 
             Exception baseException = ex.GetBaseException();

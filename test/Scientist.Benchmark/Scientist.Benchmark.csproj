@@ -5,6 +5,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>GitHub</RootNamespace>
     <TargetFrameworks>net8.0</TargetFrameworks>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Scientist\Scientist.csproj" />
