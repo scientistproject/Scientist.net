@@ -1,5 +1,9 @@
 ### New in 2.0.1
 
+**Features**
+
+- Added targeting for .NET Standard 2.0
+
 **Fixes**
 
 -  Resolve deadlock issue on async experiments when caller uses sync over async - #131  
