@@ -39,7 +39,7 @@ jobs:
     - name: Publish to GitHub
       working-directory: artifacts
       run: |
-        dotnet nuget add source --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Scientist/index.json"
+        dotnet nuget add source --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/scientistproject/index.json"
         dotnet nuget push --source github *.nupkg
 
     - name: Publish to NuGet

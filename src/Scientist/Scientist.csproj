@@ -11,11 +11,7 @@
     <PackageTags>scientist;refactoring</PackageTags>
     <PackageProjectUrl>http://github.com/scientistproject/Scientist.net</PackageProjectUrl>
     <PackageIcon>scientist-logo-64x64.png</PackageIcon>
-    <PackageReleaseNotes>
-      Features**
-      - Make IoC/DI friendlier - #108 via @martincostello
-      - Add `FireAndForgetResultPublisher`. Wrap an existing `IResultPublisher` to delegate publishing to another thread and avoid publishing delays when running experiments - #83 via @thematthopkins and @joncloud
-    </PackageReleaseNotes>
+    <PackageReleaseNotes>https://github.com/scientistproject/Scientist.net/blob/master/ReleaseNotes.md</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <IncludeSymbols></IncludeSymbols>
