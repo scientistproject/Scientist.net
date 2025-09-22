@@ -1,19 +1,23 @@
 # Contributing to Scientist.NET
 
 ## Table of Contents:
-- [Code of Conduct](#code-of-conduct)
-- [I just have a question](#i-just-have-a-question)
-- [How can i contribute?](#how-can-i-contribute)
-  - [Reporting bugs](#reporting-bugs)
-  - [Suggesting enhancements](#suggesting-enhancements)
-  - [Your first code contribution](#your-first-code-contribution)
-  - [Pull Requests](#pull-requests)
-- [Styleguides](#styleguides)
-  - [Git Commit Messages](#git-commit-messages)
-- [Labels](#labels)
-  - [Issue labels](#issue-labels)
-  - [Topic category labels](#topic-category-labels)
-  - [Pull request labels](#pull-request-labels)
+- [Contributing to Scientist.NET](#contributing-to-scientistnet)
+  - [Table of Contents:](#table-of-contents)
+  - [Code of conduct](#code-of-conduct)
+  - [I just have a question](#i-just-have-a-question)
+  - [How can i contribute?](#how-can-i-contribute)
+    - [Reporting bugs](#reporting-bugs)
+    - [Suggesting enhancements](#suggesting-enhancements)
+    - [Your first code contribution](#your-first-code-contribution)
+    - [Pull Requests](#pull-requests)
+  - [Styleguides](#styleguides)
+    - [Git commit messages](#git-commit-messages)
+  - [Labels](#labels)
+    - [Issue labels](#issue-labels)
+    - [Topic category labels](#topic-category-labels)
+    - [Pull request labels](#pull-request-labels)
+  - [GitHub Actions](#github-actions)
+    - [Running actions locally](#running-actions-locally)
 
 ## Code of conduct
 
@@ -56,32 +60,42 @@ While the prerequisites above must be satisfied prior to having your pull reques
 ### Git commit messages
 Please refer to [Conventional commits](https://www.conventionalcommits.org/en/v1.0.0/)
 
-| Type | Usage | Version increment |
-| --- | --- | --- |
-| fix(): | A commit which fixes or patches a bug | x.x.1|
-| feat(): | A commit which introduces a new feature | x.1.x|
-| BREAKING CHANGE: | A commit which has BREAKING CHANGE: in the footer | 1.x.x |
+| Type             | Usage                                             | Version increment |
+| ---------------- | ------------------------------------------------- | ----------------- |
+| fix():           | A commit which fixes or patches a bug             | x.x.1             |
+| feat():          | A commit which introduces a new feature           | x.1.x             |
+| BREAKING CHANGE: | A commit which has BREAKING CHANGE: in the footer | 1.x.x             |
 
 ## Labels
 
 ### Issue labels
-| Label name | Search | Description |
-| --- | --- | --- |
+| Label name         | Search                                                                                                       | Description                                                                                       |
+| ------------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
 | `good first issue` | [search](https://github.com/scientistproject/Scientist.net/issues?q=is:issue+is:open+label:good+first+issue) | Less complex issues which would be good first issues to work on for users who want to contribute. |
-| `help wanted` | [search](https://github.com/scientistproject/Scientist.net/issues?q=is:issue+is:open+label:help+wanted) | The would appreciate help from the community in resolving these issues. |
+| `help wanted`      | [search](https://github.com/scientistproject/Scientist.net/issues?q=is:issue+is:open+label:help+wanted)      | The would appreciate help from the community in resolving these issues.                           |
 
 ### Topic category labels
-| Label name | Search | Description |
-| --- | --- | --- |
-| `documentation` | [search](https://github.com/scientistproject/Scientist.net/issues?q=is:issue+is:open+label:) | Related to any type of documentation. |
-| `performance` | [search](https://github.com/scientistproject/Scientist.net/issues?q=is:issue+is:open+label:performance) | Related to performance. |
-| `security` | [search](https://github.com/scientistproject/Scientist.net/issues?q=is:issue+is:open+label:security) | Related to security. |
+| Label name      | Search                                                                                                  | Description                           |
+| --------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `documentation` | [search](https://github.com/scientistproject/Scientist.net/issues?q=is:issue+is:open+label:)            | Related to any type of documentation. |
+| `performance`   | [search](https://github.com/scientistproject/Scientist.net/issues?q=is:issue+is:open+label:performance) | Related to performance.               |
+| `security`      | [search](https://github.com/scientistproject/Scientist.net/issues?q=is:issue+is:open+label:security)    | Related to security.                  |
 
 ### Pull request labels
-| Label name | Search | Description |
-| --- | --- | --- |
-| `work-in-progress` | [search](https://github.com/scientistproject/Scientist.net/issues?q=is:issue+is:open+label:work-in-progress) | Pull requests which are still being worked on, more changes will follow. |
-| `needs-review` | [search](https://github.com/scientistproject/Scientist.net/issues?q=is:issue+is:open+label:needs-review) | Pull requests which need code review, and approval from maintainers. |
-| `under-review` | [search](https://github.com/scientistproject/Scientist.net/issues?q=is:issue+is:open+label:under-review) | Pull requests being reviewed by maintainers. |
+| Label name         | Search                                                                                                       | Description                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| `work-in-progress` | [search](https://github.com/scientistproject/Scientist.net/issues?q=is:issue+is:open+label:work-in-progress) | Pull requests which are still being worked on, more changes will follow.                 |
+| `needs-review`     | [search](https://github.com/scientistproject/Scientist.net/issues?q=is:issue+is:open+label:needs-review)     | Pull requests which need code review, and approval from maintainers.                     |
+| `under-review`     | [search](https://github.com/scientistproject/Scientist.net/issues?q=is:issue+is:open+label:under-review)     | Pull requests being reviewed by maintainers.                                             |
 | `requires-changes` | [search](https://github.com/scientistproject/Scientist.net/issues?q=is:issue+is:open+label:requires-changes) | Pull requests which need to be updated based on review comments and then reviewed again. |
-| `needs-testing` | [search](https://github.com/scientistproject/Scientist.net/issues?q=is:issue+is:open+label:needs-testing) | Pull requests which need manual testing. |
+| `needs-testing`    | [search](https://github.com/scientistproject/Scientist.net/issues?q=is:issue+is:open+label:needs-testing)    | Pull requests which need manual testing.                                                 |
+
+
+## GitHub Actions
+
+### Running actions locally
+
+- You will need follow the instructions and install [nektos/act](https://github.com/nektos/act)
+
+Running the release workflow locally
+`act push -e ./internal/act-tag-payload.json`

@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Benchmarks for scientist</Description>
+    <IsPackable>false</IsPackable>
     <OutputType>Exe</OutputType>
     <RootNamespace>GitHub</RootNamespace>
-    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net8.0</TargetFrameworks>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Scientist\Scientist.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" Version="0.11.5" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.15.2" />
   </ItemGroup>
 </Project>
