@@ -1,4 +1,4 @@
-### New in 2.0.1
+### New in 2.1.0
 
 **Features**
 
