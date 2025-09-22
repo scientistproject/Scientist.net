@@ -9,9 +9,8 @@ namespace GitHub
     /// </summary>
     public class Scientist : IScientist
     {
-        static readonly Task<bool> EnabledTask = Task.FromResult(true);
         static readonly Lazy<Scientist> _sharedScientist = new Lazy<Scientist>(CreateSharedInstance);
-        static Func<Task<bool>> _enabled = () => EnabledTask;
+        static Func<Task<bool>> _enabled = () => Task.FromResult(true);
         static IResultPublisher _sharedPublisher = new InMemoryResultPublisher();
         readonly IResultPublisher _resultPublisher;
 
@@ -52,7 +51,7 @@ namespace GitHub
             }
         }
 
-        static Scientist CreateSharedInstance() => new SharedScientist(ResultPublisher);
+        static Scientist CreateSharedInstance() => new Scientist(ResultPublisher);
 
         Experiment<T, TClean> Build<T, TClean>(string name, int concurrentTasks, Action<IExperiment<T, TClean>> experiment)
         {
@@ -183,22 +182,6 @@ namespace GitHub
         /// <remarks>
         /// Override this method to change the default implementation which always returns <see langword="true"/>.
         /// </remarks>
-        protected virtual Task<bool> IsEnabledAsync() => EnabledTask;
-
-        /// <summary>
-        /// This class acts as a proxy to allow the static methods to set the state on an instance of Scientist.
-        /// </summary>
-        private sealed class SharedScientist : Scientist
-        {
-            internal SharedScientist(IResultPublisher resultPublisher)
-                : base(resultPublisher)
-            {
-            }
-
-            protected override async Task<bool> IsEnabledAsync()
-            {
-                return await _enabled().ConfigureAwait(false);
-            }
-        }
+        protected virtual Task<bool> IsEnabledAsync() => _enabled();
     }
 }
