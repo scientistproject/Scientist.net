@@ -10,7 +10,10 @@ env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
 
 jobs:
-  build:
+  test:
+    permissions:
+      contents: read
+
     strategy:
       fail-fast: false
       matrix:

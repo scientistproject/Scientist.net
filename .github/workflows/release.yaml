@@ -11,6 +11,10 @@ env:
 
 jobs:
   build:
+    permissions:
+      contents: read
+      packages: write
+
     runs-on: windows-latest
 
     steps:
