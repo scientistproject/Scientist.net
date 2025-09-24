@@ -29,7 +29,7 @@ jobs:
         cache-dependency-path: subdir/packages.lock.json
 
     - name: Restore
-      run: dotnet restore --locked-mode
+      run: dotnet restore
 
     - name: Build
       run: dotnet build --configuration Release --no-restore
