@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+#if !NET6_0_OR_GREATER
 
-namespace GitHub.Internals.Extensions
+using System.Collections.Generic;
+
+namespace System.Linq
 {
     internal static class LinqExtensionMethods
     {
@@ -22,3 +22,5 @@ namespace GitHub.Internals.Extensions
         }
     }
 }
+
+#endif

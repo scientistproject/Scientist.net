@@ -2,7 +2,7 @@
 
 **Features**
 
-- Added targeting for .NET Standard 2.0
+- Added targeting for .NET Standard 2.0, .NET 6 and .NET 8
 
 **Fixes**
 
