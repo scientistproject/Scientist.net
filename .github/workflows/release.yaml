@@ -1,4 +1,3 @@
-# This runs when a tag gets pushed matching the format below
 name: Release
 
 on:
@@ -12,7 +11,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
     - uses: actions/checkout@v5
@@ -23,24 +22,25 @@ jobs:
       uses: actions/setup-dotnet@v5
       with:
         dotnet-version: 8.0.x
+        cache-dependency-path: subdir/packages.lock.json
 
     - name: Restore
-      run: dotnet restore
+      run: dotnet restore --locked-mode
 
     - name: Build
       run: dotnet build --configuration Release --no-restore
       
     - name: Test
-      run: dotnet test --configuration Release --no-build --verbosity normal
+      run: dotnet test --configuration Release --no-build --no-restore --verbosity normal
 
     - name: Pack
-      run: dotnet pack --configuration Release -p:PackageVersion=${{ github.ref_name }} --output artifacts/
+      run: dotnet pack --no-build --no-restore --configuration Release -p:PackageVersion=${{ github.ref_name }} --output artifacts/
 
     - name: Publish to GitHub
       working-directory: artifacts
       run: |
         dotnet nuget add source --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/scientistproject/index.json"
-        dotnet nuget push --source github *.nupkg
+        dotnet nuget push *.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source github 
 
     - name: Publish to NuGet
       working-directory: artifacts

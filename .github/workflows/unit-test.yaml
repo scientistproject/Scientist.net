@@ -1,0 +1,44 @@
+name: Unit test
+
+on:
+  pull_request:
+    branches: ["master"]
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - framework: net8.0
+            sdk: 8.0.x
+            os: ubuntu-latest
+          - framework: net48
+            sdk: none
+            os: windows-latest
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup .NET (skip for net48)
+        if: matrix.sdk != 'none'
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ matrix.sdk }}
+          cache-dependency-path: subdir/packages.lock.json  
+
+      - name: Restore
+        run: dotnet restore --locked-mode
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test --no-build --no-restore --framework ${{ matrix.framework }} --configuration Release --verbosity normal
