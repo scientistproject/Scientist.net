@@ -2,12 +2,12 @@
 
 **Features**
 
-- Added targeting for .NET Standard 2.0, .NET 6 and .NET 8
+- Added targeting for .NET Standard 2.0, .NET 6 and .NET 8 - [#162](https://github.com/scientistproject/Scientist.net/pull/162) via @dahlbyk
 
 **Fixes**
 
--  `Scientist.Enabled()` now affects all instances by default, not just the shared static instance. - [#129](https://github.com/scientistproject/Scientist.net/pull/129)
--  Resolve deadlock issue on async experiments when caller uses sync over async - [#131](https://github.com/scientistproject/Scientist.net/pull/131)
+-  `Scientist.Enabled()` now affects all instances by default, not just the shared static instance. - [#129](https://github.com/scientistproject/Scientist.net/pull/129) via @marioanogueira
+-  Resolve deadlock issue on async experiments when caller uses sync over async - [#131](https://github.com/scientistproject/Scientist.net/pull/131) via @zizhong-zhang
 
 ### New in 2.0.0 (Released 2018/06/05)
 
