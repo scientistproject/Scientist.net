@@ -28,6 +28,8 @@ namespace GitHub.Internals
         private readonly Dictionary<string, dynamic> _contexts = new Dictionary<string, dynamic>();
         private readonly IResultPublisher _resultPublisher;
 
+        private bool _ensureControlRunsFirst = false;
+
         public Experiment(string name, Func<Task<bool>> enabled, int concurrentTasks, IResultPublisher resultPublisher)
         {
             if (concurrentTasks <= 0)
@@ -130,7 +132,8 @@ namespace GitHub.Internals
                 RunIf = _runIf,
                 Thrown = _thrown,
                 ThrowOnMismatches = ThrowOnMismatches,
-                ResultPublisher = _resultPublisher
+                ResultPublisher = _resultPublisher,
+                EnsureControlRunsFirst = _ensureControlRunsFirst,
             });
 
         public void Compare(Func<T, T, bool> comparison)
@@ -155,6 +158,10 @@ namespace GitHub.Internals
         public void BeforeRun(Func<Task> action)
         {
             _beforeRun = action;
+        }
+
+        public void EnsureControlRunsFirst() {
+            _ensureControlRunsFirst = true;
         }
     }
 }

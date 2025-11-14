@@ -29,7 +29,7 @@ public bool CanAccess(IUser user)
 Wrap a `Use` block around the code's original behavior, and wrap `Try` around the new behavior. Invoking `Scientist.Science<T>` will always return whatever the `Use` block returns, but it does a bunch of stuff behind the scenes:
 
 * It decides whether or not to run the `Try` block,
-* Randomizes the order in which `Use` and `Try` blocks are run,
+* Randomizes the order in which `Use` and `Try` blocks are run (Also see [Ensure control runs first](#control-first) option), 
 * Measures the durations of all behaviors,
 * Compares the result of `Try` to the result of `Use`,
 * Swallows (but records) any exceptions raised in the `Try` block, and
@@ -340,6 +340,18 @@ public bool CanAccess(IUser user)
     });
 }
 ```
+
+### Ensuring Control is ran first {#control-first}
+
+Sometimes you've got to run the control first and then the candidate(s) and we get it! 
+```csharp
+Scientist.Science<int>("ExperimentN", experiment => 
+{
+    experiment.EnsureControlRunsFirst();
+    // ...
+});
+```
+> The candidates are still ran in a randomised order, its just the control get ran first.
 
 ## Alternatives
 

@@ -16,7 +16,8 @@ namespace GitHub.Internals
 
         internal readonly string Name;
         internal readonly int ConcurrentTasks;
-        internal readonly List<NamedBehavior> Behaviors;
+        internal readonly NamedBehavior Control;
+        internal readonly List<NamedBehavior> Candidates = new List<NamedBehavior>();
         internal readonly Func<T, TClean> Cleaner;
         internal readonly Func<T, T, bool> Comparator;
         internal readonly Func<Task> BeforeRun;
@@ -27,18 +28,15 @@ namespace GitHub.Internals
         internal readonly Action<Operation, Exception> Thrown;
         internal readonly bool ThrowOnMismatches;
         internal readonly IResultPublisher ResultPublisher;
-        
+        internal readonly bool EnsureControlRunsFirst;
+
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
-        
+
         public ExperimentInstance(ExperimentSettings<T, TClean> settings)
         {
             Name = settings.Name;
-
-            Behaviors = new List<NamedBehavior>
-            {
-                new NamedBehavior(ControlExperimentName, settings.Control),
-            };
-            Behaviors.AddRange(
+            Control = new NamedBehavior(ControlExperimentName, settings.Control);
+            Candidates.AddRange(
                 settings.Candidates.Select(c => new NamedBehavior(c.Key, c.Value)));
 
             BeforeRun = settings.BeforeRun;
@@ -52,6 +50,7 @@ namespace GitHub.Internals
             Thrown = settings.Thrown;
             ThrowOnMismatches = settings.ThrowOnMismatches;
             ResultPublisher = settings.ResultPublisher;
+            EnsureControlRunsFirst = settings.EnsureControlRunsFirst;
         }
 
         public async Task<T> Run()
@@ -60,7 +59,7 @@ namespace GitHub.Internals
             if (!await ShouldExperimentRun().ConfigureAwait(false))
             {
                 // Run the control behavior.
-                return await Behaviors[0].Behavior().ConfigureAwait(false);
+                return await Control.Behavior().ConfigureAwait(false);
             }
 
             if (BeforeRun != null)
@@ -68,19 +67,27 @@ namespace GitHub.Internals
                 await BeforeRun().ConfigureAwait(false);
             }
 
-            // Randomize ordering...
-            NamedBehavior[] orderedBehaviors;
-            lock (_random)
+
+            var behaviors = new NamedBehavior[0];
+            if (EnsureControlRunsFirst)
             {
-                orderedBehaviors = Behaviors.OrderBy(b => _random.Next()).ToArray();
+
+                behaviors = RandomiseBehavioursOrder(Candidates);
+                behaviors = new[] { Control }.Concat(behaviors).ToArray();
             }
+            else
+            {
+                behaviors = new[] { Control }.Concat(behaviors).ToArray();
+                behaviors = RandomiseBehavioursOrder(Candidates);
+            }
+
 
             // Break tasks into batches of "ConcurrentTasks" size
             var observations = new List<Observation<T, TClean>>();
-            foreach (var behaviors in orderedBehaviors.Chunk(ConcurrentTasks))
+            foreach (var behaviorsChunk in behaviors.Chunk(ConcurrentTasks))
             {
                 // Run batch of behaviors simultaneously
-                var tasks = behaviors.Select(b =>
+                var tasks = behaviorsChunk.Select(b =>
                 {
                     return Observation<T, TClean>.New(
                         b.Name,
@@ -95,7 +102,7 @@ namespace GitHub.Internals
             }
 
             var controlObservation = observations.FirstOrDefault(o => o.Name == ControlExperimentName);
-            
+
             var result = new Result<T, TClean>(this, observations, controlObservation, Contexts);
 
             try
@@ -115,7 +122,15 @@ namespace GitHub.Internals
             if (controlObservation.Thrown) throw controlObservation.Exception;
             return controlObservation.Value;
         }
-        
+
+        private NamedBehavior[] RandomiseBehavioursOrder(List<NamedBehavior> behaviors)
+        {
+            lock (_random)
+            {
+                return behaviors.OrderBy(b => _random.Next()).ToArray();
+            }
+        }
+
         /// <summary>
         /// Does <see cref="RunIf"/> allow the experiment to run?
         /// </summary>
@@ -149,7 +164,7 @@ namespace GitHub.Internals
                 return false;
             }
         }
-        
+
         /// <summary>
         /// Determine whether or not the experiment should run.
         /// </summary>
@@ -157,9 +172,8 @@ namespace GitHub.Internals
         {
             try
             {
-                // Only let the experiment run if at least one candidate (> 1 behaviors) is 
-                // included.  The control is always included behaviors count.
-                return Behaviors.Count > 1 && await Enabled().ConfigureAwait(false) && await RunIfAllows().ConfigureAwait(false);
+                // Only let the experiment run if at least one candidate (>= 1 behaviors)
+                return Candidates.Count >= 1 && await Enabled().ConfigureAwait(false) && await RunIfAllows().ConfigureAwait(false);
             }
             catch (Exception ex)
             {

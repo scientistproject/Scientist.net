@@ -32,6 +32,11 @@ namespace GitHub.Internals
         /// </summary>
         /// <param name="block">The delegate to handle exceptions thrown from an experiment.</param>
         void Thrown(Action<Operation, Exception> block);
+
+        /// <summary>
+        /// Sets the control to run first and candidates after. Does not affect candidate randomisation.
+        /// </summary>
+        void EnsureControlRunsFirst();
     }
 
     /// <summary>
