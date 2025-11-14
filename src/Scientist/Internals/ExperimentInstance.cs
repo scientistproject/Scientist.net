@@ -77,7 +77,7 @@ namespace GitHub.Internals
             }
             else
             {
-                behaviors = new[] { Control }.Concat(behaviors).ToArray();
+                Candidates.Add(Control);
                 behaviors = RandomiseBehavioursOrder(Candidates);
             }
 
