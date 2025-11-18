@@ -351,11 +351,29 @@ scientist.Experiment<int>(experimentName, experiment =>
     // ...
 });
 ```
-We also provide so pre-written alogrithms
+There are some pre-written alogrithms
 ```csharp
 Ordering.Random
 Ordering.ControlFirst
 Ordering.ControlLast
+```
+But if you need to rock your own then you can write something like below
+```csharp
+ private static int _seed = 123;
+
+ public static IReadOnlyList<INamedBehaviour<T>> SeededExperimentOrderer<T>(IReadOnlyList<INamedBehaviour<T>> behaviours)
+ {
+     var random = new Random(_seed);
+     return behaviours.OrderBy(_ => random.Next()).ToList();
+ }
+
+// ...
+
+scientist.Experiment<int>(experimentName, experiment =>
+{
+    experiment.UseCustomOrdering(SeededExperimentOrderer);
+    // ...
+});
 ```
 
 ## Alternatives
