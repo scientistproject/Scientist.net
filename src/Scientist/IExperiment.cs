@@ -80,9 +80,13 @@ namespace GitHub.Internals
         /// <summary>
         /// Defines the check to run to determine if mismatches should be ignored.
         /// </summary>
-        /// <param name="block">The delegate to execute</param>
+        /// <param name="block">The delegate to execute.</param>
         void Ignore(Func<T, T, bool> block);
 
+        /// <summary>
+        /// Defines the custom ordering to run on the behaviours
+        /// </summary>
+        /// <param name="ordering">The delgate to execute.</param>
         void UseCustomOrdering(Func<IReadOnlyList<INamedBehaviour<T>>, IReadOnlyList<INamedBehaviour<T>>> ordering);
     }
 
@@ -140,11 +144,14 @@ namespace GitHub.Internals
         /// <summary>
         /// Defines the check to run to determine if mismatches should be ignored.
         /// </summary>
-        /// <param name="block">The delegate to execute</param>
+        /// <param name="block">The delegate to execute.</param>
         void Ignore(Func<T, T, Task<bool>> block);
 
+        /// <summary>
+        /// Defines the custom ordering to run on the behaviours
+        /// </summary>
+        /// <param name="customOrdering">The delgate to execute.</param>
         void UseCustomOrdering(CustomOrderer<T> customOrdering);
-
     }
 
     /// <summary>
