@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Github.Ordering;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,7 +17,7 @@ namespace GitHub.Internals
 
         internal readonly string Name;
         internal readonly int ConcurrentTasks;
-        internal readonly List<NamedBehavior> Behaviors;
+        internal readonly List<NamedBehaviour<T>> Behaviors;
         internal readonly Func<T, TClean> Cleaner;
         internal readonly Func<T, T, bool> Comparator;
         internal readonly Func<Task> BeforeRun;
@@ -27,19 +28,18 @@ namespace GitHub.Internals
         internal readonly Action<Operation, Exception> Thrown;
         internal readonly bool ThrowOnMismatches;
         internal readonly IResultPublisher ResultPublisher;
-        
-        static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
-        
+        internal readonly CustomOrderer<T> CustomOrderer;
+
         public ExperimentInstance(ExperimentSettings<T, TClean> settings)
         {
             Name = settings.Name;
 
-            Behaviors = new List<NamedBehavior>
+            Behaviors = new List<NamedBehaviour<T>>
             {
-                new NamedBehavior(ControlExperimentName, settings.Control),
+                new NamedBehaviour<T>(ControlExperimentName, settings.Control),
             };
             Behaviors.AddRange(
-                settings.Candidates.Select(c => new NamedBehavior(c.Key, c.Value)));
+                settings.Candidates.Select(c => new NamedBehaviour<T>(c.Key, c.Value)));
 
             BeforeRun = settings.BeforeRun;
             Cleaner = settings.Cleaner;
@@ -52,6 +52,7 @@ namespace GitHub.Internals
             Thrown = settings.Thrown;
             ThrowOnMismatches = settings.ThrowOnMismatches;
             ResultPublisher = settings.ResultPublisher;
+            CustomOrderer = settings.CustomOrderer;
         }
 
         public async Task<T> Run()
@@ -60,7 +61,7 @@ namespace GitHub.Internals
             if (!await ShouldExperimentRun().ConfigureAwait(false))
             {
                 // Run the control behavior.
-                return await Behaviors[0].Behavior().ConfigureAwait(false);
+                return await Behaviors[0].Behaviour().ConfigureAwait(false);
             }
 
             if (BeforeRun != null)
@@ -68,12 +69,7 @@ namespace GitHub.Internals
                 await BeforeRun().ConfigureAwait(false);
             }
 
-            // Randomize ordering...
-            NamedBehavior[] orderedBehaviors;
-            lock (_random)
-            {
-                orderedBehaviors = Behaviors.OrderBy(b => _random.Next()).ToArray();
-            }
+            var orderedBehaviors = await CustomOrderer(Behaviors).ConfigureAwait(false);
 
             // Break tasks into batches of "ConcurrentTasks" size
             var observations = new List<Observation<T, TClean>>();
@@ -84,7 +80,7 @@ namespace GitHub.Internals
                 {
                     return Observation<T, TClean>.New(
                         b.Name,
-                        b.Behavior,
+                        b.Behaviour,
                         Comparator,
                         Thrown,
                         Cleaner);
@@ -95,7 +91,7 @@ namespace GitHub.Internals
             }
 
             var controlObservation = observations.FirstOrDefault(o => o.Name == ControlExperimentName);
-            
+
             var result = new Result<T, TClean>(this, observations, controlObservation, Contexts);
 
             try
@@ -115,7 +111,7 @@ namespace GitHub.Internals
             if (controlObservation.Thrown) throw controlObservation.Exception;
             return controlObservation.Value;
         }
-        
+
         /// <summary>
         /// Does <see cref="RunIf"/> allow the experiment to run?
         /// </summary>
@@ -149,7 +145,7 @@ namespace GitHub.Internals
                 return false;
             }
         }
-        
+
         /// <summary>
         /// Determine whether or not the experiment should run.
         /// </summary>
@@ -166,30 +162,6 @@ namespace GitHub.Internals
                 Thrown(Operation.Enabled, ex);
                 return false;
             }
-        }
-
-        internal class NamedBehavior
-        {
-            public NamedBehavior(string name, Func<T> behavior)
-                : this(name, () => Task.FromResult(behavior()))
-            {
-            }
-
-            public NamedBehavior(string name, Func<Task<T>> behavior)
-            {
-                Behavior = behavior;
-                Name = name;
-            }
-
-            /// <summary>
-            /// Gets the behavior to execute during an experiment.
-            /// </summary>
-            public Func<Task<T>> Behavior { get; }
-
-            /// <summary>
-            /// Gets the name of the behavior.
-            /// </summary>
-            public string Name { get; }
         }
     }
 }

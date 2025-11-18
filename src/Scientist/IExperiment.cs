@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Github.Ordering;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace GitHub.Internals
@@ -80,6 +82,8 @@ namespace GitHub.Internals
         /// </summary>
         /// <param name="block">The delegate to execute</param>
         void Ignore(Func<T, T, bool> block);
+
+        void UseCustomOrdering(Func<IReadOnlyList<INamedBehaviour<T>>, IReadOnlyList<INamedBehaviour<T>>> ordering);
     }
 
     /// <summary>
@@ -138,6 +142,9 @@ namespace GitHub.Internals
         /// </summary>
         /// <param name="block">The delegate to execute</param>
         void Ignore(Func<T, T, Task<bool>> block);
+
+        void UseCustomOrdering(CustomOrderer<T> customOrdering);
+
     }
 
     /// <summary>

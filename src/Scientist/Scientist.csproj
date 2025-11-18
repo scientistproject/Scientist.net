@@ -31,7 +31,7 @@
     <None Include="..\..\LICENSE.txt" Pack="true" PackagePath="" />
     <None Include="..\..\README.md" Pack="true" PackagePath="" />
     <None Include="..\..\ReleaseNotes.md" Pack="true" PackagePath="" />
-    <None Include="..\..\assets\scientist-logo-64x64.png" Pack="true" PackagePath=""/>
+    <None Include="..\..\assets\scientist-logo-64x64.png" Pack="true" PackagePath="" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
