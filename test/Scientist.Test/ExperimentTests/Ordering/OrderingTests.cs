@@ -143,10 +143,10 @@ public class OrderingTests
 
     private static int _seed = 123;
 
-    public static IReadOnlyList<INamedBehaviour<T>> SeededExperimentOrderer<T>(IReadOnlyList<INamedBehaviour<T>> behaviours)
+    public static IReadOnlyList<INamedBehavior<T>> SeededExperimentOrderer<T>(IReadOnlyList<INamedBehavior<T>> behaviors)
     {
         var random = new Random(_seed);
-        return behaviours.OrderBy(_ => random.Next()).ToList();
+        return behaviors.OrderBy(_ => random.Next()).ToList();
     }
 }
 

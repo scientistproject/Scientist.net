@@ -3,20 +3,21 @@ using System.Threading.Tasks;
 
 namespace GitHub
 {
-    public interface INamedBehaviour<T> {
-        string Name { get; }
-        Func<Task<T>> Behaviour { get; }
-    }
-    public class NamedBehaviour<T>: INamedBehaviour<T>
+    public interface INamedBehavior<T>
     {
-        public NamedBehaviour(string name, Func<T> method)
+        string Name { get; }
+        Func<Task<T>> Behavior { get; }
+    }
+    public class NamedBehavior<T> : INamedBehavior<T>
+    {
+        public NamedBehavior(string name, Func<T> method)
                 : this(name, () => Task.FromResult(method()))
         {
-        }   
+        }
 
-        public NamedBehaviour(string name, Func<Task<T>> method)
+        public NamedBehavior(string name, Func<Task<T>> method)
         {
-            Behaviour = method;
+            Behavior = method;
             Name = name;
         }
 
@@ -28,6 +29,6 @@ namespace GitHub
         /// <summary>
         /// Gets the behavior to execute during an experiment.
         /// </summary>
-        public Func<Task<T>> Behaviour { get; }        
+        public Func<Task<T>> Behavior { get; }
     }
 }

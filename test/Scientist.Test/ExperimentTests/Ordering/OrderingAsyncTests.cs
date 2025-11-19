@@ -72,7 +72,7 @@ public class OrderingAsyncTests
         var result = await scientist.ExperimentAsync<int>(experimentName, experiment =>
         {
             experiment.ThrowOnMismatches = true;
-            experiment.UseCustomOrdering(behaviours => Task.FromResult(Ordering.ControlFirst(behaviours)));
+            experiment.UseCustomOrdering(behaviors => Task.FromResult(Ordering.ControlFirst(behaviors)));
             experiment.Use(mock.Control);
             experiment.Try("candidate", mock.Candidate);
         });
@@ -100,7 +100,7 @@ public class OrderingAsyncTests
         var result = await scientist.ExperimentAsync<int>(experimentName, experiment =>
         {
             experiment.ThrowOnMismatches = true;
-            experiment.UseCustomOrdering(behaviours => Task.FromResult(Ordering.ControlLast(behaviours)));
+            experiment.UseCustomOrdering(behaviors => Task.FromResult(Ordering.ControlLast(behaviors)));
             experiment.Use(mock.Control);
             experiment.Try("candidate", mock.Candidate);
         });
@@ -144,10 +144,10 @@ public class OrderingAsyncTests
 
     private static int _seed = 123;
 
-    public static async Task<IReadOnlyList<INamedBehaviour<T>>> SeededExperimentOrderer<T>(IReadOnlyList<INamedBehaviour<T>> behaviours)
+    public static async Task<IReadOnlyList<INamedBehavior<T>>> SeededExperimentOrderer<T>(IReadOnlyList<INamedBehavior<T>> behaviors)
     {
         var random = new Random(_seed);
-        return behaviours.OrderBy(_ => random.Next()).ToList();
+        return behaviors.OrderBy(_ => random.Next()).ToList();
     }
 }
 

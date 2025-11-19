@@ -84,10 +84,10 @@ namespace GitHub.Internals
         void Ignore(Func<T, T, bool> block);
 
         /// <summary>
-        /// Defines the custom ordering to run on the behaviours
+        /// Defines the custom ordering to run on the behaviors
         /// </summary>
         /// <param name="ordering">The delgate to execute.</param>
-        void UseCustomOrdering(Func<IReadOnlyList<INamedBehaviour<T>>, IReadOnlyList<INamedBehaviour<T>>> ordering);
+        void UseCustomOrdering(Func<IReadOnlyList<INamedBehavior<T>>, IReadOnlyList<INamedBehavior<T>>> ordering);
     }
 
     /// <summary>
@@ -148,7 +148,7 @@ namespace GitHub.Internals
         void Ignore(Func<T, T, Task<bool>> block);
 
         /// <summary>
-        /// Defines the custom ordering to run on the behaviours
+        /// Defines the custom ordering to run on the behaviors
         /// </summary>
         /// <param name="customOrdering">The delgate to execute.</param>
         void UseCustomOrdering(CustomOrderer<T> customOrdering);

@@ -6,27 +6,27 @@ using System.Threading.Tasks;
 
 namespace Github.Ordering
 {
-    public delegate Task<IReadOnlyList<INamedBehaviour<T>>> CustomOrderer<T>(IReadOnlyList<INamedBehaviour<T>> namedBehaviours);
+    public delegate Task<IReadOnlyList<INamedBehavior<T>>> CustomOrderer<T>(IReadOnlyList<INamedBehavior<T>> namedBehaviors);
 
     public class Ordering
     {
-        public static IReadOnlyList<INamedBehaviour<T>> ControlFirst<T>(IReadOnlyList<INamedBehaviour<T>> namedBehaviours)
+        public static IReadOnlyList<INamedBehavior<T>> ControlFirst<T>(IReadOnlyList<INamedBehavior<T>> namedBehaviors)
         {
-            return namedBehaviours.OrderByDescending(namedBehaviour => namedBehaviour.Name == "control").ToList();
+            return namedBehaviors.OrderByDescending(namedBehavior => namedBehavior.Name == "control").ToList();
         }
 
-        public static IReadOnlyList<INamedBehaviour<T>> ControlLast<T>(IReadOnlyList<INamedBehaviour<T>> namedBehaviours)
+        public static IReadOnlyList<INamedBehavior<T>> ControlLast<T>(IReadOnlyList<INamedBehavior<T>> namedBehaviors)
         {
-            return ControlFirst(namedBehaviours).Reverse().ToList();
+            return ControlFirst(namedBehaviors).Reverse().ToList();
         }
 
         static Random _random = new Random(DateTimeOffset.UtcNow.Millisecond);
 
-        public static IReadOnlyList<INamedBehaviour<T>> Random<T>(IReadOnlyList<INamedBehaviour<T>> namedBehaviours)
+        public static IReadOnlyList<INamedBehavior<T>> Random<T>(IReadOnlyList<INamedBehavior<T>> namedBehaviors)
         {
             lock (_random)
             {
-                return namedBehaviours.OrderBy(b => _random.Next()).ToArray();
+                return namedBehaviors.OrderBy(b => _random.Next()).ToArray();
             }
         }
     }

@@ -17,7 +17,7 @@ namespace GitHub.Internals
 
         internal readonly string Name;
         internal readonly int ConcurrentTasks;
-        internal readonly List<NamedBehaviour<T>> Behaviors;
+        internal readonly List<NamedBehavior<T>> Behaviors;
         internal readonly Func<T, TClean> Cleaner;
         internal readonly Func<T, T, bool> Comparator;
         internal readonly Func<Task> BeforeRun;
@@ -34,12 +34,12 @@ namespace GitHub.Internals
         {
             Name = settings.Name;
 
-            Behaviors = new List<NamedBehaviour<T>>
+            Behaviors = new List<NamedBehavior<T>>
             {
-                new NamedBehaviour<T>(ControlExperimentName, settings.Control),
+                new NamedBehavior<T>(ControlExperimentName, settings.Control),
             };
             Behaviors.AddRange(
-                settings.Candidates.Select(c => new NamedBehaviour<T>(c.Key, c.Value)));
+                settings.Candidates.Select(c => new NamedBehavior<T>(c.Key, c.Value)));
 
             BeforeRun = settings.BeforeRun;
             Cleaner = settings.Cleaner;
@@ -61,7 +61,7 @@ namespace GitHub.Internals
             if (!await ShouldExperimentRun().ConfigureAwait(false))
             {
                 // Run the control behavior.
-                return await Behaviors[0].Behaviour().ConfigureAwait(false);
+                return await Behaviors[0].Behavior().ConfigureAwait(false);
             }
 
             if (BeforeRun != null)
@@ -80,7 +80,7 @@ namespace GitHub.Internals
                 {
                     return Observation<T, TClean>.New(
                         b.Name,
-                        b.Behaviour,
+                        b.Behavior,
                         Comparator,
                         Thrown,
                         Cleaner);

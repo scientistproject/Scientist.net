@@ -343,7 +343,7 @@ public bool CanAccess(IUser user)
 
 ### Changing the order
 
-By default the library randomises the order in which behaviours (control & candidates) are ran however, under certain cirumstances you might want to run your own ordering so we provide a handy method `UseCustomOrdering`. 
+By default the library randomises the order in which behaviors (control & candidates) are ran however, under certain cirumstances you might want to run your own ordering so we provide a handy method `UseCustomOrdering`. 
 ```csharp
 scientist.Experiment<int>(experimentName, experiment =>
 {
@@ -361,10 +361,10 @@ But if you need to rock your own then you can write something like below
 ```csharp
  private static int _seed = 123;
 
- public static IReadOnlyList<INamedBehaviour<T>> SeededExperimentOrderer<T>(IReadOnlyList<INamedBehaviour<T>> behaviours)
+ public static IReadOnlyList<INamedBehavior<T>> SeededExperimentOrderer<T>(IReadOnlyList<INamedBehavior<T>> behaviors)
  {
      var random = new Random(_seed);
-     return behaviours.OrderBy(_ => random.Next()).ToList();
+     return behaviors.OrderBy(_ => random.Next()).ToList();
  }
 
 // ...

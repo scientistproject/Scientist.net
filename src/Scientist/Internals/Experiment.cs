@@ -29,7 +29,7 @@ namespace GitHub.Internals
         private readonly Dictionary<string, dynamic> _contexts = new Dictionary<string, dynamic>();
         private readonly IResultPublisher _resultPublisher;
 
-        private CustomOrderer<T> _customOrderer = behaviours => Task.FromResult(Ordering.Random(behaviours));
+        private CustomOrderer<T> _customOrderer = behaviors => Task.FromResult(Ordering.Random(behaviors));
 
         public Experiment(string name, Func<Task<bool>> enabled, int concurrentTasks, IResultPublisher resultPublisher)
         {
@@ -162,7 +162,7 @@ namespace GitHub.Internals
         }
 
 
-        public void UseCustomOrdering(Func<IReadOnlyList<INamedBehaviour<T>>, IReadOnlyList<INamedBehaviour<T>>> customOrdering)
+        public void UseCustomOrdering(Func<IReadOnlyList<INamedBehavior<T>>, IReadOnlyList<INamedBehavior<T>>> customOrdering)
         {
             _customOrderer = list => Task.FromResult(customOrdering(list));
         }
