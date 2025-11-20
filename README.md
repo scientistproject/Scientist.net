@@ -29,7 +29,7 @@ public bool CanAccess(IUser user)
 Wrap a `Use` block around the code's original behavior, and wrap `Try` around the new behavior. Invoking `Scientist.Science<T>` will always return whatever the `Use` block returns, but it does a bunch of stuff behind the scenes:
 
 * It decides whether or not to run the `Try` block,
-* Randomizes the order in which `Use` and `Try` blocks are run,
+* By default randomises the order in which `Use` and `Try` blocks are run,
 * Measures the durations of all behaviors,
 * Compares the result of `Try` to the result of `Use`,
 * Swallows (but records) any exceptions raised in the `Try` block, and
@@ -339,6 +339,41 @@ public bool CanAccess(IUser user)
         experiment.Try("raw-sql", () => HasAccessSql(user));
     });
 }
+```
+
+### Changing the order
+
+By default the library randomises the order in which behaviors (control & candidates) are ran however, under certain cirumstances you might want to run your own ordering so we provide a handy method `UseCustomOrdering`. 
+```csharp
+scientist.Experiment<int>(experimentName, experiment =>
+{
+    experiment.UseCustomOrdering(Ordering.ControlFirst);
+    // ...
+});
+```
+There are some pre-written alogrithms
+```csharp
+Ordering.Random
+Ordering.ControlFirst
+Ordering.ControlLast
+```
+But if you need to rock your own then you can write something like below
+```csharp
+ private static int _seed = 123;
+
+ public static IReadOnlyList<INamedBehavior<T>> SeededExperimentOrderer<T>(IReadOnlyList<INamedBehavior<T>> behaviors)
+ {
+     var random = new Random(_seed);
+     return behaviors.OrderBy(_ => random.Next()).ToList();
+ }
+
+// ...
+
+scientist.Experiment<int>(experimentName, experiment =>
+{
+    experiment.UseCustomOrdering(SeededExperimentOrderer);
+    // ...
+});
 ```
 
 ## Alternatives

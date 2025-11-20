@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Github.Ordering;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace GitHub.Internals
@@ -78,8 +80,14 @@ namespace GitHub.Internals
         /// <summary>
         /// Defines the check to run to determine if mismatches should be ignored.
         /// </summary>
-        /// <param name="block">The delegate to execute</param>
+        /// <param name="block">The delegate to execute.</param>
         void Ignore(Func<T, T, bool> block);
+
+        /// <summary>
+        /// Defines the custom ordering to run on the behaviors
+        /// </summary>
+        /// <param name="ordering">The delgate to execute.</param>
+        void UseCustomOrdering(Func<IReadOnlyList<INamedBehavior<T>>, IReadOnlyList<INamedBehavior<T>>> ordering);
     }
 
     /// <summary>
@@ -136,8 +144,14 @@ namespace GitHub.Internals
         /// <summary>
         /// Defines the check to run to determine if mismatches should be ignored.
         /// </summary>
-        /// <param name="block">The delegate to execute</param>
+        /// <param name="block">The delegate to execute.</param>
         void Ignore(Func<T, T, Task<bool>> block);
+
+        /// <summary>
+        /// Defines the custom ordering to run on the behaviors
+        /// </summary>
+        /// <param name="customOrdering">The delgate to execute.</param>
+        void UseCustomOrdering(CustomOrderer<T> customOrdering);
     }
 
     /// <summary>

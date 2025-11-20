@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Github.Ordering;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -26,5 +27,6 @@ namespace GitHub.Internals
         public bool ThrowOnMismatches { get; set; }
         public Action<Operation, Exception> Thrown { get; set; }
         public IResultPublisher ResultPublisher { get; set; }
+        public CustomOrderer<T> CustomOrderer { get; set;  }
     }
 }
