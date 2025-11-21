@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GitHub
@@ -7,18 +8,21 @@ namespace GitHub
     {
         string Name { get; }
         Func<Task<T>> Behavior { get; }
+        CancellationToken CancellationToken { get; }
     }
     public class NamedBehavior<T> : INamedBehavior<T>
     {
-        public NamedBehavior(string name, Func<T> method)
-                : this(name, () => Task.FromResult(method()))
+        public NamedBehavior(string name, Func<T> behavior)
         {
+            Name = name;
+            Behavior = () => Task.FromResult(behavior());
         }
 
-        public NamedBehavior(string name, Func<Task<T>> method)
+        public NamedBehavior(string name, Func<Task<T>> behavior, CancellationToken cancellationToken)
         {
-            Behavior = method;
+            Behavior = behavior;
             Name = name;
+            CancellationToken = cancellationToken;
         }
 
         /// <summary>
@@ -30,5 +34,11 @@ namespace GitHub
         /// Gets the behavior to execute during an experiment.
         /// </summary>
         public Func<Task<T>> Behavior { get; }
+
+        /// <summary>
+        /// Gets the cancellation token to use during an experiment.
+        /// </summary>
+        public CancellationToken CancellationToken { get; }
+
     }
 }
