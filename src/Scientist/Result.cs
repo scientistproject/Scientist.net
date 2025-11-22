@@ -6,7 +6,7 @@ namespace GitHub
 {
     public class Result<T, TClean>
     {
-        internal Result(ExperimentInstance<T, TClean> experiment, IEnumerable<Observation<T, TClean>> observations, Observation<T, TClean> control, Dictionary<string, dynamic> contexts)
+        internal Result(ExperimentInstance<T, TClean> experiment, IEnumerable<Observation<T, TClean>> observations, Observation<T, TClean> control, Dictionary<string, dynamic> contexts, bool cancelled)
         {
             Candidates = observations.Where(o => o != control).ToList();
             Control = control;
@@ -19,6 +19,8 @@ namespace GitHub
             IgnoredObservations = mismatchedObservations.Where(m => experiment.IgnoreMismatchedObservation(control, m).Result).ToList();
 
             MismatchedObservations = mismatchedObservations.Except(IgnoredObservations).ToList();
+
+            Cancelled = cancelled;
         }
 
         /// <summary>
@@ -65,5 +67,10 @@ namespace GitHub
         /// Gets the context data supplied to the experiment.
         /// </summary>
         public IReadOnlyDictionary<string, dynamic> Contexts { get; }
+
+        /// <summary>
+        /// Whether the experiment was cancelled.
+        /// </summary>
+        public bool Cancelled { get; }
     }
 }

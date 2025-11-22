@@ -1,6 +1,7 @@
 ﻿using Github.Ordering;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GitHub.Internals
@@ -16,9 +17,9 @@ namespace GitHub.Internals
         private string _name;
         private int _concurrentTasks;
 
-        private Func<Task<T>> _control;
+        private Candidate<T> _control;
 
-        private readonly Dictionary<string, Func<Task<T>>> _candidates;
+        private readonly Dictionary<string, Candidate<T>> _candidates;
         private Func<T, TClean> _cleaner;
         private Func<T, T, bool> _comparison = DefaultComparison;
         private Func<Task> _beforeRun;
@@ -31,6 +32,9 @@ namespace GitHub.Internals
 
         private CustomOrderer<T> _customOrderer = behaviors => Task.FromResult(Ordering.Random(behaviors));
 
+        private CancellationToken _cancellationToken = default;
+
+
         public Experiment(string name, Func<Task<bool>> enabled, int concurrentTasks, IResultPublisher resultPublisher)
         {
             if (concurrentTasks <= 0)
@@ -40,7 +44,7 @@ namespace GitHub.Internals
                 throw new ArgumentNullException("A result publisher must be specified", nameof(resultPublisher));
 
             _name = name;
-            _candidates = new Dictionary<string, Func<Task<T>>>();
+            _candidates = new Dictionary<string, Candidate<T>>();
             _enabled = enabled;
             _concurrentTasks = concurrentTasks;
             _resultPublisher = resultPublisher;
@@ -60,20 +64,34 @@ namespace GitHub.Internals
         public void Thrown(Action<Operation, Exception> block) =>
             _thrown = block;
 
-        public void Use(Func<Task<T>> control) =>
-            _control = control;
+        public void Use(Func<Task<T>> control, CancellationToken cancellationToken = default)
+        {
+            var isasd = cancellationToken == default
+              ? true
+              : false;
+
+            var tokenToUse = cancellationToken == default
+              ? _cancellationToken
+              : cancellationToken;
+            _control = new Candidate<T>(control, tokenToUse);
+        }
 
         public void Use(Func<T> control) =>
-            _control = () => Task.FromResult(control());
+            _control = new Candidate<T>(() => Task.FromResult(control()));
 
-        public void Try(Func<Task<T>> candidate)
+        public void Try(Func<Task<T>> candidate, CancellationToken cancellationToken = default)
         {
             if (_candidates.ContainsKey(CandidateExperimentName))
             {
                 throw new InvalidOperationException(
                     "You have already added a default try. Give this candidate a new name with the Try(string, Func<Task<T>>) overload");
             }
-            _candidates.Add(CandidateExperimentName, candidate);
+
+            var tokenToUse = cancellationToken == default
+                ? _cancellationToken
+                : cancellationToken;
+
+            _candidates.Add(CandidateExperimentName, new Candidate<T>(candidate, tokenToUse));
         }
 
         public void Try(Func<T> candidate)
@@ -83,17 +101,22 @@ namespace GitHub.Internals
                 throw new InvalidOperationException(
                     "You have already added a default try. Give this candidate a new name with the Try(string, Func<Task<T>>) overload");
             }
-            _candidates.Add(CandidateExperimentName, () => Task.FromResult(candidate()));
+            _candidates.Add(CandidateExperimentName, new Candidate<T>(() => Task.FromResult(candidate())));
         }
 
-        public void Try(string name, Func<Task<T>> candidate)
+        public void Try(string name, Func<Task<T>> candidate, CancellationToken cancellationToken = default)
         {
             if (_candidates.ContainsKey(name))
             {
                 throw new InvalidOperationException(
                     $"You already have a candidate named {name}. Provide a different name for this test.");
             }
-            _candidates.Add(name, candidate);
+
+            var tokenToUse = cancellationToken == default
+                ? _cancellationToken
+                : cancellationToken;
+
+            _candidates.Add(name, new Candidate<T>(candidate, tokenToUse));
         }
 
         public void Try(string name, Func<T> candidate)
@@ -103,7 +126,7 @@ namespace GitHub.Internals
                 throw new InvalidOperationException(
                     $"You already have a candidate named {name}. Provide a different name for this test.");
             }
-            _candidates.Add(name, () => Task.FromResult(candidate()));
+            _candidates.Add(name, new Candidate<T>(() => Task.FromResult(candidate())));
         }
 
         public void Ignore(Func<T, T, bool> block) =>
@@ -134,7 +157,8 @@ namespace GitHub.Internals
                 Thrown = _thrown,
                 ThrowOnMismatches = ThrowOnMismatches,
                 ResultPublisher = _resultPublisher,
-                CustomOrderer = _customOrderer
+                CustomOrderer = _customOrderer,
+                CancellationToken = _cancellationToken,
             });
 
         public void Compare(Func<T, T, bool> comparison)
@@ -161,7 +185,6 @@ namespace GitHub.Internals
             _beforeRun = action;
         }
 
-
         public void UseCustomOrdering(Func<IReadOnlyList<INamedBehavior<T>>, IReadOnlyList<INamedBehavior<T>>> customOrdering)
         {
             _customOrderer = list => Task.FromResult(customOrdering(list));
@@ -170,6 +193,11 @@ namespace GitHub.Internals
         public void UseCustomOrdering(CustomOrderer<T> customOrdering)
         {
             _customOrderer = customOrdering;
+        }
+
+        public void WithCancellationToken(CancellationToken cancellationToken)
+        {
+            _cancellationToken = cancellationToken;
         }
     }
 }
