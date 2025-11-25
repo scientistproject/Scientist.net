@@ -34,7 +34,6 @@ namespace GitHub.Internals
 
         private CancellationToken _cancellationToken = default;
 
-
         public Experiment(string name, Func<Task<bool>> enabled, int concurrentTasks, IResultPublisher resultPublisher)
         {
             if (concurrentTasks <= 0)
@@ -66,10 +65,6 @@ namespace GitHub.Internals
 
         public void Use(Func<Task<T>> control, CancellationToken cancellationToken = default)
         {
-            var isasd = cancellationToken == default
-              ? true
-              : false;
-
             var tokenToUse = cancellationToken == default
               ? _cancellationToken
               : cancellationToken;
