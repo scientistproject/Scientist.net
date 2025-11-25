@@ -1,6 +1,7 @@
 ﻿using Github.Ordering;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GitHub.Internals
@@ -121,20 +122,20 @@ namespace GitHub.Internals
         /// Defines the operation to try.
         /// </summary>
         /// <param name="candidate">The delegate to execute.</param>
-        void Try(Func<Task<T>> candidate);
+        void Try(Func<Task<T>> candidate, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Defines the operation to try.
         /// </summary>
         /// <param name="name"></param>
         /// <param name="candidate">The delegate to execute.</param>
-        void Try(string name, Func<Task<T>> candidate);
+        void Try(string name, Func<Task<T>> candidate, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Defines the operation to actually use.
         /// </summary>
         /// <param name="control">The delegate to execute.</param>
-        void Use(Func<Task<T>> control);
+        void Use(Func<Task<T>> control, CancellationToken cancellationToken = default   );
 
         /// <summary>
         /// Defines a func used to compare results.
@@ -152,6 +153,12 @@ namespace GitHub.Internals
         /// </summary>
         /// <param name="customOrdering">The delgate to execute.</param>
         void UseCustomOrdering(CustomOrderer<T> customOrdering);
+
+        /// <summary>
+        /// Defines the global cancellation token to use
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        void WithCancellationToken(CancellationToken cancellationToken = default);
     }
 
     /// <summary>

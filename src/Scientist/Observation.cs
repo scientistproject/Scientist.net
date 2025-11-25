@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GitHub
@@ -59,6 +60,15 @@ namespace GitHub
         }
 
         /// <summary>
+        /// Gets whether the experiment behaviour was cancelled
+        /// </summary>
+        public bool Cancelled
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
         /// Determines if another <see cref="Observation{T}"/> matches this instance.
         /// </summary>
         /// <param name="other">The other observation.</param>
@@ -92,7 +102,7 @@ namespace GitHub
                 return false;
             }
         }
-        
+
         /// <summary>
         /// Creates a new observation, and runs the experiment.
         /// </summary>
@@ -101,11 +111,19 @@ namespace GitHub
         /// <param name="comparison">The comparison delegate used to determine if an observation is equivalent.</param>
         /// <param name="thrown">The delegate used for handling thrown exceptions during equivalency comparisons.</param>
         /// <returns>The observed experiment.</returns>
-        public static async Task<Observation<T, TClean>> New(string name, Func<Task<T>> block, Func<T, T, bool> comparison, Action<Operation, Exception> thrown, Func<T, TClean> cleaner)
+        public static async Task<Observation<T, TClean>> New(string name, Func<Task<T>> block, Func<T, T, bool> comparison, Action<Operation, Exception> thrown, Func<T, TClean> cleaner, CancellationToken cancellationToken)
         {
             Observation<T, TClean> observation = new Observation<T, TClean>(name, thrown, cleaner);
 
-            await observation.Run(block).ConfigureAwait(false);
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                await observation.Run(block, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException ex) {
+                observation.Cancelled = true;
+                observation.Exception = ex;
+            }
 
             return observation;
         }
@@ -115,16 +133,22 @@ namespace GitHub
         /// <summary>
         /// Runs the experiment.
         /// </summary>
-        internal async Task Run(Func<Task<T>> block)
+        internal async Task Run(Func<Task<T>> block, CancellationToken cancellationToken)
         {
             var start = Stopwatch.GetTimestamp();
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 Value = await block().ConfigureAwait(false);
             }
             catch (AggregateException ex)
             {
                 Exception = ex.GetBaseException();
+            }
+            catch (OperationCanceledException ex)
+            {
+                Cancelled = true;
+                Exception = ex;
             }
             catch (Exception ex)
             {

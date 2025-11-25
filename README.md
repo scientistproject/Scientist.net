@@ -263,6 +263,54 @@ await Scientist.ScienceAsync<int>(
 
 As always when using async/await, don't forget to call `.ConfigureAwait(false)` where appropriate.
 
+#### Asynchronous cancellation
+Experiments can be cancelled part way through running by using any of the three ways below
+
+1. Via the global `WithCancellationToken` method
+```csharp
+var cancellationTokenSource = new CancellationTokenSource();
+
+await scientist.ExperimentAsync<int>(experimentName, experiment =>
+{
+    experiment.WithCancellationToken(cancellationTokenSource.Token);
+    experiment.Use(async () => await StartRunningSomething(myData));
+    experiment.Try("candidate", async () => await AnAsyncMethod(myData));
+});
+```
+
+2. Per method
+```csharp
+var controlCancellationTokenSource = new CancellationTokenSource();
+var candidateCancellationTokenSource = new CancellationTokenSource();
+
+await scientist.ExperimentAsync<int>(experimentName, experiment =>
+{
+    experiment.Use(async () => await StartRunningSomething(myData), controlCancellationTokenSource.Token);
+    experiment.Try(
+        "candidate",
+        async () => await AnAsyncMethod(myData),
+        candidateCancellationTokenSource.Token
+        );
+});
+```
+
+3. Or overriding the global token on the `Try` and/or `Catch`
+```csharp
+var cancellationTokenSource = new CancellationTokenSource();
+var candidateCancellationTokenSource = new CancellationTokenSource();
+
+await scientist.ExperimentAsync<int>(experimentName, experiment =>
+{
+    experiment.WithCancellationToken(cancellationTokenSource.Token);
+    experiment.Use(async () => await StartRunningSomething(myData));
+    experiment.Try(
+        "candidate",
+        async () => await AnAsyncMethod(myData),
+        candidateCancellationTokenSource.Token
+        );
+});
+```
+
 ### Testing
 
 When running your test suite, it's helpful to know that the experimental results always match. To help with testing, Scientist has a `ThrowOnMismatches` property that can be set to `true`. Only do this in your test suite!

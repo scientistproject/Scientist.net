@@ -1,6 +1,7 @@
 ﻿using Github.Ordering;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GitHub.Internals
@@ -14,11 +15,11 @@ namespace GitHub.Internals
     internal class ExperimentSettings<T, TClean>
     {
         public Func<Task> BeforeRun { get; set; }
-        public Dictionary<string, Func<Task<T>>> Candidates { get; set; }
+        public Dictionary<string, Candidate<T>> Candidates { get; set; }
         public Func<T, TClean> Cleaner { get; set; }
         public Func<T, T, bool> Comparator { get; set; }
         public Dictionary<string, dynamic> Contexts { get; set; }
-        public Func<Task<T>> Control { get; set; }
+        public Candidate<T> Control { get; set; }
         public Func<Task<bool>> Enabled { get; set; }
         public IEnumerable<Func<T, T, Task<bool>>> Ignores { get; set; }
         public string Name { get; set; }
@@ -28,5 +29,6 @@ namespace GitHub.Internals
         public Action<Operation, Exception> Thrown { get; set; }
         public IResultPublisher ResultPublisher { get; set; }
         public CustomOrderer<T> CustomOrderer { get; set;  }
+        public CancellationToken CancellationToken { get; set; }
     }
 }

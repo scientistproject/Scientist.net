@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace GitHub.Internals
@@ -29,6 +30,7 @@ namespace GitHub.Internals
         internal readonly bool ThrowOnMismatches;
         internal readonly IResultPublisher ResultPublisher;
         internal readonly CustomOrderer<T> CustomOrderer;
+        internal readonly CancellationToken CancellationToken;
 
         public ExperimentInstance(ExperimentSettings<T, TClean> settings)
         {
@@ -36,10 +38,10 @@ namespace GitHub.Internals
 
             Behaviors = new List<NamedBehavior<T>>
             {
-                new NamedBehavior<T>(ControlExperimentName, settings.Control),
+                new NamedBehavior<T>(ControlExperimentName, settings.Control.Behavior, settings.Control.CancellationToken),
             };
             Behaviors.AddRange(
-                settings.Candidates.Select(c => new NamedBehavior<T>(c.Key, c.Value)));
+                settings.Candidates.Select(c => new NamedBehavior<T>(c.Key, c.Value.Behavior, c.Value.CancellationToken)));
 
             BeforeRun = settings.BeforeRun;
             Cleaner = settings.Cleaner;
@@ -53,10 +55,13 @@ namespace GitHub.Internals
             ThrowOnMismatches = settings.ThrowOnMismatches;
             ResultPublisher = settings.ResultPublisher;
             CustomOrderer = settings.CustomOrderer;
+            CancellationToken = settings.CancellationToken;
         }
 
         public async Task<T> Run()
         {
+            CancellationToken.ThrowIfCancellationRequested();
+
             // Determine if experiments should be run.
             if (!await ShouldExperimentRun().ConfigureAwait(false))
             {
@@ -64,35 +69,70 @@ namespace GitHub.Internals
                 return await Behaviors[0].Behavior().ConfigureAwait(false);
             }
 
-            if (BeforeRun != null)
-            {
-                await BeforeRun().ConfigureAwait(false);
-            }
-
-            var orderedBehaviors = await CustomOrderer(Behaviors).ConfigureAwait(false);
-
-            // Break tasks into batches of "ConcurrentTasks" size
             var observations = new List<Observation<T, TClean>>();
-            foreach (var behaviors in orderedBehaviors.Chunk(ConcurrentTasks))
-            {
-                // Run batch of behaviors simultaneously
-                var tasks = behaviors.Select(b =>
-                {
-                    return Observation<T, TClean>.New(
-                        b.Name,
-                        b.Behavior,
-                        Comparator,
-                        Thrown,
-                        Cleaner);
-                });
+            var wasCancelled = false;
 
-                // Collect the observations
-                observations.AddRange(await Task.WhenAll(tasks).ConfigureAwait(false));
+            try
+            {
+                CancellationToken.ThrowIfCancellationRequested();
+
+                if (BeforeRun != null)
+                {
+                    await BeforeRun().ConfigureAwait(false);
+                }
+
+                var orderedBehaviors = await CustomOrderer(Behaviors).ConfigureAwait(false);
+
+                // Break tasks into batches of "ConcurrentTasks" size
+                foreach (var behaviors in orderedBehaviors.Chunk(ConcurrentTasks))
+                {
+
+                    // Run batch of behaviors simultaneously
+                    var tasks = behaviors.Select(b =>
+                    {
+
+                        return Observation<T, TClean>.New(
+                            b.Name,
+                            b.Behavior,
+                            Comparator,
+                            Thrown,
+                            Cleaner,
+                            b.CancellationToken // ?? CancellationToken // Use global token if override hasnt been given
+                            );
+                    });
+
+
+                    // Collect the observations
+#if NET6_0_OR_GREATER
+                    observations.AddRange(await Task.WhenAll(tasks).WaitAsync(CancellationToken).ConfigureAwait(false));
+#else
+                    var allTasks = Task.WhenAll(tasks);
+                    var cancelTask = Task.Delay(Timeout.Infinite, CancellationToken);
+
+                    var completed = await Task.WhenAny(allTasks, cancelTask).ConfigureAwait(false);
+
+                    if (completed == cancelTask)
+                    {
+                        throw new OperationCanceledException(CancellationToken);
+                    }
+
+                    observations.AddRange(await allTasks.ConfigureAwait(false));
+#endif
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ex is OperationCanceledException || ex is TaskCanceledException)
+                {
+                    wasCancelled = true;
+                }
             }
 
             var controlObservation = observations.FirstOrDefault(o => o.Name == ControlExperimentName);
 
-            var result = new Result<T, TClean>(this, observations, controlObservation, Contexts);
+            wasCancelled = wasCancelled || observations.Exists(o => o.Cancelled);
+
+            var result = new Result<T, TClean>(this, observations, controlObservation, Contexts, wasCancelled);
 
             try
             {
@@ -103,12 +143,18 @@ namespace GitHub.Internals
                 Thrown(Operation.Publish, ex);
             }
 
-            if (ThrowOnMismatches && result.Mismatched)
+            if (ThrowOnMismatches && result.Mismatched && !wasCancelled)
             {
                 throw new MismatchException<T, TClean>(Name, result);
             }
 
+            if (controlObservation == null || controlObservation.Cancelled)
+            {
+                throw new OperationCanceledException("Operation was cancelled during control observation run.");
+            }
+
             if (controlObservation.Thrown) throw controlObservation.Exception;
+
             return controlObservation.Value;
         }
 

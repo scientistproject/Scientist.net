@@ -142,11 +142,9 @@ public class TheScientistClass
         public void EnsureNullGuardIsWorking()
         {
 #if !DEBUG
-           var ex = Assert.Throws<AggregateException>(() =>
+           Assert.Throws<NullReferenceException>(() =>
                 Scientist.Science<object>(null, _ => { })
-            );
-
-           Assert.IsType<NullReferenceException>(ex.InnerException);             
+            );      
 #endif
         }
 
