@@ -1,4 +1,11 @@
-### New in 2.1.0
+### New in 2.2.0
+
+**Features**
+
+- Asynchronous experiment cancellation [165](https://github.com/scientistproject/Scientist.net/issues/165) by @LewieMac - [#168](https://github.com/scientistproject/Scientist.net/pull/168) via @JoshHiles
+- Custom experiment ordering [159](https://github.com/scientistproject/Scientist.net/issues/159) by @flakey-bit - [#167](https://github.com/scientistproject/Scientist.net/pull/167) via @JoshHiles
+
+### New in 2.1.0 (Released 29/11/2025)
 
 **Features**
 
